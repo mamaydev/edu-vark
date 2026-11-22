@@ -93,7 +93,10 @@ jobs:
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = "mamaydev/edu-vark"
           test "${GITHUB_REF}" = "refs/heads/main"
-          test -x /usr/local/sbin/eduvark-deploy
+          # The engine is root:root 0750, so the runner cannot test -x it.
+          # Verify ownership/mode instead; execution goes through sudo.
+          test "$(stat -c '%U %a' /usr/local/sbin/eduvark-deploy)" = "root 750"
+          test "$(id -u)" -ne 0
           echo "Guards passed on $(hostname) as $(id -un)"
 
       - name: Run deployment engine
