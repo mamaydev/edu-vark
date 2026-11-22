@@ -1,0 +1,8 @@
+# Install as /etc/sudoers.d/eduvark-runner (root:root 0440), then validate with
+# `visudo -c`. Never edit /etc/sudoers directly.
+#
+# The GitHub Actions runner is a non-root, non-docker user. It has no shell
+# escalation beyond the root-owned deployment engine, which re-validates the
+# repository, the commit and its own preconditions on every invocation.
+Defaults:eduvark-runner !requiretty
+eduvark-runner ALL=(root) NOPASSWD: /usr/local/sbin/eduvark-deploy verify *, /usr/local/sbin/eduvark-deploy dry-run *, /usr/local/sbin/eduvark-deploy deploy *, /usr/local/sbin/eduvark-deploy rollback *, /usr/local/sbin/eduvark-deploy status

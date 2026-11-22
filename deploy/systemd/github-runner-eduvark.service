@@ -1,0 +1,25 @@
+[Unit]
+Description=GitHub Actions Runner (mamaydev/edu-vark, eduvark-deploy)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=eduvark-runner
+Group=eduvark-runner
+WorkingDirectory=/opt/eduvark/runner
+Environment=HOME=/home/eduvark-runner
+ExecStart=/opt/eduvark/runner/run.sh
+Restart=always
+RestartSec=5
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=60
+# The service intentionally keeps NoNewPrivileges=no because it escalates
+# through a narrow sudoers rule to the deployment engine.
+NoNewPrivileges=no
+PrivateTmp=yes
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
