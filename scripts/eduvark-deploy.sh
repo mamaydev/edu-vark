@@ -73,13 +73,17 @@ set_backend_tag() {
   chmod 0600 "$ENV_FILE"
 }
 
-git_clean_checkout() {
+prepare_repo() {
   cd "$REPO_DIR"
   local origin_url
   origin_url=$(git config --get remote.origin.url)
   [ "$origin_url" = "https://github.com/mamaydev/edu-vark.git" ] ||
     die "unexpected origin URL: $origin_url"
   git fetch --quiet --prune origin main
+}
+
+git_clean_checkout() {
+  cd "$REPO_DIR"
   if ! git diff --quiet || ! git diff --cached --quiet; then
     git checkout --quiet -- . 2>/dev/null || true
     git reset --quiet --hard HEAD
@@ -90,6 +94,7 @@ resolve_sha() {
   local input=${1:-}
   [ -n "$input" ] || die "commit SHA is required"
   [[ "$input" =~ ^[0-9a-f]{7,40}$ ]] || die "invalid SHA format: $input"
+  prepare_repo
   cd "$REPO_DIR"
   local sha
   sha=$(git rev-parse --verify "${input}^{commit}" 2>/dev/null) ||
@@ -252,7 +257,6 @@ cmd_verify() {
   check_env_files
   check_runtime
   check_capacity
-  git_clean_checkout
   log "verify ok: sha=$sha tag=${sha:0:12} current_tag=$(env_get BACKEND_TAG)"
   printf 'VERIFIED_SHA=%s\n' "$sha"
 }
@@ -265,7 +269,6 @@ cmd_dry_run() {
   check_env_files
   check_runtime
   check_capacity
-  git_clean_checkout
   mig=$(migration_snapshot)
   backup=$(backup_database "$sha")
   log "dry-run: building image without switching services"
