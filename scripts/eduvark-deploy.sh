@@ -35,6 +35,8 @@ ENV_FILE="$REPO_DIR/.env"
 PROD_ENV="$REPO_DIR/backend/.env.production"
 POSTGRES_CONTAINER=eduvark-postgres
 BACKEND_CONTAINER=eduvark-backend
+# `docker compose up` addresses the *service*, not the container_name.
+BACKEND_SERVICE=backend
 HOST_HEALTH_URL=http://192.168.0.100:3000/health/ready
 PUBLIC_BASE_URL=https://pam.sequein.my.id
 MIN_FREE_MB=${EDUVARK_MIN_FREE_MB:-3072}
@@ -234,8 +236,16 @@ write_state() {
 }
 
 switch_backend() {
-  local tag=$1
-  BACKEND_TAG="$tag" compose up -d --no-deps --wait --wait-timeout 120 "$BACKEND_CONTAINER"
+  local tag=$1 running_image
+  BACKEND_TAG="$tag" compose up -d --no-deps --wait --wait-timeout 120 "$BACKEND_SERVICE" ||
+    return 1
+  # A compose call that silently no-ops would otherwise be reported as success
+  # while the previous image keeps serving traffic.
+  running_image=$(docker inspect -f '{{.Config.Image}}' "$BACKEND_CONTAINER" 2>/dev/null) || return 1
+  [ "$running_image" = "eduvark-backend:$tag" ] || {
+    log "switch did not take effect: running '$running_image', expected 'eduvark-backend:$tag'"
+    return 1
+  }
 }
 
 rollback_to() {
