@@ -1,5 +1,16 @@
 # Deploy EduVARK di Homelab Proxmox (LXC 10100)
 
+> **Rilis normal sekarang lewat CI/CD, bukan langkah manual di bawah.**
+> Alur otomatis: `.github/workflows/deploy-homelab.yml` → environment `homelab-testing`
+> (approval) → runner `eduvark-deploy` → `/usr/local/sbin/eduvark-deploy`.
+> Dokumentasi lengkap: [`docs/ci-cd/`](docs/ci-cd/) —
+> [architecture](docs/ci-cd/architecture.md), [cicd](docs/ci-cd/cicd.md),
+> [deployment](docs/ci-cd/deployment.md), [rollback](docs/ci-cd/rollback.md),
+> [runner](docs/ci-cd/runner.md), [security](docs/ci-cd/security.md),
+> [operations](docs/ci-cd/operations.md), [provisioning](docs/ci-cd/provisioning.md).
+> Panduan manual di file ini dipakai untuk *bootstrap* pertama, pemulihan darurat, atau
+> bila runner sedang mati.
+
 Panduan ini menggantikan versi lama yang mengasumsikan PostgreSQL eksternal/Supabase dan
 reverse proxy Caddy/Nginx. Stack yang berjalan sekarang:
 
@@ -30,9 +41,14 @@ chmod 600 .env backend/.env.production
 ```
 
 `.env` berisi `POSTGRES_PASSWORD` (samakan dengan password pada `DATABASE_URL`),
-`BACKEND_TAG`, dan `BACKEND_BIND_ADDRESS=192.168.0.100`. Database `eduvark` dan user
-`eduvark` sudah dipin di compose mengikuti volume yang ada — jangan menambah/mengubah
-`POSTGRES_DB`/`POSTGRES_USER` setelah volume terinisialisasi.
+`BACKEND_TAG` (12 karakter pertama commit yang dirilis), dan
+`BACKEND_BIND_ADDRESS=192.168.0.100`. Database `eduvark` dan user `eduvark` dipin di
+compose — jangan menambah/mengubah `POSTGRES_DB`/`POSTGRES_USER` setelah volume
+terinisialisasi.
+
+Database pada LXC ini **diinisialisasi baru** (tidak ada volume/dump lama yang bisa
+dipakai). Bila suatu saat memulihkan dari dump, ikuti
+[`docs/ci-cd/rollback.md`](docs/ci-cd/rollback.md).
 
 `backend/.env.production` minimal berisi:
 
@@ -71,20 +87,28 @@ image `eduvark-backend:testing`.
 
 ## 3. Backup sebelum migrasi (wajib)
 
+Rilis lewat CI/CD sudah membuat backup otomatis dan memverifikasinya
+(`pg_restore -l`). Untuk langkah manual:
+
 ```bash
-mkdir -p /opt/eduvark/backups
+mkdir -p /opt/eduvark/backups && chmod 750 /opt/eduvark/backups
+umask 077
 docker exec eduvark-postgres pg_dump -U eduvark -d eduvark -Fc \
-  > /opt/eduvark/backups/eduvark-$(date +%F-%H%M).dump
-ls -lh /opt/eduvark/backups | tail -3
+  > /opt/eduvark/backups/eduvark-$(date -u +%Y%m%dT%H%M%SZ).dump
+docker exec -i eduvark-postgres pg_restore -l \
+  < "$(ls -t /opt/eduvark/backups/*.dump | head -1)" > /dev/null && echo "backup valid"
 ```
+
+Backup harian otomatis: `eduvark-backup.timer` (03:30, retensi 14 dump).
 
 ## 4. Build image
 
 ```bash
 cd /opt/eduvark/try-pam
-git fetch --all
-git checkout <commit-disetujui>
-docker compose -f docker-compose.homelab.yml build backend
+git fetch origin main
+git checkout --detach <commit-disetujui>
+TAG=$(git rev-parse --short=12 HEAD)
+BACKEND_TAG="$TAG" docker compose -f docker-compose.homelab.yml build backend
 docker image ls eduvark-backend
 ```
 
@@ -121,14 +145,21 @@ ke R2 lalu buka signed URL; login mahasiswa → pilih VARK → buka materi.
 
 ## 8. Rollback
 
-```bash
-# image sebelumnya (tag lain/commit sebelumnya)
-docker compose -f docker-compose.homelab.yml up -d --no-deps backend
+Cara utama (otomatis, image sebelumnya, tanpa menyentuh database):
 
-# hanya jika migrasi baru bermasalah dan sudah disetujui:
-docker exec -i eduvark-postgres pg_restore -U eduvark -d eduvark --clean --if-exists \
-  < /opt/eduvark/backups/eduvark-<timestamp>.dump
+```bash
+sudo /usr/local/sbin/eduvark-deploy rollback
+sudo /usr/local/sbin/eduvark-deploy status
 ```
+
+Atau manual dengan tag image sebelumnya:
+
+```bash
+BACKEND_TAG=<tag-sebelumnya> docker compose -f docker-compose.homelab.yml up -d --no-deps backend
+```
+
+Restore database hanya bila migrasi baru tidak kompatibel dan sudah disetujui — prosedur
+lengkap dan peringatannya ada di [`docs/ci-cd/rollback.md`](docs/ci-cd/rollback.md).
 
 Jangan menghapus volume. Jika container dobel, hapus container lama dengan
 `docker rm -f <nama>` (bukan volume).

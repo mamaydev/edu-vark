@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily EduVARK PostgreSQL backup (03:30 local time)
+Documentation=file:/opt/eduvark/try-pam/docs/ci-cd/operations.md
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=eduvark-backup.service
+
+[Install]
+WantedBy=timers.target

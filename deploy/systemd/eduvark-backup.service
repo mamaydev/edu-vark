@@ -1,0 +1,13 @@
+[Unit]
+Description=EduVARK nightly PostgreSQL backup
+Documentation=file:/opt/eduvark/try-pam/docs/ci-cd/operations.md
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/eduvark-backup
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=yes
