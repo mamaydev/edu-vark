@@ -259,6 +259,8 @@ cmd_verify() {
 
 cmd_dry_run() {
   local sha backup mig
+  exec 9>"$LOCK_FILE"
+  flock -n 9 || die "another deployment is already running"
   sha=$(resolve_sha "${1:-}")
   check_env_files
   check_runtime
