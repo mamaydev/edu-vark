@@ -1,0 +1,218 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { getEnv } from '../config/env';
+import { AppError } from './errors';
+
+let client: S3Client | null = null;
+
+const LOCAL_MIME: Record<string, string> = {
+  '.pdf': 'application/pdf',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.mp3': 'audio/mpeg',
+  '.m4a': 'audio/mp4',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+};
+
+function hasR2(): boolean {
+  const env = getEnv();
+  return Boolean(
+    env.R2_ENDPOINT &&
+      env.R2_ACCESS_KEY_ID &&
+      env.R2_SECRET_ACCESS_KEY &&
+      env.R2_BUCKET,
+  );
+}
+
+function isLocalStorage(): boolean {
+  const env = getEnv();
+  return !hasR2() && env.NODE_ENV !== 'production';
+}
+
+function localDir(): string {
+  return path.resolve(process.cwd(), getEnv().LOCAL_STORAGE_DIR ?? 'storage');
+}
+
+function localPath(key: string): string {
+  const root = localDir();
+  const resolved = path.resolve(root, key);
+  if (!resolved.startsWith(root + path.sep)) {
+    throw new AppError('STORAGE_UNAVAILABLE', 500, 'Kunci penyimpanan tidak valid.');
+  }
+  return resolved;
+}
+
+function localSecret(): string {
+  return getEnv().JWT_ACCESS_SECRET ?? 'eduvark-local-storage-development-secret';
+}
+
+function localSignature(key: string, expires: number): string {
+  return createHmac('sha256', localSecret())
+    .update(key + ':' + expires)
+    .digest('hex');
+}
+
+function config(): { client: S3Client; bucket: string; ttl: number } {
+  const env = getEnv();
+  if (!hasR2()) {
+    throw new AppError(
+      'STORAGE_UNAVAILABLE',
+      502,
+      'Penyimpanan materi belum dikonfigurasi.',
+    );
+  }
+
+  if (!client) {
+    client = new S3Client({
+      region: 'auto',
+      endpoint: env.R2_ENDPOINT,
+      credentials: {
+        accessKeyId: env.R2_ACCESS_KEY_ID!,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY!,
+      },
+    });
+  }
+
+  return { client, bucket: env.R2_BUCKET!, ttl: env.R2_SIGNED_URL_TTL_SECONDS };
+}
+
+function storageFailure(error: unknown): AppError {
+  if (error instanceof AppError) return error;
+  return new AppError(
+    'STORAGE_UNAVAILABLE',
+    502,
+    'Penyimpanan materi sedang tidak tersedia.',
+  );
+}
+
+export async function putObject(
+  key: string,
+  body: Buffer,
+  _contentType: string,
+): Promise<void> {
+  if (isLocalStorage()) {
+    try {
+      const filePath = localPath(key);
+      await mkdir(path.dirname(filePath), { recursive: true });
+      await writeFile(filePath, body);
+      return;
+    } catch (error) {
+      throw storageFailure(error);
+    }
+  }
+
+  try {
+    const cfg = config();
+    await cfg.client.send(
+      new PutObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+        Body: body,
+        ContentType: _contentType,
+      }),
+    );
+  } catch (error) {
+    throw storageFailure(error);
+  }
+}
+
+export async function getSignedObjectUrl(key: string): Promise<string> {
+  if (isLocalStorage()) {
+    const env = getEnv();
+    const ttl = env.R2_SIGNED_URL_TTL_SECONDS;
+    const expires = Math.floor(Date.now() / 1000) + ttl;
+    const base = (env.PUBLIC_API_BASE_URL ?? 'http://10.0.2.2:3000/api/v1').replace(
+      /\/$/,
+      '',
+    );
+    return (
+      base +
+      '/material-files?key=' +
+      encodeURIComponent(key) +
+      '&expires=' +
+      expires +
+      '&signature=' +
+      localSignature(key, expires)
+    );
+  }
+
+  try {
+    const cfg = config();
+    return await getSignedUrl(
+      cfg.client,
+      new GetObjectCommand({ Bucket: cfg.bucket, Key: key }),
+      { expiresIn: cfg.ttl },
+    );
+  } catch (error) {
+    throw storageFailure(error);
+  }
+}
+
+export async function deleteObject(key: string): Promise<void> {
+  if (isLocalStorage()) {
+    try {
+      await unlink(localPath(key));
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== 'ENOENT') throw storageFailure(error);
+    }
+    return;
+  }
+
+  try {
+    const cfg = config();
+    await cfg.client.send(
+      new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }),
+    );
+  } catch (error) {
+    throw storageFailure(error);
+  }
+}
+
+export async function readLocalObject(
+  key: string,
+  expires: number,
+  signature: string,
+): Promise<{ buffer: Buffer; mime: string }> {
+  if (!isLocalStorage()) {
+    throw new AppError('STORAGE_UNAVAILABLE', 404, 'Materi tidak ditemukan.');
+  }
+  if (!Number.isFinite(expires) || expires < Math.floor(Date.now() / 1000)) {
+    throw new AppError('SIGNED_URL_EXPIRED', 403, 'Tautan materi sudah kedaluwarsa.');
+  }
+
+  const expected = localSignature(key, expires);
+  const actualBuffer = Buffer.from(signature, 'utf8');
+  const expectedBuffer = Buffer.from(expected, 'utf8');
+  if (
+    actualBuffer.length !== expectedBuffer.length ||
+    !timingSafeEqual(actualBuffer, expectedBuffer)
+  ) {
+    throw new AppError('SIGNED_URL_INVALID', 403, 'Tautan materi tidak valid.');
+  }
+
+  const filePath = localPath(key);
+  try {
+    const buffer = await readFile(filePath);
+    return { buffer, mime: LOCAL_MIME[path.extname(filePath).toLowerCase()] ?? 'application/octet-stream' };
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT') {
+      throw new AppError('MATERIAL_NOT_FOUND', 404, 'Materi tidak ditemukan.');
+    }
+    throw storageFailure(error);
+  }
+}

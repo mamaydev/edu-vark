@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: eduvark-postgres
+    environment:
+      POSTGRES_DB: eduvark
+      POSTGRES_USER: eduvark
+      POSTGRES_PASSWORD: eduvark
+    ports:
+      - "5432:5432"
+    volumes:
+      - eduvark_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eduvark -d eduvark"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  eduvark_pgdata:

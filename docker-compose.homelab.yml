@@ -1,0 +1,81 @@
+# EduVARK homelab stack for LXC 10100 (Ubuntu 24.04, Docker Engine).
+#
+# Resource names are pinned so an existing deployment keeps using the same
+# PostgreSQL volume and Docker network:
+#   volume  try-pam_eduvark_pgdata
+#   network try-pam_eduvark_internal
+#
+# Prerequisites (see DEPLOY-PROXMOX.md):
+#   - root .env with POSTGRES_PASSWORD (and optional POSTGRES_DB/USER/BACKEND_TAG)
+#   - backend/.env.production (never committed)
+name: try-pam
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: eduvark-postgres
+    restart: unless-stopped
+    # Nama database/user mengikuti deployment yang sudah ada (SRS D-02/D-06).
+    # Jangan diubah setelah volume terinisialisasi.
+    environment:
+      POSTGRES_DB: eduvark
+      POSTGRES_USER: eduvark
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - eduvark_pgdata:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eduvark -d eduvark"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - eduvark_internal
+    stop_grace_period: 30s
+
+  backend:
+    image: eduvark-backend:${BACKEND_TAG:-testing}
+    build:
+      context: ./backend
+    container_name: eduvark-backend
+    init: true
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.production
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+    ports:
+      - "${BACKEND_BIND_ADDRESS:-192.168.0.100}:3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health/ready').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+    networks:
+      - eduvark_internal
+    stop_grace_period: 20s
+
+volumes:
+  eduvark_pgdata:
+    name: try-pam_eduvark_pgdata
+
+networks:
+  eduvark_internal:
+    name: try-pam_eduvark_internal

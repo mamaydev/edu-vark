@@ -1,0 +1,94 @@
+package com.eduvark.app.presentation.lecturer.cases
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.eduvark.app.domain.error.AppFailure
+import com.eduvark.app.domain.model.CaseStudy
+import com.eduvark.app.domain.usecase.GetLecturerCaseUseCase
+import com.eduvark.app.domain.usecase.UpsertCaseUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+data class LecturerCaseUiState(
+    val isLoading: Boolean = true,
+    val isSaving: Boolean = false,
+    val caseStudy: CaseStudy? = null,
+    val error: String? = null,
+    val saveError: String? = null,
+)
+
+@HiltViewModel
+class LecturerCaseViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val getLecturerCaseUseCase: GetLecturerCaseUseCase,
+    private val upsertCaseUseCase: UpsertCaseUseCase,
+) : ViewModel() {
+
+    private val topicId: String = savedStateHandle.get<String>("topicId").orEmpty()
+
+    private val _state = MutableStateFlow(LecturerCaseUiState())
+    val state: StateFlow<LecturerCaseUiState> = _state.asStateFlow()
+
+    init {
+        load()
+    }
+
+    fun load() {
+        if (topicId.isBlank()) {
+            _state.value = LecturerCaseUiState(isLoading = false, error = "Topik tidak valid.")
+            return
+        }
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null, saveError = null) }
+            try {
+                val caseStudy = getLecturerCaseUseCase(topicId)
+                _state.value = LecturerCaseUiState(isLoading = false, caseStudy = caseStudy)
+            } catch (error: AppFailure) {
+                _state.update { it.copy(isLoading = false, error = error.message) }
+            } catch (error: Exception) {
+                _state.update {
+                    it.copy(isLoading = false, error = "Terjadi kesalahan. Coba lagi.")
+                }
+            }
+        }
+    }
+
+    fun save(theory: String, instructions: String, deadlineAt: String) {
+        if (instructions.trim().isEmpty()) {
+            _state.update { it.copy(saveError = "Instruksi wajib diisi.") }
+            return
+        }
+        if (deadlineAt.trim().isEmpty()) {
+            _state.update { it.copy(saveError = "Deadline wajib diisi (ISO UTC).") }
+            return
+        }
+        if (_state.value.isSaving) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isSaving = true, saveError = null) }
+            try {
+                val caseStudy = upsertCaseUseCase(
+                    topicId,
+                    theory.trim().ifBlank { null },
+                    instructions.trim(),
+                    deadlineAt.trim(),
+                )
+                _state.update {
+                    it.copy(isSaving = false, caseStudy = caseStudy, saveError = null)
+                }
+            } catch (error: AppFailure) {
+                _state.update { it.copy(isSaving = false, saveError = error.message) }
+            } catch (error: Exception) {
+                _state.update {
+                    it.copy(isSaving = false, saveError = "Gagal menyimpan studi kasus.")
+                }
+            }
+        }
+    }
+}

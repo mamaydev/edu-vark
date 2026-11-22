@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="eduvark_primary">#2557DE</color>
+    <color name="eduvark_primary_dark">#1B43B2</color>
+    <color name="eduvark_secondary">#087F79</color>
+    <color name="eduvark_tertiary">#995F0B</color>
+    <color name="eduvark_surface">#FFFFFF</color>
+    <color name="eduvark_page">#F7F8FC</color>
+    <color name="eduvark_ink">#162947</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

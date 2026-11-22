@@ -1,0 +1,178 @@
+[
+  {
+    "file": "docs/diagrams/activity/admin.md",
+    "index": 1,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 74753
+  },
+  {
+    "file": "docs/diagrams/activity/admin.md",
+    "index": 2,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 67336
+  },
+  {
+    "file": "docs/diagrams/activity/admin.md",
+    "index": 3,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 74392
+  },
+  {
+    "file": "docs/diagrams/activity/dosen.md",
+    "index": 1,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 96348
+  },
+  {
+    "file": "docs/diagrams/activity/dosen.md",
+    "index": 2,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 91898
+  },
+  {
+    "file": "docs/diagrams/activity/dosen.md",
+    "index": 3,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 88228
+  },
+  {
+    "file": "docs/diagrams/activity/dosen.md",
+    "index": 4,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 82601
+  },
+  {
+    "file": "docs/diagrams/activity/dosen.md",
+    "index": 5,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 72900
+  },
+  {
+    "file": "docs/diagrams/activity/mahasiswa.md",
+    "index": 1,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 121299
+  },
+  {
+    "file": "docs/diagrams/activity/mahasiswa.md",
+    "index": 2,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 99627
+  },
+  {
+    "file": "docs/diagrams/activity/mahasiswa.md",
+    "index": 3,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 104199
+  },
+  {
+    "file": "docs/diagrams/activity/mahasiswa.md",
+    "index": 4,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 131312
+  },
+  {
+    "file": "docs/diagrams/activity/mahasiswa.md",
+    "index": 5,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 75115
+  },
+  {
+    "file": "docs/diagrams/database/ERD_CONCEPTUAL.md",
+    "index": 1,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 73772
+  },
+  {
+    "file": "docs/diagrams/database/ERD_LOGICAL_DRAFT.md",
+    "index": 1,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 349725
+  },
+  {
+    "file": "docs/diagrams/use-case/admin.md",
+    "index": 1,
+    "type": "plantuml",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 31664
+  },
+  {
+    "file": "docs/diagrams/use-case/dosen.md",
+    "index": 1,
+    "type": "plantuml",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 49959
+  },
+  {
+    "file": "docs/diagrams/use-case/mahasiswa.md",
+    "index": 1,
+    "type": "plantuml",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 85634
+  },
+  {
+    "file": "docs/use-cases/USE_CASE_DEPENDENCIES_EDUVARK_V0.7.md",
+    "index": 1,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 55727
+  },
+  {
+    "file": "docs/use-cases/USE_CASE_DEPENDENCIES_EDUVARK_V0.7.md",
+    "index": 2,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 81151
+  },
+  {
+    "file": "docs/use-cases/USE_CASE_DEPENDENCIES_EDUVARK_V0.7.md",
+    "index": 3,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 112387
+  },
+  {
+    "file": "docs/use-cases/USE_CASE_DEPENDENCIES_EDUVARK_V0.7.md",
+    "index": 4,
+    "type": "mermaid",
+    "svg": "OK",
+    "png": "OK",
+    "pngBytes": 28916
+  }
+]
