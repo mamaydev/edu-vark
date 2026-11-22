@@ -1,0 +1,7 @@
+# Deployment and CI definitions are privileged: changes here can execute code on
+# the self-hosted runner. Require review from the repository owner.
+/.github/                @mamaydev
+/.github/workflows/     @mamaydev
+/scripts/               @mamaydev
+/docker-compose.homelab.yml @mamaydev
+/backend/Dockerfile     @mamaydev
