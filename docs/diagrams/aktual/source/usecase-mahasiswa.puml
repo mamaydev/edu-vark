@@ -1,0 +1,55 @@
+@startuml
+!theme plain
+left to right direction
+skinparam dpi 150
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam usecaseBackgroundColor #EAF7F1
+skinparam usecaseBorderColor #287356
+skinparam actorBorderColor #287356
+skinparam ArrowColor #52687B
+title EduVARK — Use Case Mahasiswa
+actor Mahasiswa as M
+rectangle "Sistem EduVARK" {
+  package "Akun dan sesi" {
+    usecase "Login" as Login
+    usecase "Mengganti password" as Pass
+    usecase "Melihat akun dan sesi" as Me
+    usecase "Logout" as Logout
+  }
+  package "Pembelajaran" {
+    usecase "Memilih VARK sesi" as Vark
+    usecase "Melihat topik terbit" as Topics
+    usecase "Membuka materi\nsesuai VARK" as Materials
+    usecase "Mengisi / memperbarui\nfeedback V/A/R" as Feedback
+    usecase "Mengirim jawaban\nKinesthetic final" as Submit
+    usecase "Melihat status dan\nhasil penilaian sendiri" as Result
+  }
+}
+M -- Login
+M -- Pass
+M -- Me
+M -- Logout
+M -- Vark
+M -- Topics
+M -- Materials
+M -- Feedback
+M -- Submit
+M -- Result
+note right of Vark
+  Satu kategori dikunci per sesi.
+  Pemilihan baru memerlukan login baru.
+end note
+note right of Feedback
+  Hanya Visual, Aural, Read/Write;
+  materi kategori harus tersedia.
+  Satu nilai terbaru per mahasiswa,
+  topik, dan kategori.
+end note
+note right of Submit
+  Jawaban 1–10.000 karakter;
+  satu pengiriman final tanpa draft;
+  waktu database <= deadline.
+end note
+@enduml

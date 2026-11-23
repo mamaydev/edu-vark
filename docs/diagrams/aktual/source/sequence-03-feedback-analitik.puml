@@ -1,0 +1,53 @@
+@startuml
+title EduVARK — Feedback Pemahaman dan Analitik Dosen
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+autonumber
+actor Mahasiswa as M
+participant "Android Mahasiswa" as AM
+participant "API Feedback / Analitik" as API
+database PostgreSQL as DB
+participant "Android Dosen" as AD
+actor Dosen as D
+note over AM, API: Awalan /api/v1; token, sesi, role, dan password\ndiperiksa pada permintaan terlindungi.
+M -> AM: Buka feedback pada materi V/A/R
+AM -> API: GET /topics/{id}/feedback
+API -> DB: BEGIN; cek enrollment, topik terbit, materi kategori tersedia
+API -> DB: Cari feedback mahasiswa–topik–VARK sesi
+DB --> API: Nilai terakhir atau kosong
+API -> DB: COMMIT
+API --> AM: Nilai 0–100 atau null
+M -> AM: Atur slider dan Simpan
+AM -> API: PUT /topics/{id}/feedback {value}
+API -> API: Validasi integer 0–100 dan VARK bukan Kinesthetic
+alt Input atau akses tidak valid
+  API --> AM: Error validasi / akses
+else Valid
+  API -> DB: BEGIN; cek ketersediaan materi dan akses
+  API -> DB: UPSERT berdasarkan mahasiswa, topik, VARK; audit; COMMIT
+  API --> AM: Nilai terbaru dan updatedAt
+  AM --> M: Konfirmasi tersimpan
+end
+== Analitik dibaca secara terpisah ==
+D -> AD: Pilih topik, kategori dan/atau mahasiswa
+AD -> API: GET /lecturer/analytics/topics/{id}?filter
+API -> DB: BEGIN; cek topik dan penugasan dosen pada kelas
+alt Dosen bukan pengampu / filter mahasiswa tidak sah
+  API -> DB: ROLLBACK
+  API --> AD: Error akses / data tidak ditemukan
+else Berwenang
+  API -> DB: Ambil feedback terbaru sesuai filter
+  DB --> API: Daftar mahasiswa dan nilai per kategori
+  API -> API: Hitung mean, histogram, jumlah responden,\ndan belum merespons (null berbeda dari 0)
+  API -> DB: Ambil submission dan nilai Kinesthetic topik
+  DB --> API: Nilai dan status Kinesthetic
+  API -> API: Hitung metrik Kinesthetic secara terpisah
+  API -> DB: COMMIT
+  API --> AD: Data agregat, mahasiswa, dan metrik Kinesthetic
+  AD --> D: Tampilkan grafik / ringkasan
+end
+note over API, DB: Feedback hanya menyimpan nilai terbaru tiap kombinasi.\nMean menghitung nilai feedback yang tidak null;\nrespondentCount menghitung mahasiswa dengan nilai terpilih.\nMetrik Kinesthetic tidak digabung dengan feedback subjektif.
+@enduml

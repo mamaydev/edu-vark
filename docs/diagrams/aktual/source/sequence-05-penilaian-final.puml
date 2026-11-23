@@ -1,0 +1,49 @@
+@startuml
+title EduVARK — Penilaian Final dan Pembacaan Hasil
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+autonumber
+actor Dosen as D
+participant "Android Dosen" as AD
+participant "API Penilaian" as API
+database PostgreSQL as DB
+participant "Android Mahasiswa" as AM
+actor Mahasiswa as M
+note over AD, API: Awalan /api/v1; permintaan dilindungi token, sesi, role\ndan kewajiban mengganti password.
+D -> AD: Buka daftar pengumpulan kasus
+AD -> API: GET /lecturer/cases/{id}/submissions
+API -> DB: BEGIN; cek kasus dan penugasan dosen;\nambil daftar mahasiswa + status; COMMIT
+API --> AD: Daftar status dan submission yang tersedia
+D -> AD: Pilih jawaban
+AD -> API: GET /submissions/{id}
+API -> DB: BEGIN; ambil jawaban dan cek hak dosen kelas; COMMIT
+API --> AD: Teks final dan status penilaian
+D -> AD: Nilai integer 0–100; komentar opsional; konfirmasi
+AD -> API: POST /submissions/{id}/assessment
+API -> API: Validasi score; trim komentar (maks. 1.000 karakter)
+alt Input tidak valid
+  API --> AD: 422 error validasi
+else Valid
+  API -> DB: BEGIN; baca submission dan cek penugasan dosen
+  alt Tidak berwenang / submission tidak ditemukan
+    API -> DB: ROLLBACK
+    API --> AD: Error akses / not found
+  else Sudah ada assessment
+    API -> DB: ROLLBACK
+    API --> AD: 409 ALREADY_ASSESSED
+  else Belum dinilai
+    API -> DB: INSERT assessment; audit; COMMIT
+    API --> AD: 201 assessment final
+  end
+end
+== Hasil tersedia pada pembacaan berikutnya ==
+M -> AM: Buka / muat ulang hasil kasus
+AM -> API: GET /topics/{id}/case
+API -> DB: BEGIN; cek akses mahasiswa;\nJOIN kasus, submission, assessment; COMMIT
+API --> AM: SUDAH_DINILAI + score + komentar jika ada
+AM --> M: Tampilkan hasil
+note over API, DB: UNIQUE(submission_id) mencegah penilaian ganda.\nTrigger melarang UPDATE/DELETE assessment.\nTidak ada publikasi ulang atau push hasil otomatis.
+@enduml

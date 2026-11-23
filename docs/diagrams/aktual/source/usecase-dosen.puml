@@ -1,0 +1,61 @@
+@startuml
+!theme plain
+left to right direction
+skinparam dpi 150
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam usecaseBackgroundColor #EEF0FC
+skinparam usecaseBorderColor #514A8D
+skinparam actorBorderColor #514A8D
+skinparam ArrowColor #52687B
+title EduVARK — Use Case Dosen
+actor Dosen as D
+rectangle "Sistem EduVARK" {
+  package "Akun dan sesi" {
+    usecase "Login" as Login
+    usecase "Mengganti password" as Pass
+    usecase "Melihat akun dan sesi" as Me
+    usecase "Logout" as Logout
+  }
+  package "Pengajaran" {
+    usecase "Mengelola topik\ndan urutan" as Topic
+    usecase "Menerbitkan / menarik\npublikasi topik" as Publish
+    usecase "Mengelola file / tautan\nmateri per VARK" as Material
+    usecase "Mengelola studi kasus\ndan deadline" as Case
+    usecase "Memeriksa daftar\npengumpulan dan jawaban" as Review
+    usecase "Memberikan penilaian final" as Assess
+    usecase "Melihat analitik kelas" as Analytics
+  }
+}
+D -- Login
+D -- Pass
+D -- Me
+D -- Logout
+D -- Topic
+D -- Publish
+D -- Material
+D -- Case
+D -- Review
+D -- Assess
+D -- Analytics
+note right of Publish
+  Topik boleh terbit meskipun
+  materi empat kategori belum lengkap.
+end note
+note right of Case
+  Satu studi kasus per topik;
+  deadline terkunci setelah
+  submission pertama.
+end note
+note right of Assess
+  Integer 0–100, sekali dan final;
+  komentar opsional <= 1.000 karakter;
+  hasil langsung terlihat oleh pemilik.
+end note
+note right of Analytics
+  Feedback subjektif V/A/R dan nilai
+  Kinesthetic dihitung terpisah.
+  Akses terbatas pada kelas dosen.
+end note
+@enduml

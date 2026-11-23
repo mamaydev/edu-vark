@@ -1,0 +1,71 @@
+@startuml
+!theme plain
+skinparam dpi 150
+skinparam defaultFontName Arial
+skinparam activityBackgroundColor #EEF0FC
+skinparam activityBorderColor #514A8D
+skinparam ArrowColor #514A8D
+title EduVARK — Activity Pengelolaan Pembelajaran Dosen
+|Dosen|
+start
+:Masuk dengan sesi dosen valid;\nselesaikan ganti password jika wajib;
+:Pilih aktivitas pada kelas yang diampu;
+|Backend|
+:Periksa autentikasi, role dosen,\ndan penugasan atau kepemilikan objek;
+if (Berwenang?) then (ya)
+else (tidak)
+  |Aplikasi Android|
+  :Tampilkan penolakan akses;
+  stop
+endif
+|Dosen|
+switch (Aktivitas)
+case (Topik dan materi)
+  :Buat atau pilih topik;\nubah identitas, urutan, atau status terbit;
+  :Pilih kategori VARK;\nunggah file atau tambah tautan jika diperlukan;
+  |Backend|
+  :Validasi data topik / tautan;\nuntuk file: periksa MIME, isi,\ndan ukuran maksimum konfigurasi;
+  if (Valid?) then (ya)
+    :Simpan file ke R2 bila berupa file;\nsimpan metadata dan audit;
+    note right
+      Maksimum konfigurasi file 100 MB.
+      Topik boleh diterbitkan walaupun
+      empat kategori belum lengkap.
+    end note
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan pesan validasi atau\nkegagalan storage;
+  endif
+case (Studi kasus)
+  :Pilih topik; isi teori opsional,\ninstruksi, dan deadline;
+  |Backend|
+  :Validasi; satu studi kasus per topik;\nperubahan deadline ditolak jika\nsudah ada submission;
+  if (Valid dan perubahan diizinkan?) then (ya)
+    :Simpan studi kasus dan audit;\ndeadline disimpan UTC, ditampilkan WIB;
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan pesan validasi\natau deadline terkunci;
+  endif
+case (Penilaian final)
+  :Buka daftar pengumpulan;\npilih submission;
+  :Baca jawaban; isi nilai integer 0–100,\nkomentar opsional <= 1.000 karakter;\nkonfirmasi simpan final;
+  |Backend|
+  :Validasi input, akses,\ndan belum ada assessment;
+  if (Valid dan belum dinilai?) then (ya)
+    :Simpan assessment unik dan audit;\njawaban dan penilaian tetap final;
+    |Aplikasi Android|
+    :Tampilkan hasil; mahasiswa dapat\nmelihatnya tanpa publikasi terpisah;
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan kesalahan;\npenilaian tersimpan tidak diubah;
+  endif
+case (Analitik)
+  :Pilih topik dan filter\nkategori atau mahasiswa;
+  |Backend|
+  :Hitung rerata, jumlah responden,\ndan histogram feedback V/A/R;\npisahkan mahasiswa belum feedback;
+  :Hitung metrik Kinesthetic terpisah;
+  |Aplikasi Android|
+  :Tampilkan grafik atau keadaan kosong;\nbelum feedback tidak dianggap 0%;
+endswitch
+stop
+@enduml

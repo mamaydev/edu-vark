@@ -1,0 +1,131 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 160
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 65
+skinparam entity {
+ BackgroundColor #F0F6FF
+ BorderColor #325882
+ FontColor #15324F
+}
+hide circle
+title EduVARK | ERD detail akademik
+entity "users" as users {
+  * id : uuid <<PK>>
+  * login_id : text
+  * password_hash : text
+  * full_name : text
+  * role : text
+  * status : text
+  * must_change_password : boolean
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+entity "classes" as classes {
+  * id : uuid <<PK>>
+  * code : text
+  * name : text
+  * semester : text
+  * is_active : boolean
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+entity "topics" as topics {
+  * id : uuid <<PK>>
+  * class_id : uuid <<FK>>
+  * created_by : uuid <<FK>>
+  * title : text
+    description : text
+  * sort_order : integer
+  * status : text
+  * created_at : timestamptz
+  * updated_at : timestamptz
+    deleted_at : timestamptz
+}
+entity "materials" as materials {
+  * id : uuid <<PK>>
+  * topic_id : uuid <<FK>>
+  * uploaded_by : uuid <<FK>>
+  * vark_type : text
+  * title : text
+  * kind : text
+    object_key : text
+    url : text
+    mime : text
+    size_bytes : bigint
+  * uploaded_at : timestamptz
+  * updated_at : timestamptz
+    deleted_at : timestamptz
+}
+entity "feedback" as feedback {
+  * id : uuid <<PK>>
+  * student_id : uuid <<FK>>
+  * topic_id : uuid <<FK>>
+  * vark_type : text
+  * value : integer
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+entity "case_studies" as case_studies {
+  * id : uuid <<PK>>
+  * topic_id : uuid <<FK>>
+  * created_by : uuid <<FK>>
+    theory : text
+  * instructions : text
+  * deadline_at : timestamptz
+  * created_at : timestamptz
+  * updated_at : timestamptz
+    deleted_at : timestamptz
+}
+entity "submissions" as submissions {
+  * id : uuid <<PK>>
+  * case_study_id : uuid <<FK>>
+  * student_id : uuid <<FK>>
+  * answer_text : text
+  * submitted_at : timestamptz
+}
+entity "assessments" as assessments {
+  * id : uuid <<PK>>
+  * submission_id : uuid <<FK>>
+  * assessed_by : uuid <<FK>>
+  * score : integer
+    comment : text
+  * assessed_at : timestamptz
+}
+classes ||--o{ topics : class_id
+users ||--o{ topics : created_by
+topics ||--o{ materials : topic_id
+users ||--o{ materials : uploaded_by
+users ||--o{ feedback : student_id
+topics ||--o{ feedback : topic_id
+topics ||--o{ case_studies : topic_id
+users ||--o{ case_studies : created_by
+case_studies ||--o{ submissions : case_study_id
+users ||--o{ submissions : student_id
+submissions ||--o| assessments : submission_id
+users ||--o{ assessments : assessed_by
+note bottom of case_studies
+Maksimal satu kasus non-deleted per topik.
+Riwayat soft-delete membuat FK fisik 1:N.
+end note
+note bottom of feedback
+UNIQUE(student_id, topic_id, vark_type)
+V/A/R saja; integer 0..100.
+end note
+note bottom of submissions
+UNIQUE(student_id, case_study_id)
+Jawaban final 1..10.000 karakter.
+end note
+legend bottom left
+  PK = primary key; FK = foreign key; * = NOT NULL.
+  Crow's foot: || tepat satu; o| nol/satu; o{ nol/banyak.
+  Relasi menunjuk FK fisik; pembatasan role ditegakkan layanan.
+  schema_migrations adalah tabel teknis dan ditampilkan terpisah.
+endlegend
+@enduml

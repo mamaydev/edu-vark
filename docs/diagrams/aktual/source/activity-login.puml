@@ -1,0 +1,67 @@
+@startuml
+!theme plain
+skinparam dpi 150
+skinparam defaultFontName Arial
+skinparam activityBackgroundColor #EAF3FB
+skinparam activityBorderColor #24527A
+skinparam ArrowColor #24527A
+title EduVARK — Activity Autentikasi dan Awal Sesi
+|Pengguna|
+start
+:Masukkan NIM/NIP atau login ID\ndan password;
+|Backend|
+:Periksa pembatas percobaan login,\nkredensial, dan status akun;
+if (Login diizinkan?) then (ya)
+  :Cabut sesi aktif sebelumnya;\nbuat sesi baru dan pasangan token;
+else (tidak)
+  |Aplikasi Android|
+  :Tampilkan alasan penolakan;
+  stop
+endif
+|Aplikasi Android|
+if (Wajib ganti password?) then (ya)
+  |Pengguna|
+  :Isi password saat ini, password baru,\ndan konfirmasi;
+  |Backend|
+  :Validasi password saat ini;\npassword baru 6–200 karakter,\nberbeda dari password lama,\ndan konfirmasi sesuai;
+  if (Valid?) then (ya)
+    :Hash Argon2id; simpan password;\ncabut seluruh sesi; catat audit;
+    |Aplikasi Android|
+    :Arahkan ke login ulang;
+    stop
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan pesan validasi;\npengguna dapat memperbaiki input;
+    stop
+  endif
+else (tidak)
+endif
+|Aplikasi Android|
+if (Role mahasiswa?) then (ya)
+  |Mahasiswa|
+  :Pilih Visual, Aural,\nRead/Write, atau Kinesthetic;
+  |Backend|
+  :Validasi kategori dan sesi;\nsimpan tepat satu VARK aktif;
+  note right
+    VARK hanya dapat ditetapkan sekali
+    dalam sesi. Perubahan memerlukan
+    logout dan login baru.
+  end note
+  |Aplikasi Android|
+  :Tampilkan beranda mahasiswa;
+else (dosen / admin)
+  :Tampilkan beranda sesuai role;
+endif
+|Pengguna|
+:Gunakan fitur sesuai hak akses;
+if (Memilih logout?) then (ya)
+  |Backend|
+  :Cabut sesi dan catat audit;
+  |Aplikasi Android|
+  :Hapus token lokal; tampilkan login;
+else (tidak)
+  |Aplikasi Android|
+  :Pertahankan sesi selama valid;\nrotasi refresh token bila diperlukan;
+endif
+stop
+@enduml

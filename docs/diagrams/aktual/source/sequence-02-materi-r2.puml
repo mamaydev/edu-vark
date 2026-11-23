@@ -1,0 +1,63 @@
+@startuml
+title EduVARK — Unggah Materi dan Akses Mahasiswa
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+autonumber
+actor Dosen as D
+participant "Android Dosen" as AD
+participant "API Materi" as API
+database PostgreSQL as DB
+participant "Cloudflare R2" as R2
+participant "Android Mahasiswa" as AM
+actor Mahasiswa as M
+note over AD, API: Awalan /api/v1; API memeriksa token, sesi, role dan guard terkait.
+D -> AD: Pilih topik, kategori, judul, dan file
+AD -> API: POST /lecturer/topics/{id}/materials/file
+API -> API: Validasi ukuran, MIME, ekstensi / signature
+API -> DB: BEGIN; cek penugasan dosen pada kelas topik
+alt File tidak valid / dosen tidak berwenang
+  API -> DB: ROLLBACK bila transaksi sudah dimulai
+  API --> AD: Error
+else Valid dan berwenang
+  API -> R2: PutObject (key acak)
+  alt Penyimpanan gagal
+    R2 --> API: Gagal
+    API -> DB: ROLLBACK
+    API --> AD: 502 STORAGE_UNAVAILABLE
+  else Objek tersimpan
+    API -> DB: INSERT metadata materi
+    alt INSERT metadata gagal
+      API -> R2: DeleteObject sebagai kompensasi
+      API -> DB: ROLLBACK
+      API --> AD: Error
+    else INSERT berhasil
+      API -> DB: Audit MATERIAL_CREATED
+      API -> API: Buat presigned GET URL secara lokal (SDK)
+      API -> DB: COMMIT
+      API --> AD: 201 metadata dan signed URL
+    end
+  end
+end
+== Materi pada topik yang telah dipublikasikan ==
+M -> AM: Buka topik
+AM -> API: GET /topics/{id}/materials
+API -> DB: BEGIN; cek kelas aktif, enrollment, topik terbit\ndan filter kategori VARK sesi
+DB --> API: Materi yang boleh diakses
+alt Tidak ada materi pada kategori sesi
+  API -> DB: ROLLBACK
+  API --> AM: 404 MATERIAL_NOT_AVAILABLE
+else Materi tersedia
+  API -> API: Buat presigned GET URL untuk file
+  API -> DB: COMMIT
+  API --> AM: Daftar materi + URL (default TTL 5 menit)
+  AM --> M: Tampilkan daftar materi
+  M -> AM: Buka file
+  AM -> R2: GET presigned URL
+  R2 --> AM: File jika signature dan waktu masih valid
+end
+note over API, R2: R2 menerima URL bertanda tangan langsung;\npemeriksaan VARK dilakukan saat API menerbitkan URL.\nURL yang sudah diterbitkan tidak memeriksa sesi lagi.
+note over API, DB: Penghapusan materi normal adalah soft-delete metadata.\nTautan eksternal tidak diunggah ke R2.\nFallback file lokal hanya pada mode non-production.
+@enduml
