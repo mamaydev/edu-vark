@@ -3,6 +3,7 @@ package com.eduvark.app.testutil
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.MaterialKind
+import com.eduvark.app.domain.model.StudentDashboard
 import com.eduvark.app.domain.model.Topic
 import com.eduvark.app.domain.model.TopicStatus
 import com.eduvark.app.domain.model.UploadPayload
@@ -47,6 +48,15 @@ class FakeTopicRepository(
 
     var lastReorder: List<String>? = null
 
+    override suspend fun getStudentDashboard(): StudentDashboard {
+        failure?.let { throw it }
+        return StudentDashboard(
+            vark = VarkType.VISUAL,
+            availableMaterials = topics.count { it.materialAvailable },
+            notCompletedMaterials = topics.count { it.materialAvailable },
+        )
+    }
+
     override suspend fun listTopics(): List<Topic> {
         failure?.let { throw it }
         return topics
@@ -55,6 +65,11 @@ class FakeTopicRepository(
     override suspend fun getTopic(topicId: String): Topic {
         failure?.let { throw it }
         return topics.firstOrNull { it.id == topicId } ?: throw AppFailure.Unknown
+    }
+
+    override suspend fun listLecturerMaterials(topicId: String): List<Material> {
+        failure?.let { throw it }
+        return materials
     }
 
     override suspend fun listMaterials(topicId: String): List<Material> {

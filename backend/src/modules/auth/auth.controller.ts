@@ -1,5 +1,10 @@
 import type { Request, RequestHandler } from 'express';
 import { unauthorized } from '../../lib/errors';
+import {
+  assertPasswordChangeAllowed,
+  clearPasswordChangeFailures,
+  recordPasswordChangeFailure,
+} from '../../lib/password-change-throttle';
 import type { AuthContext, VarkType } from '../../types/auth';
 import * as authService from './auth.service';
 import {
@@ -59,8 +64,17 @@ export const meHandler: RequestHandler = async (req, res, next) => {
 export const changePasswordHandler: RequestHandler = async (req, res, next) => {
   try {
     const context = auth(req);
+    assertPasswordChangeAllowed(context.userId);
     const input = changePasswordSchema.parse(req.body);
-    await authService.changePassword(context.userId, input);
+    try {
+      await authService.changePassword(context.userId, input);
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'INVALID_PASSWORD') {
+        recordPasswordChangeFailure(context.userId);
+      }
+      throw error;
+    }
+    clearPasswordChangeFailures(context.userId);
     res.status(204).send();
   } catch (error) {
     next(error);

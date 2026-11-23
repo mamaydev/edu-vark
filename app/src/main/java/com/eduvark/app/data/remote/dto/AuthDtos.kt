@@ -63,6 +63,7 @@ data class MeResponse(
 data class ChangePasswordRequest(
     val currentPassword: String,
     val newPassword: String,
+    val confirmPassword: String,
 )
 
 @Serializable

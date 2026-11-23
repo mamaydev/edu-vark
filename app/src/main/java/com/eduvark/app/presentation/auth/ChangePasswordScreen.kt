@@ -13,12 +13,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eduvark.app.ui.components.EduField
+import com.eduvark.app.ui.components.PasswordField
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.Eyebrow
 import com.eduvark.app.ui.components.FieldHelper
@@ -35,6 +35,7 @@ fun ChangePasswordScreen(
     onSuccess: () -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    forced: Boolean = true,
     viewModel: ChangePasswordViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -53,36 +54,41 @@ fun ChangePasswordScreen(
         ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
             Eyebrow("Keamanan akun")
             Spacer(Modifier.height(10.dp))
-            Text(text = "Ganti password\nsebelum lanjut.", style = EduText.Display)
+            Text(
+                text = if (forced) "Ganti password\nsebelum lanjut." else "Ganti password\nakunmu.",
+                style = EduText.Display,
+            )
             Spacer(Modifier.height(12.dp))
             Text(
-                text = "Password sementara wajib diganti sebelum kamu memulai sesi belajar.",
+                text = if (forced) {
+                    "Password sementara wajib diganti sebelum kamu memulai sesi belajar."
+                } else {
+                    "Masukkan password saat ini. Semua sesi lain akan keluar setelah password diganti."
+                },
                 style = EduText.Body,
             )
 
             Spacer(Modifier.height(24.dp))
             Column {
                 FieldLabel("Password saat ini")
-                EduField(
+                PasswordField(
                     value = currentPassword,
                     onValueChange = { currentPassword = it },
                     placeholder = "Password saat ini",
                     enabled = !state.isLoading,
-                    keyboardType = KeyboardType.Password,
-                    visualTransformation = PasswordVisualTransformation(),
+                    leadingLabel = "password saat ini",
                 )
             }
 
             Spacer(Modifier.height(16.dp))
             Column {
                 FieldLabel("Password baru")
-                EduField(
+                PasswordField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
                     placeholder = "Password baru",
                     enabled = !state.isLoading,
-                    keyboardType = KeyboardType.Password,
-                    visualTransformation = PasswordVisualTransformation(),
+                    leadingLabel = "password baru",
                 )
                 FieldHelper("Minimal 6 karakter.")
             }
@@ -90,13 +96,12 @@ fun ChangePasswordScreen(
             Spacer(Modifier.height(16.dp))
             Column {
                 FieldLabel("Konfirmasi password baru")
-                EduField(
+                PasswordField(
                     value = confirmation,
                     onValueChange = { confirmation = it },
                     placeholder = "Ulangi password baru",
                     enabled = !state.isLoading,
-                    keyboardType = KeyboardType.Password,
-                    visualTransformation = PasswordVisualTransformation(),
+                    leadingLabel = "konfirmasi password",
                 )
             }
 

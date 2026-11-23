@@ -66,6 +66,55 @@ export async function findStudentClassId(
   return result.rows[0]?.id ?? null;
 }
 
+export interface StudentDashboardRow {
+  available_materials: number;
+  not_completed_materials: number;
+}
+
+export async function getStudentDashboard(
+  client: PoolClient,
+  classId: string,
+  studentId: string,
+  vark: VarkType,
+): Promise<StudentDashboardRow> {
+  const result = await client.query<StudentDashboardRow>(
+    `
+      WITH available AS (
+        SELECT t.id
+        FROM topics t
+        WHERE t.class_id = $1
+          AND t.status = 'PUBLISHED'
+          AND t.deleted_at IS NULL
+          AND EXISTS (
+            SELECT 1 FROM materials m
+            WHERE m.topic_id = t.id
+              AND m.vark_type = $2
+              AND m.deleted_at IS NULL
+          )
+      )
+      SELECT
+        COUNT(*)::int AS available_materials,
+        COUNT(*) FILTER (
+          WHERE ($2 = 'KINESTHETIC' AND NOT EXISTS (
+            SELECT 1
+            FROM submissions s
+            JOIN case_studies cs ON cs.id = s.case_study_id AND cs.deleted_at IS NULL
+            WHERE cs.topic_id = available.id AND s.student_id = $3
+          ))
+          OR ($2 <> 'KINESTHETIC' AND NOT EXISTS (
+            SELECT 1 FROM feedback f
+            WHERE f.topic_id = available.id
+              AND f.student_id = $3
+              AND f.vark_type = $2
+          ))
+        )::int AS not_completed_materials
+      FROM available
+    `,
+    [classId, vark, studentId],
+  );
+  return result.rows[0] ?? { available_materials: 0, not_completed_materials: 0 };
+}
+
 export async function listTopicsForStudent(
   client: PoolClient,
   classId: string,

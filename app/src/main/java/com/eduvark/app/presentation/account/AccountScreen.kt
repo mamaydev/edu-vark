@@ -51,6 +51,7 @@ fun AccountScreen(
     onOpenAnalytics: () -> Unit,
     onOpenAdminAccounts: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenChangePassword: () -> Unit = {},
     onOpenServerSettings: () -> Unit = {},
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
@@ -152,6 +153,8 @@ fun AccountScreen(
                 NoticeCard(text = accountNotice(user.role))
 
                 Spacer(Modifier.height(20.dp))
+                SecondaryButton(text = "Ubah password", onClick = onOpenChangePassword)
+                Spacer(Modifier.height(10.dp))
                 SecondaryButton(text = "Keluar dari akun", onClick = viewModel::logout)
                 Spacer(Modifier.height(12.dp))
                 Text(

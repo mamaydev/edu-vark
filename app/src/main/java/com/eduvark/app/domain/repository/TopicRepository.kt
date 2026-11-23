@@ -1,14 +1,17 @@
 package com.eduvark.app.domain.repository
 
 import com.eduvark.app.domain.model.Material
+import com.eduvark.app.domain.model.StudentDashboard
 import com.eduvark.app.domain.model.Topic
 import com.eduvark.app.domain.model.UploadPayload
 import com.eduvark.app.domain.model.VarkType
 
 interface TopicRepository {
+    suspend fun getStudentDashboard(): StudentDashboard
     suspend fun listTopics(): List<Topic>
     suspend fun getTopic(topicId: String): Topic
     suspend fun listMaterials(topicId: String): List<Material>
+    suspend fun listLecturerMaterials(topicId: String): List<Material>
 
     suspend fun createTopic(title: String, description: String?): Topic
     suspend fun publishTopic(topicId: String): Topic

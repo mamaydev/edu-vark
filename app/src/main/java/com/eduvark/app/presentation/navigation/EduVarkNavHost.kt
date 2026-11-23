@@ -133,6 +133,20 @@ fun EduVarkApp() {
                 onOpenAnalytics = { navController.openRoot(Routes.LECTURER_ANALYTICS_HUB) },
                 onOpenAdminAccounts = { navController.openRoot(Routes.ADMIN_USERS) },
                 onOpenServerSettings = { navController.navigate(Routes.SERVER_SETTINGS) },
+                onOpenChangePassword = { navController.navigate(Routes.CHANGE_PASSWORD_SELF) },
+            )
+        }
+
+        composable(Routes.CHANGE_PASSWORD_SELF) {
+            ChangePasswordScreen(
+                onBack = { navController.popBackStack() },
+                onSuccess = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                forced = false,
             )
         }
 
@@ -193,6 +207,9 @@ fun EduVarkApp() {
                 onOpenSubmissions = { caseId ->
                     navController.navigate(Routes.lecturerSubmissions(caseId))
                 },
+                onOpenCase = { topicId ->
+                    navController.navigate(Routes.lecturerCase(topicId))
+                },
                 bottomBar = { LecturerShellBar(navController, LecturerTab.PENILAIAN) },
             )
         }
@@ -226,6 +243,9 @@ fun EduVarkApp() {
                 onBack = { navController.popBackStack() },
                 onOpenSubmissions = { caseId ->
                     navController.navigate(Routes.lecturerSubmissions(caseId))
+                },
+                onOpenMaterials = { topicId ->
+                    navController.navigate(Routes.lecturerMaterials(topicId))
                 },
                 bottomBar = { LecturerShellBar(navController, LecturerTab.PENILAIAN) },
             )

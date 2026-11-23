@@ -34,6 +34,7 @@ import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.ui.components.AdminBottomBar
 import com.eduvark.app.ui.components.AdminTab
 import com.eduvark.app.ui.components.EduIcons
+import com.eduvark.app.ui.components.EduPullToRefresh
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.Eyebrow
 import com.eduvark.app.ui.components.LecturerBottomBar
@@ -154,7 +155,16 @@ fun HomeScreen(
                 )
             }
 
-            else -> ScrollColumn(modifier = Modifier.padding(padding)) {
+            else -> EduPullToRefresh(
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.padding(padding),
+            ) {
+                ScrollColumn {
+                if (state.refreshError != null) {
+                    NoticeCard(text = state.refreshError.orEmpty(), tone = TintTone.Danger)
+                    Spacer(Modifier.height(16.dp))
+                }
                 when (user.role) {
                     UserRole.STUDENT -> StudentHome(state, onOpenStudentTopics)
                     UserRole.LECTURER -> LecturerHome(
@@ -169,6 +179,7 @@ fun HomeScreen(
                         onCreateUser = onCreateUser,
                         onOpenAccounts = onOpenAdminAccounts,
                     )
+                }
                 }
             }
         }
@@ -250,19 +261,21 @@ private fun StudentHome(state: HomeUiState, onOpenTopics: () -> Unit) {
         )
     }
 
-    if (!kinesthetic) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatCard(
-                value = state.publishedTopics.size.toString().padStart(2, '0'),
-                label = "Topik terbit",
-                modifier = Modifier.weight(1f),
-            )
-            StatCard(
-                value = state.readyTopics.size.toString().padStart(2, '0'),
-                label = "Materi siap",
-                modifier = Modifier.weight(1f),
-            )
-        }
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatCard(
+            value = state.studentDashboard?.availableMaterials
+                ?.toString()
+                ?.padStart(2, '0') ?: "—",
+            label = "Materi Tersedia",
+            modifier = Modifier.weight(1f),
+        )
+        StatCard(
+            value = state.studentDashboard?.notCompletedMaterials
+                ?.toString()
+                ?.padStart(2, '0') ?: "—",
+            label = "Materi Belum Dikerjakan",
+            modifier = Modifier.weight(1f),
+        )
     }
 
     SectionHeader(

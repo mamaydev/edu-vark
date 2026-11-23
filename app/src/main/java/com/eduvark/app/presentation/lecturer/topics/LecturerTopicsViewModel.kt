@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 
 data class LecturerTopicsUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val isSaving: Boolean = false,
     val topics: List<Topic> = emptyList(),
     val error: String? = null,
@@ -39,22 +40,62 @@ class LecturerTopicsViewModel @Inject constructor(
     private val _state = MutableStateFlow(LecturerTopicsUiState())
     val state: StateFlow<LecturerTopicsUiState> = _state.asStateFlow()
 
+    private var requestInFlight = false
+
     init {
         load()
     }
 
-    fun load() {
+    fun load() = fetch(showFullLoading = true)
+
+    fun refresh() = fetch(showFullLoading = false)
+
+    private fun fetch(showFullLoading: Boolean) {
+        if (requestInFlight) return
+        requestInFlight = true
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            _state.update {
+                if (showFullLoading) {
+                    it.copy(isLoading = true, error = null)
+                } else {
+                    it.copy(isRefreshing = true, error = null)
+                }
+            }
             try {
                 val topics = getTopicsUseCase()
-                _state.value = LecturerTopicsUiState(isLoading = false, topics = topics)
+                _state.update {
+                    it.copy(isLoading = false, isRefreshing = false, topics = topics)
+                }
             } catch (error: AppFailure) {
-                _state.update { it.copy(isLoading = false, error = error.message) }
+                _state.update {
+                    if (it.topics.isEmpty()) {
+                        it.copy(isLoading = false, isRefreshing = false, error = error.message)
+                    } else {
+                        it.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            actionError = error.message,
+                        )
+                    }
+                }
             } catch (error: Exception) {
                 _state.update {
-                    it.copy(isLoading = false, error = "Terjadi kesalahan. Coba lagi.")
+                    if (it.topics.isEmpty()) {
+                        it.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            error = "Terjadi kesalahan. Coba lagi.",
+                        )
+                    } else {
+                        it.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            actionError = "Terjadi kesalahan. Coba lagi.",
+                        )
+                    }
                 }
+            } finally {
+                requestInFlight = false
             }
         }
     }

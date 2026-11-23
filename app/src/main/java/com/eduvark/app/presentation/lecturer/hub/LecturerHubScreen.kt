@@ -12,11 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eduvark.app.ui.components.EduPullToRefresh
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.EmptyBlock
 import com.eduvark.app.ui.components.ErrorBlock
 import com.eduvark.app.ui.components.Eyebrow
 import com.eduvark.app.ui.components.LoadingBlock
+import com.eduvark.app.ui.components.NoticeCard
 import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TopicCard
@@ -33,6 +35,7 @@ fun LecturerHubScreen(
     bottomBar: (@Composable () -> Unit)? = null,
     onOpenSubmissions: (String) -> Unit = {},
     onOpenAnalytics: (String) -> Unit = {},
+    onOpenCase: (String) -> Unit = {},
     viewModel: LecturerHubViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -65,7 +68,16 @@ fun LecturerHubScreen(
                 ErrorBlock(message = state.error.orEmpty(), onRetry = viewModel::load)
             }
 
-            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
+            else -> EduPullToRefresh(
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.padding(padding),
+            ) {
+                ScrollColumn(spacing = 0.dp) {
+                if (state.refreshError != null) {
+                    NoticeCard(text = state.refreshError.orEmpty(), tone = TintTone.Danger)
+                    Spacer(Modifier.height(16.dp))
+                }
                 Eyebrow("Implementasi Basis Data")
                 Spacer(Modifier.height(10.dp))
                 Text(text = headline, style = EduText.Display)
@@ -87,16 +99,15 @@ fun LecturerHubScreen(
                             LecturerHubMode.GRADING -> {
                                 val count = item.submissionCount
                                 when {
-                                    !hasCase -> "Belum ada studi kasus" to TintTone.Neutral
-                                    count != null -> "$count pengumpulan" to TintTone.Teal
-                                    else -> "Buka pengumpulan" to TintTone.Teal
+                                    !hasCase -> "Buat studi kasus" to TintTone.Neutral
+                                    count != null && count > 0 -> "$count pengumpulan" to TintTone.Teal
+                                    else -> "Belum ada pengumpulan" to TintTone.Neutral
                                 }
                             }
 
                             LecturerHubMode.ANALYTICS ->
                                 "Buka analitik" to TintTone.Teal
                         }
-                        val enabled = mode == LecturerHubMode.ANALYTICS || hasCase
                         TopicCard(
                             orderLabel = "Topik ${item.topic.sortOrder.toString().padStart(2, '0')}  /  " +
                                 "Implementasi Basis Data",
@@ -106,7 +117,7 @@ fun LecturerHubScreen(
                                     if (hasCase) {
                                         "Studi kasus Kinesthetic • nilai final"
                                     } else {
-                                        "Tambahkan studi kasus dari tab Topik"
+                                        "Topik ini belum punya studi kasus. Ketuk untuk membuat."
                                     }
 
                                 LecturerHubMode.ANALYTICS ->
@@ -114,21 +125,19 @@ fun LecturerHubScreen(
                             },
                             status = card.first,
                             statusTone = card.second,
-                            onClick = if (!enabled) {
-                                null
-                            } else {
-                                {
-                                    when (mode) {
-                                        LecturerHubMode.GRADING ->
-                                            item.caseId?.let(onOpenSubmissions)
+                            onClick = {
+                                when {
+                                    mode == LecturerHubMode.ANALYTICS ->
+                                        onOpenAnalytics(item.topic.id)
 
-                                        LecturerHubMode.ANALYTICS -> onOpenAnalytics(item.topic.id)
-                                    }
+                                    item.caseId != null -> onOpenSubmissions(item.caseId)
+                                    else -> onOpenCase(item.topic.id)
                                 }
                             },
                         )
                         Spacer(Modifier.height(12.dp))
                     }
+                }
                 }
             }
         }

@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
+import { getPool } from '../../src/db/client';
 import { resetLoginThrottle } from '../../src/lib/login-throttle';
 import { closeDb, createClass, createUser, resetDb } from '../helpers/db';
 import {
@@ -208,8 +209,14 @@ describeDb('analytics integration', () => {
     expect(data.notRespondedCount).toBe(1);
   });
 
-  it('rejects a VARK/category mismatch, a non-owner, and an invalid category', async () => {
-    const mismatch = await request(app)
+  it('reads feedback by its stored category, not the active login VARK', async () => {
+    await getPool().query(
+      `INSERT INTO feedback (student_id, topic_id, vark_type, value)
+       VALUES ($1, $2, 'VISUAL', 95)`,
+      [student3Id, topicId],
+    );
+
+    const response = await request(app)
       .get(
         '/api/v1/lecturer/analytics/topics/' +
           topicId +
@@ -217,9 +224,14 @@ describeDb('analytics integration', () => {
           student3Id,
       )
       .set('Authorization', bearer(lecturerToken))
-      .expect(403);
-    expect(mismatch.body.error.code).toBe('VARK_MISMATCH');
+      .expect(200);
+    const data = response.body.data;
+    expect(data.respondentCount).toBe(1);
+    expect(data.mean).toBe(95);
+    expect(data.students[0].vark).toBe('VISUAL');
+  });
 
+  it('rejects a non-owner and an invalid category', async () => {
     const otherLecturer = await loginAs(app, 'lect2', 'LecturerPass123');
     const forbidden = await request(app)
       .get('/api/v1/lecturer/analytics/topics/' + topicId)

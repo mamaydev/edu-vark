@@ -10,6 +10,7 @@ import com.eduvark.app.data.remote.dto.TopicDto
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.MaterialKind
+import com.eduvark.app.domain.model.StudentDashboard
 import com.eduvark.app.domain.model.Topic
 import com.eduvark.app.domain.model.TopicStatus
 import com.eduvark.app.domain.model.UploadPayload
@@ -28,6 +29,17 @@ class TopicRepositoryImpl @Inject constructor(
     private val executor: ApiExecutor,
 ) : TopicRepository {
 
+    override suspend fun getStudentDashboard(): StudentDashboard {
+        val response = executor.execute { api.getStudentDashboard() }
+        val data = response.data ?: throw AppFailure.Unknown
+        val vark = VarkType.fromWire(data.vark) ?: throw AppFailure.Unknown
+        return StudentDashboard(
+            vark = vark,
+            availableMaterials = data.availableMaterials,
+            notCompletedMaterials = data.notCompletedMaterials,
+        )
+    }
+
     override suspend fun listTopics(): List<Topic> {
         val response = executor.execute { api.listTopics() }
         return response.data.orEmpty().map { it.toDomain() }
@@ -41,6 +53,11 @@ class TopicRepositoryImpl @Inject constructor(
 
     override suspend fun listMaterials(topicId: String): List<Material> {
         val response = executor.execute { api.listMaterials(topicId) }
+        return response.data.orEmpty().map { it.toDomain() }
+    }
+
+    override suspend fun listLecturerMaterials(topicId: String): List<Material> {
+        val response = executor.execute { api.listLecturerMaterials(topicId) }
         return response.data.orEmpty().map { it.toDomain() }
     }
 

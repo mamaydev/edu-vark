@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 
 data class AdminUsersUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val users: List<AdminUser> = emptyList(),
     val total: Int = 0,
     val page: Int = 1,
@@ -25,6 +26,7 @@ data class AdminUsersUiState(
     val roleFilter: UserRole? = null,
     val statusFilter: AdminAccountStatus? = null,
     val error: String? = null,
+    val refreshError: String? = null,
 )
 
 @HiltViewModel
@@ -35,10 +37,24 @@ class AdminUsersViewModel @Inject constructor(
     private val _state = MutableStateFlow(AdminUsersUiState())
     val state: StateFlow<AdminUsersUiState> = _state.asStateFlow()
 
-    fun load(page: Int = _state.value.page) {
+    private var requestInFlight = false
+
+    fun load(page: Int = _state.value.page) = fetch(page, showFullLoading = true)
+
+    fun refresh() = fetch(_state.value.page, showFullLoading = false)
+
+    private fun fetch(page: Int, showFullLoading: Boolean) {
+        if (requestInFlight) return
+        requestInFlight = true
         viewModelScope.launch {
             val current = _state.value
-            _state.update { it.copy(isLoading = true, error = null, page = page) }
+            _state.update {
+                if (showFullLoading) {
+                    it.copy(isLoading = true, error = null, page = page)
+                } else {
+                    it.copy(isRefreshing = true, error = null, refreshError = null)
+                }
+            }
             try {
                 val result = listAdminUsersUseCase(
                     query = current.query.trim().ifBlank { null },
@@ -50,6 +66,7 @@ class AdminUsersViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isLoading = false,
+                        isRefreshing = false,
                         users = result.items,
                         total = result.total,
                         page = result.page,
@@ -57,11 +74,19 @@ class AdminUsersViewModel @Inject constructor(
                     )
                 }
             } catch (error: AppFailure) {
-                _state.update { it.copy(isLoading = false, error = error.message) }
+                _state.update {
+                    it.copy(isLoading = false, isRefreshing = false, error = error.message)
+                }
             } catch (error: Exception) {
                 _state.update {
-                    it.copy(isLoading = false, error = "Gagal memuat pengguna.")
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        error = "Gagal memuat pengguna.",
+                    )
                 }
+            } finally {
+                requestInFlight = false
             }
         }
     }

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.CaseStudy
+import com.eduvark.app.domain.model.Material
+import com.eduvark.app.domain.usecase.GetMaterialsUseCase
 import com.eduvark.app.domain.usecase.GetStudentCaseUseCase
 import com.eduvark.app.domain.usecase.GetTopicUseCase
 import com.eduvark.app.domain.usecase.SubmitCaseUseCase
@@ -20,6 +22,7 @@ data class StudentCaseUiState(
     val isLoading: Boolean = true,
     val caseStudy: CaseStudy? = null,
     val topicTitle: String? = null,
+    val materials: List<Material> = emptyList(),
     val isSubmitting: Boolean = false,
     val error: String? = null,
     val submitError: String? = null,
@@ -30,6 +33,7 @@ class StudentCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getStudentCaseUseCase: GetStudentCaseUseCase,
     private val getTopicUseCase: GetTopicUseCase,
+    private val getMaterialsUseCase: GetMaterialsUseCase,
     private val submitCaseUseCase: SubmitCaseUseCase,
 ) : ViewModel() {
 
@@ -52,10 +56,14 @@ class StudentCaseViewModel @Inject constructor(
             try {
                 val caseStudy = getStudentCaseUseCase(topicId)
                 val topicTitle = runCatching { getTopicUseCase(topicId).title }.getOrNull()
+                // Supporting Kinesthetic materials are optional. A missing or
+                // expired material must not hide the case study itself.
+                val materials = runCatching { getMaterialsUseCase(topicId) }.getOrDefault(emptyList())
                 _state.value = StudentCaseUiState(
                     isLoading = false,
                     caseStudy = caseStudy,
                     topicTitle = topicTitle,
+                    materials = materials,
                 )
             } catch (error: AppFailure) {
                 _state.update { it.copy(isLoading = false, error = error.message) }

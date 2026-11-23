@@ -4,6 +4,7 @@ object Routes {
     const val LOGIN = "login"
     const val SERVER_SETTINGS = "server-settings"
     const val CHANGE_PASSWORD = "change-password"
+    const val CHANGE_PASSWORD_SELF = "account/change-password"
     const val VARK = "vark"
     const val HOME = "home"
     const val ACCOUNT = "account"

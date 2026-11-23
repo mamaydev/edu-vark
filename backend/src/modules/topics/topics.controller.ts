@@ -75,6 +75,19 @@ export const getTopicHandler: RequestHandler = async (req, res, next) => {
   }
 };
 
+export const getStudentDashboardHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const context = auth(req);
+    const dashboard = await topicsService.getStudentDashboard(
+      context.userId,
+      studentVark(context),
+    );
+    res.status(200).json({ data: dashboard });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const listTopicMaterialsHandler: RequestHandler = async (req, res, next) => {
   try {
     const context = auth(req);

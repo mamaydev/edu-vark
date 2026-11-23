@@ -31,6 +31,7 @@ import com.eduvark.app.domain.model.UserRole
 import com.eduvark.app.ui.components.EduDropdown
 import com.eduvark.app.ui.components.EduField
 import com.eduvark.app.ui.components.EduIcons
+import com.eduvark.app.ui.components.EduPullToRefresh
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.ErrorBlock
 import com.eduvark.app.ui.components.Eyebrow
@@ -88,7 +89,16 @@ fun AdminUsersScreen(
         modifier = modifier,
         bottomBar = bottomBar,
     ) { padding ->
-        ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
+        EduPullToRefresh(
+            isRefreshing = state.isRefreshing,
+            onRefresh = viewModel::refresh,
+            modifier = Modifier.padding(padding),
+        ) {
+        ScrollColumn(spacing = 0.dp) {
+            if (state.refreshError != null) {
+                NoticeCard(text = state.refreshError.orEmpty(), tone = TintTone.Danger)
+                Spacer(Modifier.height(16.dp))
+            }
             Eyebrow("${state.total} akun terdaftar")
             Spacer(Modifier.height(10.dp))
             Text(text = "Kelola akses pengguna.", style = EduText.Display)
@@ -203,6 +213,7 @@ fun AdminUsersScreen(
                     }
                 }
             }
+        }
         }
     }
 }

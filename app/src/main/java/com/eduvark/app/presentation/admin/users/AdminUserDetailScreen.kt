@@ -15,7 +15,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +26,7 @@ import com.eduvark.app.ui.components.DangerButton
 import com.eduvark.app.ui.components.EduCard
 import com.eduvark.app.ui.components.EduDropdown
 import com.eduvark.app.ui.components.EduField
+import com.eduvark.app.ui.components.PasswordField
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.ErrorBlock
 import com.eduvark.app.ui.components.Eyebrow
@@ -448,7 +448,7 @@ private fun ResetPasswordPanel(
 
         Spacer(Modifier.height(16.dp))
         FieldLabel("Kata sandi sementara")
-        EduField(
+        PasswordField(
             value = password,
             onValueChange = {
                 password = it
@@ -456,13 +456,12 @@ private fun ResetPasswordPanel(
             },
             placeholder = "Minimal 6 karakter",
             enabled = enabled,
-            keyboardType = KeyboardType.Password,
-            visualTransformation = PasswordVisualTransformation(),
+            leadingLabel = "kata sandi sementara",
         )
 
         Spacer(Modifier.height(12.dp))
         FieldLabel("Ulangi kata sandi sementara")
-        EduField(
+        PasswordField(
             value = confirmation,
             onValueChange = {
                 confirmation = it
@@ -470,8 +469,7 @@ private fun ResetPasswordPanel(
             },
             placeholder = "Ulangi kata sandi",
             enabled = enabled,
-            keyboardType = KeyboardType.Password,
-            visualTransformation = PasswordVisualTransformation(),
+            leadingLabel = "konfirmasi kata sandi sementara",
         )
 
         val errorText = error

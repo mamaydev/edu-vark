@@ -246,7 +246,7 @@ export async function me(userId: string, sessionId: string): Promise<UserRespons
 
 export async function changePassword(
   userId: string,
-  input: { currentPassword: string; newPassword: string },
+  input: { currentPassword: string; newPassword: string; confirmPassword: string },
 ): Promise<void> {
   const client = await getPool().connect();
   try {
@@ -258,6 +258,20 @@ export async function changePassword(
     const valid = await verifyPassword(user.password_hash, input.currentPassword);
     if (!valid) {
       throw unprocessable('INVALID_PASSWORD', 'Password saat ini tidak sesuai.');
+    }
+
+    if (input.newPassword !== input.confirmPassword) {
+      throw unprocessable(
+        'PASSWORD_CONFIRMATION_MISMATCH',
+        'Konfirmasi password baru tidak sama.',
+      );
+    }
+
+    if (await verifyPassword(user.password_hash, input.newPassword)) {
+      throw unprocessable(
+        'PASSWORD_REUSED',
+        'Password baru harus berbeda dari password saat ini.',
+      );
     }
 
     assertStrongPassword(input.newPassword);

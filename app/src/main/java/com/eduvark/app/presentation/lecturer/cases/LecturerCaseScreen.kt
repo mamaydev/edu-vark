@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.ui.components.EduDropdown
 import com.eduvark.app.ui.components.EduField
 import com.eduvark.app.ui.components.EduScreen
@@ -56,11 +57,13 @@ fun LecturerCaseScreen(
     onBack: () -> Unit,
     onOpenSubmissions: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenMaterials: (String) -> Unit = {},
     bottomBar: (@Composable () -> Unit)? = null,
     viewModel: LecturerCaseViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val caseStudy = state.caseStudy
+    val kinestheticMaterials = state.materials.filter { it.vark == VarkType.KINESTHETIC }
     val deadlineIso = caseStudy?.deadlineAt
     val locked = (caseStudy?.submissionCount ?: 0) > 0
 
@@ -110,14 +113,38 @@ fun LecturerCaseScreen(
                 TintBar(text = "KINESTHETIC • STUDI KASUS", tone = TintTone.Primary, uppercase = true)
                 Spacer(Modifier.height(16.dp))
                 Text(text = "Rancang studi kasus", style = EduText.Display)
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
+                state.topicTitle?.let { title ->
+                    Text(text = "Topik: $title", style = EduText.BodyStrong)
+                    Spacer(Modifier.height(6.dp))
+                }
                 Text(
                     text = if (caseStudy == null) {
-                        "Belum ada studi kasus untuk topik ini. Simpan rancangan pertama."
+                        "Topik ini belum punya studi kasus. Simpan rancangan pertama."
                     } else {
                         "Atur penjelasan teori, instruksi, dan tenggat pengumpulan."
                     },
                     style = EduText.Body,
+                )
+
+                Spacer(Modifier.height(12.dp))
+                NoticeCard(
+                    text = if (kinestheticMaterials.isEmpty()) {
+                        "Belum ada materi Kinesthetic. Unggah PDF pendukung agar mahasiswa " +
+                            "bisa membacanya sebelum menjawab."
+                    } else {
+                        "${kinestheticMaterials.size} materi Kinesthetic siap dibaca mahasiswa."
+                    },
+                    tone = if (kinestheticMaterials.isEmpty()) {
+                        TintTone.Neutral
+                    } else {
+                        TintTone.Teal
+                    },
+                )
+                Spacer(Modifier.height(8.dp))
+                TextLink(
+                    text = "Kelola materi Kinesthetic",
+                    onClick = { onOpenMaterials(state.topicId) },
                 )
 
                 caseStudy?.let { study ->

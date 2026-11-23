@@ -2,8 +2,11 @@ package com.eduvark.app.presentation.lecturer.cases
 
 import androidx.lifecycle.SavedStateHandle
 import com.eduvark.app.domain.usecase.GetLecturerCaseUseCase
+import com.eduvark.app.domain.usecase.GetLecturerMaterialsUseCase
+import com.eduvark.app.domain.usecase.GetTopicUseCase
 import com.eduvark.app.domain.usecase.UpsertCaseUseCase
 import com.eduvark.app.testutil.FakeCaseRepository
+import com.eduvark.app.testutil.FakeTopicRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -34,9 +37,12 @@ class LecturerCaseViewModelTest {
     @Test
     fun `loads and saves case`() = runTest {
         val repository = FakeCaseRepository()
+        val topicRepository = FakeTopicRepository()
         val viewModel = LecturerCaseViewModel(
             savedStateHandle = SavedStateHandle(mapOf("topicId" to "topic-1")),
             getLecturerCaseUseCase = GetLecturerCaseUseCase(repository),
+            getTopicUseCase = GetTopicUseCase(topicRepository),
+            getMaterialsUseCase = GetLecturerMaterialsUseCase(topicRepository),
             upsertCaseUseCase = UpsertCaseUseCase(repository),
         )
         advanceUntilIdle()

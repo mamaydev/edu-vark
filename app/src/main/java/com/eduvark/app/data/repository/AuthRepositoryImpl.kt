@@ -75,12 +75,17 @@ class AuthRepositoryImpl @Inject constructor(
         return user
     }
 
-    override suspend fun changePassword(currentPassword: String, newPassword: String) {
+    override suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmation: String,
+    ) {
         execute {
             api.changePassword(
                 ChangePasswordRequest(
                     currentPassword = currentPassword,
                     newPassword = newPassword,
+                    confirmPassword = confirmation,
                 ),
             )
         }

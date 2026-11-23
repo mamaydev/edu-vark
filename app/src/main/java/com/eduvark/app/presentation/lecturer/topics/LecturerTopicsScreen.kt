@@ -38,6 +38,7 @@ import com.eduvark.app.ui.components.EduCard
 import com.eduvark.app.ui.components.EduDropdown
 import com.eduvark.app.ui.components.EduField
 import com.eduvark.app.ui.components.EduIcons
+import com.eduvark.app.ui.components.EduPullToRefresh
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.EduStepper
 import com.eduvark.app.ui.components.ErrorBlock
@@ -208,6 +209,8 @@ fun LecturerTopicsScreen(
                 publishedCount = state.topics.count { it.status == TopicStatus.PUBLISHED },
                 draftCount = state.topics.count { it.status == TopicStatus.DRAFT },
                 isSaving = state.isSaving,
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::refresh,
                 actionError = state.actionError,
                 query = query,
                 onQueryChange = { query = it },
@@ -246,6 +249,8 @@ private fun TopicListState(
     publishedCount: Int,
     draftCount: Int,
     isSaving: Boolean,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
     actionError: String?,
     query: String,
     onQueryChange: (String) -> Unit,
@@ -266,7 +271,12 @@ private fun TopicListState(
         indexed.filter { (_, topic) -> topic.title.contains(query, ignoreCase = true) }
     }
 
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
+    EduPullToRefresh(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier,
+    ) {
+    ScrollColumn(spacing = 0.dp) {
         if (actionError != null) {
             NoticeCard(text = actionError, tone = TintTone.Danger)
             Spacer(Modifier.height(16.dp))
@@ -339,6 +349,7 @@ private fun TopicListState(
                 style = EduText.BodySmall,
             )
         }
+    }
     }
 }
 
