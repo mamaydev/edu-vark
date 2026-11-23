@@ -90,6 +90,29 @@ pct exec 10100 -- systemctl status github-runner-eduvark.service --no-pager
 pct exec 10100 -- journalctl -u github-runner-eduvark.service -f
 ```
 
+### Runner guard (automatic)
+
+`eduvark-runner-guard.timer` runs every 5 minutes and restarts the runner **only**
+when the listener is genuinely wedged: a `connect error` older than 180s that was
+never followed by `Listening for Jobs`. It is skipped while a job is executing and
+while the deploy engine holds its flock, and it is budgeted to 3 restarts per hour.
+
+```bash
+# what would it do right now?
+pct exec 10100 -- /usr/local/sbin/eduvark-runner-guard check
+
+# replay a historical window (used to validate the detector)
+pct exec 10100 -- /usr/local/sbin/eduvark-runner-guard check \
+  --since "2026-11-23 03:20:00" --until "2026-11-23 04:05:00"
+
+# what has it done?
+pct exec 10100 -- cat /var/lib/eduvark/runner-guard.log
+```
+
+GitHub can report a wedged runner as `online` (`GET /actions/runners`), so never
+use the API alone to judge runner health — that is exactly why the guard reads the
+runner's own journal.
+
 ### Deploy engine (manual)
 
 ```bash
@@ -142,11 +165,25 @@ Never run `docker volume prune`, `docker system prune --volumes`, or
 | Backend container restarting | config validation failure (`env.ts`) | `docker logs eduvark-backend` — e.g. missing JWT secret, half-filled R2 block |
 | `401` on every authenticated call | JWT secrets rotated | expected: users must log in again |
 | Uploads fail with 500 | R2 not configured | fill `R2_*` in `backend/.env.production`, recreate backend |
-| Deploy job queued forever | runner offline | `systemctl status github-runner-eduvark`; runner labels must be `eduvark-deploy` |
+| Deploy job queued forever | runner offline at the moment CI finished | see the recipe below; GitHub does not always reassign a job to a reconnected runner |
+| Runner logs `A session for this runner already exists` / `Conflict` | previous listener was killed mid-session | wait 2-3 min for the lease to expire; the guard does not restart during this window |
+| Materials fail with `NoSuchKey` | object stored under a different key than `materials.object_key` | compare `docker exec eduvark-postgres psql -c "select object_key from materials"` with the bucket listing; copy the object to the DB key |
 | Deploy fails "not an ancestor of origin/main" | SHA from a PR/unmerged branch | merge first or use a commit on `main` |
 | Deploy fails "insufficient disk" | images/dumps | cleanup section above, then retry |
 | Backup timer missed | LXC was off at 03:30 | `Persistent=true` runs it at next boot; check `systemctl list-timers` |
 | `sudo: a password is required` in job | sudoers file missing | `visudo -cf /etc/sudoers.d/eduvark-runner` |
+
+### Deploy job stuck in `queued` after a runner outage
+
+```bash
+gh run list --workflow=deploy-homelab.yml --limit 5      # find the stale run
+gh run cancel <run_id>
+gh workflow run deploy-homelab.yml --ref main -f sha=<sha-on-main> -f mode=deploy
+```
+
+`validate` re-checks that the SHA is an ancestor of `main` and that CI is green,
+so a re-dispatch cannot bypass the gates. Recovery needs a human until the
+queue-guard workflow (layer 2) exists.
 
 ## Maintenance log
 
@@ -154,17 +191,24 @@ Never run `docker volume prune`, `docker system prune --volumes`, or
 | --- | --- | --- |
 | 2026-11-22 | LXC 10100 provisioned, Docker 29.10.0, PostgreSQL 17, backend image, admin seed, runner `eduvark-lxc-10100`, deploy engine, backup timer | healthy, public API reachable |
 | 2026-11-22 | CI fixed (Android SDK installation), CD added (`deploy-homelab.yml`) | see GitHub Actions |
+| 2026-11-23 | Deploy engine fixed (compose **service** name, image assertion), engine + runner unit + sudoers versioned in git | first real deploy succeeded; `state.json` records SHA, actor and run id |
+| 2026-11-23 | CD switched to automatic (`workflow_run` after CI on `main`); required reviewers removed from `homelab-testing` | `actor`/`run_id` now propagate through sudo |
+| 2026-11-23 | `R2_ENDPOINT` corrected (bucket path removed); 5 material objects copied from the doubled key prefix to the DB key | presigned downloads 200/200 bytes match; app opens materials |
+| 2026-11-23 | `eduvark-runner-guard.timer` installed (5 min, 3 restarts/hour, lock-aware) | would have caught the 03:24Z wedge within ~2 min instead of 46 |
 
 ## Open actions
 
-1. Fill `R2_*` credentials and restart the backend (file uploads).
+1. ~~Fill `R2_*` credentials~~ — done 2026-11-23 (endpoint corrected, objects re-keyed).
 2. Configure offsite backup copy (restic/rclone → R2, or `vzdump` to another node).
 3. Add uptime monitoring for `https://pam.sequein.my.id/health/ready` + backup-failure
    alerting.
 4. Harden SSH in LXC `10100` (key-only, no root password login) — currently `pct exec`
    is the only access path used.
-5. Consider a second GitHub account as environment reviewer to remove the
-   approve-your-own-deployment weakness.
+5. CD is now automatic on `main`, so the human control point is the **merge**:
+   require a pull request plus review in the `main-protection` ruleset (currently
+   only the 3 CI checks are required, so a direct push deploys).
 6. Schedule the quarterly rollback drill from [`rollback.md`](rollback.md).
-7. Decide whether automatic deployment on merge should ever be enabled (currently
-   intentionally off).
+7. Layer 2 queue guard (auto cancel + re-dispatch of a deploy stuck in `queued`).
+   Not built: needs a scheduled workflow. Until then the recipe above is manual.
+8. Restore the 8-document layout from the master plan
+   (`TROUBLESHOOTING.md` in particular) — this file still covers that role.
