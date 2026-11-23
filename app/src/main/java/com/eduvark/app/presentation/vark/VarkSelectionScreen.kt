@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,9 +36,10 @@ import com.eduvark.app.ui.components.NoticeCard
 import com.eduvark.app.ui.components.PrimaryButton
 import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.TintTone
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
 import com.eduvark.app.ui.theme.EduVarkTheme
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 @Composable
 fun VarkSelectionScreen(
@@ -57,20 +59,20 @@ fun VarkSelectionScreen(
     }
 
     EduScreen(
-        title = "Format belajarmu",
+        title = stringResource(R.string.vark_screen_title),
         onBack = onBack,
         modifier = modifier,
     ) { padding ->
-        ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
-            Eyebrow("Langkah 1 dari 1")
-            Spacer(Modifier.height(10.dp))
-            Text(text = "Belajar dengan\ncaramu hari ini.", style = EduText.Display)
-            Spacer(Modifier.height(12.dp))
+        ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
+            Eyebrow(stringResource(R.string.vark_step_eyebrow))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
+            Text(text = stringResource(R.string.vark_headline), style = EduTheme.type.display)
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             Text(
-                text = "Pilih satu format untuk sesi ini. VARK adalah preferensi akses, bukan diagnosis gaya belajar.",
-                style = EduText.Body,
+                text = stringResource(R.string.vark_intro),
+                style = EduTheme.type.body,
             )
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_22)))
 
             VarkType.entries.forEach { vark ->
                 VarkOptionCard(
@@ -79,28 +81,29 @@ fun VarkSelectionScreen(
                     enabled = !state.isLoading,
                     onSelect = { selected = vark },
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
             }
 
             val error = state.error
             if (error != null) {
                 NoticeCard(text = error, tone = TintTone.Danger)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
             }
 
-            NoticeCard(text = "Pilihan terkunci sampai kamu keluar. Login kembali untuk memilih format lain.")
+            NoticeCard(text = stringResource(R.string.vark_locked_notice))
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_20)))
+            val picked = selected
             PrimaryButton(
-                text = if (selected != null) {
-                    "Lanjut dengan ${selected?.label}"
+                text = if (picked != null) {
+                    stringResource(R.string.vark_continue_with, picked.label)
                 } else {
-                    "Pilih satu format dulu"
+                    stringResource(R.string.vark_select_first)
                 },
-                onClick = { selected?.let(viewModel::select) },
-                enabled = selected != null,
+                onClick = { picked?.let(viewModel::select) },
+                enabled = picked != null,
                 loading = state.isLoading,
-                showArrow = selected != null,
+                showArrow = picked != null,
             )
         }
     }
@@ -113,47 +116,49 @@ private fun VarkOptionCard(
     enabled: Boolean,
     onSelect: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(dimen(R.dimen.radius_16))
+    val contentColor = if (selected) EduTheme.colors.onBrand else EduTheme.colors.ink
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(shape)
             .background(
-                if (selected) EduColors.PrimaryTint else EduColors.Surface,
+                if (selected) EduTheme.colors.lime else EduTheme.colors.surface,
                 shape,
             )
             .clickable(enabled = enabled, onClick = onSelect)
-            .padding(horizontal = 18.dp, vertical = 16.dp),
+            .padding(horizontal = dimen(R.dimen.space_18), vertical = dimen(R.dimen.space_16)),
         verticalAlignment = Alignment.Top,
     ) {
         Text(
             text = vark.letter(),
-            style = EduText.CardTitle.copy(
-                color = EduColors.Primary,
+            style = EduTheme.type.cardTitle.copy(
+                color = contentColor,
                 fontWeight = FontWeight.ExtraBold,
             ),
-            modifier = Modifier.width(26.dp),
+            modifier = Modifier.width(dimen(R.dimen.size_26)),
         )
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = vark.displayLabel(),
-                    style = EduText.CardTitle.copy(
-                        color = if (selected) EduColors.Primary else EduColors.Ink,
-                    ),
+                    style = EduTheme.type.cardTitle.copy(color = contentColor),
                     modifier = Modifier.weight(1f),
                 )
                 if (selected) {
                     Icon(
                         imageVector = EduIcons.Check,
                         contentDescription = null,
-                        tint = EduColors.Primary,
-                        modifier = Modifier.size(18.dp),
+                        tint = EduTheme.colors.onBrand,
+                        modifier = Modifier.size(dimen(R.dimen.size_18)),
                     )
                 }
             }
-            Spacer(Modifier.height(4.dp))
-            Text(text = vark.description(), style = EduText.BodySmall)
+            Spacer(Modifier.height(dimen(R.dimen.space_4)))
+            Text(
+                text = vark.description(),
+                style = EduTheme.type.bodySmall.copy(color = if (selected) EduTheme.colors.onBrand else EduTheme.colors.muted),
+            )
         }
     }
 }
@@ -165,16 +170,18 @@ internal fun VarkType.letter(): String = when (this) {
     VarkType.KINESTHETIC -> "K"
 }
 
+@Composable
 internal fun VarkType.displayLabel(): String = when (this) {
-    VarkType.AURAL -> "Aural (Audio)"
+    VarkType.AURAL -> stringResource(R.string.vark_label_aural)
     else -> label
 }
 
+@Composable
 internal fun VarkType.description(): String = when (this) {
-    VarkType.VISUAL -> "Video dan diagram untuk melihat konsep."
-    VarkType.AURAL -> "Dengarkan penjelasan dan rekaman."
-    VarkType.READ_WRITE -> "Baca modul dan rangkum pemahaman."
-    VarkType.KINESTHETIC -> "Terapkan konsep melalui studi kasus."
+    VarkType.VISUAL -> stringResource(R.string.vark_desc_visual)
+    VarkType.AURAL -> stringResource(R.string.vark_desc_aural)
+    VarkType.READ_WRITE -> stringResource(R.string.vark_desc_read_write)
+    VarkType.KINESTHETIC -> stringResource(R.string.vark_desc_kinesthetic)
 }
 
 @Preview(showBackground = true)

@@ -39,7 +39,7 @@ async function createStudent(loginId: string) {
   return id;
 }
 
-async function lecturerToken(loginId = 'lect1', password = 'LecturerPass123') {
+async function lecturerToken(loginId = '1990010001', password = 'LecturerPass123') {
   return loginAs(app, loginId, password);
 }
 
@@ -73,24 +73,24 @@ describeDb('assessment integration', () => {
     resetLoginThrottle();
     classId = await createClass();
     lecturerId = await createUser({
-      loginId: 'lect1',
+      loginId: '1990010001',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createUser({
-      loginId: 'lect2',
+      loginId: '1990010002',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createUser({
-      loginId: 'admin1',
+      loginId: 'admin',
       password: 'AdminPass1234',
       role: 'ADMIN',
     });
     await createTeachingAssignment(classId, lecturerId);
-    await createStudent('stu1');
-    await createStudent('stu2');
-    await createStudent('stu3');
+    await createStudent('2025000001');
+    await createStudent('2025000002');
+    await createStudent('2025000003');
 
     topicId = await createTopic({
       classId,
@@ -112,11 +112,86 @@ describeDb('assessment integration', () => {
     await closeDb();
   });
 
+  it('keeps a submitted answer visible after the student logs in again', async () => {
+    const lecturer = await lecturerToken();
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
+    const submitted = await submit(student.accessToken, 'Jawaban tetap terlihat.');
+    const submissionId = submitted.body.data.submissionId as string;
+
+    // A new login revokes the previous session and creates one without VARK.
+    // The submission must still be listed for the lecturer.
+    await loginAs(app, '2025000001', 'StudentPass123');
+
+    const response = await request(app)
+      .get('/api/v1/lecturer/cases/' + caseId + '/submissions')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+
+    const row = (response.body.data as Array<{
+      studentId: string;
+      submissionId: string | null;
+      status: string;
+    }>).find((item) => item.studentId === student.user.id);
+    expect(row?.submissionId).toBe(submissionId);
+    expect(row?.status).toBe('MENUNGGU_PENILAIAN');
+
+    const detail = await request(app)
+      .get('/api/v1/submissions/' + submissionId)
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+    expect(detail.body.data.answerText).toBe('Jawaban tetap terlihat.');
+  });
+
+  it('keeps submitted answers listed after the enrollment and account are disabled', async () => {
+    const lecturer = await lecturerToken();
+    const first = await loginStudent('2025000001', 'KINESTHETIC');
+    const second = await loginStudent('2025000002', 'KINESTHETIC');
+    const firstSubmit = await submit(first.accessToken, 'Jawaban mahasiswa satu.');
+    const secondSubmit = await submit(second.accessToken, 'Jawaban mahasiswa dua.');
+
+    // The answers were stored first; the academic data then changed. The grading
+    // tab still shows the aggregate count, so the detail list must agree with it.
+    await getPool().query(
+      "UPDATE enrollments SET status = 'LEFT', left_at = now() WHERE student_id = $1",
+      [first.user.id],
+    );
+    await getPool().query("UPDATE users SET status = 'INACTIVE' WHERE id = $1", [
+      first.user.id,
+    ]);
+
+    const response = await request(app)
+      .get('/api/v1/lecturer/cases/' + caseId + '/submissions')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+
+    const rows = response.body.data as Array<{
+      studentId: string;
+      submissionId: string | null;
+    }>;
+    const listedSubmissions = rows
+      .map((row) => row.submissionId)
+      .filter((id): id is string => id !== null);
+    expect(listedSubmissions).toHaveLength(2);
+    expect(listedSubmissions).toEqual(
+      expect.arrayContaining([
+        firstSubmit.body.data.submissionId,
+        secondSubmit.body.data.submissionId,
+      ]),
+    );
+    expect(rows.some((row) => row.studentId === first.user.id)).toBe(true);
+
+    const caseResponse = await request(app)
+      .get('/api/v1/lecturer/topics/' + topicId + '/case')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+    expect(caseResponse.body.data.submissionCount).toBe(listedSubmissions.length);
+  });
+
   it('lists Kinesthetic students with derived statuses', async () => {
     const lecturer = await lecturerToken();
-    const kinesthetic = await loginStudent('stu1', 'KINESTHETIC');
-    const otherKinesthetic = await loginStudent('stu2', 'KINESTHETIC');
-    await loginStudent('stu3', 'VISUAL');
+    const kinesthetic = await loginStudent('2025000001', 'KINESTHETIC');
+    const otherKinesthetic = await loginStudent('2025000002', 'KINESTHETIC');
+    await loginStudent('2025000003', 'VISUAL');
 
     const submitted = await submit(kinesthetic.accessToken, 'Jawaban pertama.');
     expect(submitted.body.data.submissionId).toBeTruthy();
@@ -143,7 +218,7 @@ describeDb('assessment integration', () => {
 
   it('grades once and exposes the final result to the student', async () => {
     const lecturer = await lecturerToken();
-    const student = await loginStudent('stu1', 'KINESTHETIC');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
     const submitted = await submit(student.accessToken);
     const submissionId = submitted.body.data.submissionId as string;
 
@@ -174,7 +249,7 @@ describeDb('assessment integration', () => {
 
   it('rejects a second assessment and keeps one row', async () => {
     const lecturer = await lecturerToken();
-    const student = await loginStudent('stu1', 'KINESTHETIC');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
     const submitted = await submit(student.accessToken);
     const submissionId = submitted.body.data.submissionId as string;
 
@@ -199,7 +274,7 @@ describeDb('assessment integration', () => {
 
   it('rejects invalid score and comment', async () => {
     const lecturer = await lecturerToken();
-    const student = await loginStudent('stu1', 'KINESTHETIC');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
     const submitted = await submit(student.accessToken);
     const submissionId = submitted.body.data.submissionId as string;
 
@@ -219,9 +294,9 @@ describeDb('assessment integration', () => {
   });
 
   it('enforces class ownership and student ownership', async () => {
-    const otherLecturer = await lecturerToken('lect2');
-    const student = await loginStudent('stu1', 'KINESTHETIC');
-    const otherStudent = await loginStudent('stu2', 'KINESTHETIC');
+    const otherLecturer = await lecturerToken('1990010002');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
+    const otherStudent = await loginStudent('2025000002', 'KINESTHETIC');
     const submitted = await submit(student.accessToken);
     const submissionId = submitted.body.data.submissionId as string;
 
@@ -251,7 +326,7 @@ describeDb('assessment integration', () => {
       .expect(403);
     expect(studentGrade.body.error.code).toBe('FORBIDDEN');
 
-    const admin = await loginAs(app, 'admin1', 'AdminPass1234');
+    const admin = await loginAs(app, 'admin', 'AdminPass1234');
     const adminRead = await request(app)
       .get('/api/v1/submissions/' + submissionId)
       .set('Authorization', bearer(admin.accessToken))
@@ -273,8 +348,8 @@ describeDb('assessment integration', () => {
       pastTopic,
       new Date(Date.now() - 60_000).toISOString(),
     );
-    await loginStudent('stu1', 'KINESTHETIC');
-    await loginStudent('stu2', 'KINESTHETIC');
+    await loginStudent('2025000001', 'KINESTHETIC');
+    await loginStudent('2025000002', 'KINESTHETIC');
 
     const response = await request(app)
       .get('/api/v1/lecturer/cases/' + pastCase.body.data.id + '/submissions')

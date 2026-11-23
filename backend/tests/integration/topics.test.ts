@@ -30,10 +30,10 @@ let lecturerId: string;
 let studentId: string;
 
 async function loginLecturer() {
-  return loginAs(app, 'lect1', 'LecturerPass123');
+  return loginAs(app, '1990010001', 'LecturerPass123');
 }
 
-async function loginStudent(loginId = 'stu1', vark = 'VISUAL') {
+async function loginStudent(loginId = '2025000001', vark = 'VISUAL') {
   const session = await loginAs(app, loginId, 'StudentPass123');
   await request(app)
     .post('/api/v1/auth/vark')
@@ -76,19 +76,19 @@ describeDb('topics and materials integration', () => {
     resetLoginThrottle();
     classId = await createClass();
     lecturerId = await createUser({
-      loginId: 'lect1',
+      loginId: '1990010001',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createTeachingAssignment(classId, lecturerId);
     studentId = await createUser({
-      loginId: 'stu1',
+      loginId: '2025000001',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
     await createEnrollment(classId, studentId);
     await createUser({
-      loginId: 'admin1',
+      loginId: 'admin',
       password: 'AdminPass1234',
       role: 'ADMIN',
     });
@@ -191,7 +191,7 @@ describeDb('topics and materials integration', () => {
       .send({ title: 'Materi Audio', vark: 'AURAL', url: 'https://example.com/audio' })
       .expect(201);
 
-    const visualStudent = await loginStudent('stu1', 'VISUAL');
+    const visualStudent = await loginStudent('2025000001', 'VISUAL');
     const visualMaterials = await request(app)
       .get('/api/v1/topics/' + topic.id + '/materials')
       .set('Authorization', bearer(visualStudent.accessToken))
@@ -200,7 +200,7 @@ describeDb('topics and materials integration', () => {
     expect(visualMaterials.body.data).toHaveLength(1);
     expect(visualMaterials.body.data[0].title).toBe('Materi Visual');
 
-    const aural = await createStudent('stu2', 'AURAL');
+    const aural = await createStudent('2025000002', 'AURAL');
     const auralMaterials = await request(app)
       .get('/api/v1/topics/' + topic.id + '/materials')
       .set('Authorization', bearer(aural.token))
@@ -283,7 +283,7 @@ describeDb('topics and materials integration', () => {
     expect(uploaded.body.data.kind).toBe('FILE');
     expect(uploaded.body.data.signedUrl).toContain('https://signed.example/');
 
-    const student = await loginStudent('stu1', 'VISUAL');
+    const student = await loginStudent('2025000001', 'VISUAL');
     const materials = await request(app)
       .get('/api/v1/topics/' + topic.id + '/materials')
       .set('Authorization', bearer(student.accessToken))
@@ -335,11 +335,31 @@ describeDb('topics and materials integration', () => {
     expect(materials.body.data).toHaveLength(1);
     expect(materials.body.data[0].title).toBe('Materi Dosen');
 
-    const student = await loginStudent('stu1', 'VISUAL');
+    const student = await loginStudent('2025000001', 'VISUAL');
     await request(app)
       .get('/api/v1/lecturer/topics/' + topic.id + '/materials')
       .set('Authorization', bearer(student.accessToken))
       .expect(403);
+  });
+
+  it('lets the owning lecturer read draft and published topics without VARK', async () => {
+    const lecturer = await loginLecturer();
+    const topic = await createTopic(lecturer.accessToken, 'Topik Detail Dosen');
+
+    const draft = await request(app)
+      .get('/api/v1/lecturer/topics/' + topic.id)
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+    expect(draft.body.data.id).toBe(topic.id);
+    expect(draft.body.data.status).toBe('DRAFT');
+
+    await publishTopic(lecturer.accessToken, topic.id);
+
+    const published = await request(app)
+      .get('/api/v1/lecturer/topics/' + topic.id)
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+    expect(published.body.data.status).toBe('PUBLISHED');
   });
 
   it('returns student dashboard counters scoped to enrollment and VARK', async () => {
@@ -352,7 +372,7 @@ describeDb('topics and materials integration', () => {
       .expect(201);
     await publishTopic(lecturer.accessToken, topic.id);
 
-    const student = await loginStudent('stu1', 'VISUAL');
+    const student = await loginStudent('2025000001', 'VISUAL');
     const before = await request(app)
       .get('/api/v1/student/dashboard')
       .set('Authorization', bearer(student.accessToken))
@@ -431,7 +451,7 @@ describeDb('topics and materials integration', () => {
     const oldSignedUrl = uploaded.body.data.signedUrl as string;
     expect(oldSignedUrl).toContain('https://signed.example/');
 
-    const student = await loginStudent('stu1', 'VISUAL');
+    const student = await loginStudent('2025000001', 'VISUAL');
     await request(app)
       .put('/api/v1/topics/' + topic.id + '/feedback')
       .set('Authorization', bearer(student.accessToken))
@@ -480,14 +500,14 @@ describeDb('topics and materials integration', () => {
   });
 
   it('enforces RBAC and the VARK gate', async () => {
-    const student = await loginAs(app, 'stu1', 'StudentPass123');
+    const student = await loginAs(app, '2025000001', 'StudentPass123');
     const noVark = await request(app)
       .get('/api/v1/topics')
       .set('Authorization', bearer(student.accessToken))
       .expect(428);
     expect(noVark.body.error.code).toBe('VARK_REQUIRED');
 
-    const studentToken = await loginStudent('stu1', 'VISUAL');
+    const studentToken = await loginStudent('2025000001', 'VISUAL');
     const studentCreate = await request(app)
       .post('/api/v1/lecturer/topics')
       .set('Authorization', bearer(studentToken.accessToken))
@@ -495,7 +515,7 @@ describeDb('topics and materials integration', () => {
       .expect(403);
     expect(studentCreate.body.error.code).toBe('FORBIDDEN');
 
-    const admin = await loginAs(app, 'admin1', 'AdminPass1234');
+    const admin = await loginAs(app, 'admin', 'AdminPass1234');
     const adminCreate = await request(app)
       .post('/api/v1/lecturer/topics')
       .set('Authorization', bearer(admin.accessToken))

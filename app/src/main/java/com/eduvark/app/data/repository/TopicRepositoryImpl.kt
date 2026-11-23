@@ -51,6 +51,12 @@ class TopicRepositoryImpl @Inject constructor(
         return data.toDomain()
     }
 
+    override suspend fun getLecturerTopic(topicId: String): Topic {
+        val response = executor.execute { api.getLecturerTopic(topicId) }
+        val data = response.data ?: throw AppFailure.Unknown
+        return data.toDomain()
+    }
+
     override suspend fun listMaterials(topicId: String): List<Material> {
         val response = executor.execute { api.listMaterials(topicId) }
         return response.data.orEmpty().map { it.toDomain() }

@@ -1,14 +1,30 @@
 import { z } from 'zod';
+import {
+  ACADEMIC_LOGIN_ID_MESSAGE,
+  isAcademicLoginId,
+} from '../../lib/login-id';
 
 export const roleSchema = z.enum(['STUDENT', 'LECTURER', 'ADMIN']);
 export const statusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
-export const createUserSchema = z.object({
-  loginId: z.string().trim().min(1).max(50),
-  fullName: z.string().trim().min(1).max(150),
-  role: roleSchema,
-  temporaryPassword: z.string().min(6),
-});
+export const createUserSchema = z
+  .object({
+    loginId: z.string().trim().min(1).max(50),
+    fullName: z.string().trim().min(1).max(150),
+    role: roleSchema,
+    temporaryPassword: z.string().min(6),
+  })
+  .superRefine((value, context) => {
+    // Student NIM and lecturer NIP/NIDN are always 10–11 digits. Admin
+    // accounts keep a username because they do not have an academic identity.
+    if (value.role !== 'ADMIN' && !isAcademicLoginId(value.loginId)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['loginId'],
+        message: ACADEMIC_LOGIN_ID_MESSAGE,
+      });
+    }
+  });
 
 export const updateUserSchema = z
   .object({

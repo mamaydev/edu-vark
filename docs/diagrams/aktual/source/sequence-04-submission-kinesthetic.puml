@@ -1,0 +1,50 @@
+@startuml
+title EduVARK — Pengiriman Final Studi Kasus Kinesthetic
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+autonumber
+actor Mahasiswa as M
+participant "Aplikasi Android" as A
+participant "API Studi Kasus" as API
+database PostgreSQL as DB
+note over A, API: Awalan /api/v1; mahasiswa sudah login,\npassword telah diganti bila diwajibkan, VARK Kinesthetic aktif.
+M -> A: Buka studi kasus pada topik terbit
+A -> API: GET /topics/{id}/case
+API -> DB: BEGIN; cek kelas/enrollment/topik;\nambil kasus, submission dan assessment mahasiswa
+DB --> API: Teori, instruksi, deadline, status, nilai jika ada
+API -> DB: COMMIT
+API --> A: Deadline UTC + tampilan WIB dan status
+A --> M: Tampilkan kasus atau hasil akhir
+M -> A: Ketik jawaban lalu konfirmasi Kirim
+note over M, A: Tidak ada simpan draft server.\nMenutup halaman sebelum Kirim tidak menjamin teks bertahan.
+A -> API: POST /topics/{id}/case/submission {answerText}
+API -> API: Cek VARK; trim teks; hitung 1–10.000 karakter Unicode
+alt Teks tidak valid / VARK salah
+  API --> A: Error tanpa INSERT
+else Teks valid
+  API -> DB: BEGIN; SELECT kasus + akses kelas/enrollment/topik\nFOR UPDATE OF case_studies; hitung now() <= deadline_at
+  alt Kasus tidak tersedia / tidak dapat diakses
+    API -> DB: ROLLBACK
+    API --> A: 404 CASE_NOT_FOUND
+  else now() > deadline_at
+    API -> DB: ROLLBACK
+    API --> A: 409 DEADLINE_PASSED
+  else Masih dalam batas (inklusif)
+    API -> DB: Cari submission mahasiswa–kasus
+    alt Sudah ada submission
+      API -> DB: ROLLBACK
+      API --> A: 409 ALREADY_SUBMITTED
+    else Belum ada
+      API -> DB: INSERT submission final; audit; COMMIT
+      DB --> API: id dan submitted_at
+      API --> A: 201 MENUNGGU_PENILAIAN
+      A --> M: Tampilkan jawaban telah terkirim
+    end
+  end
+end
+note over API, DB: UNIQUE(student_id, case_study_id) juga menangani konflik.\nTrigger database melarang perubahan/penghapusan jawaban final.\nnow() adalah waktu transaksi PostgreSQL, bukan waktu commit.\nDeadline dikunci setelah submission pertama.
+note over A, DB: Tanpa submission setelah deadline: TIDAK_MENGUMPULKAN,\ntanpa membuat submission kosong atau nilai 0 otomatis.
+@enduml

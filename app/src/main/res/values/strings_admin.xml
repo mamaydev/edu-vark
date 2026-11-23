@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Admin — account list (mockup 33) -->
+    <string name="admin_users_title">Manajemen akun</string>
+    <string name="admin_users_registered_count">%1$d akun terdaftar</string>
+    <string name="admin_users_headline">Kelola akses pengguna.</string>
+    <string name="admin_users_subtitle">Mahasiswa, dosen, dan admin</string>
+    <string name="admin_users_search_label">Cari akun</string>
+    <string name="admin_users_search_placeholder">Nama atau identitas login…</string>
+    <string name="admin_users_filter_label">Filter</string>
+    <string name="admin_filter_all_roles">Semua role</string>
+    <string name="admin_filter_all_status">Semua status</string>
+    <string name="admin_filter_label">%1$s • %2$s</string>
+    <string name="admin_users_create_button">+ Buat akun</string>
+    <string name="admin_users_empty_filtered">Tidak ada akun yang cocok dengan pencarian atau filter ini.</string>
+    <string name="admin_users_empty">Belum ada akun terdaftar.</string>
+    <string name="admin_user_meta">%1$s • %2$s</string>
+    <string name="admin_users_prev_page">Sebelumnya</string>
+    <string name="admin_users_next_page">Berikutnya</string>
+    <string name="admin_users_page_of">Halaman %1$d dari %2$d</string>
+
+    <!-- Admin — create account (mockups 34/37) -->
+    <string name="admin_create_title">Buat akun</string>
+    <string name="admin_create_eyebrow">Akun baru</string>
+    <string name="admin_create_headline">Siapkan akses pengguna.</string>
+    <string name="admin_create_subtitle">Pastikan identitas login belum digunakan.</string>
+    <string name="admin_create_validation_bar">VALIDASI AKUN</string>
+    <string name="admin_create_duplicate_eyebrow">Identitas sudah dipakai</string>
+    <string name="admin_create_duplicate_headline">Gunakan identitas yang berbeda.</string>
+    <string name="admin_create_duplicate_body">Akun baru belum disimpan.</string>
+    <string name="admin_full_name">Nama lengkap</string>
+    <string name="admin_login_id_label">Identitas login unik</string>
+    <string name="admin_login_id_placeholder">NIM / NIP / NIDN</string>
+    <string name="admin_login_helper_admin">Akun admin boleh memakai username.</string>
+    <string name="admin_login_helper_default">NIM/NIP/NIDN wajib 10–11 digit angka.</string>
+    <string name="admin_duplicate_helper">Identitas login ini sudah digunakan oleh akun lain.</string>
+    <string name="admin_field_role">Role</string>
+    <string name="admin_role_group_label">Role akun</string>
+    <string name="admin_status_label">Status akun</string>
+    <string name="admin_duplicate_notice">Periksa daftar akun jika pengguna sudah pernah didaftarkan. Hindari membuat akun ganda.</string>
+    <string name="admin_fix_and_save">Perbaiki &amp; simpan</string>
+    <string name="admin_back_to_users">Kembali ke daftar akun</string>
+    <string name="admin_initial_password_label">Kata sandi awal</string>
+    <string name="admin_initial_password_confirm_label">Ulangi kata sandi awal</string>
+    <string name="admin_initial_password_semantics">kata sandi awal</string>
+    <string name="admin_initial_password_confirm_semantics">konfirmasi kata sandi awal</string>
+    <string name="admin_password_min_placeholder">Minimal 6 karakter</string>
+    <string name="admin_password_repeat_placeholder">Ulangi kata sandi</string>
+    <string name="admin_error_password_min">Kata sandi minimal 6 karakter.</string>
+    <string name="admin_error_password_mismatch">Konfirmasi kata sandi tidak sama.</string>
+    <string name="admin_save_new_user">Simpan akun baru</string>
+    <string name="admin_create_footer">Hanya tiga role yang dapat dipilih: Mahasiswa, Dosen, dan Admin.</string>
+    <string name="admin_role_hint_student">Mahasiswa otomatis di-enroll ke kelas aktif.</string>
+    <string name="admin_role_hint_lecturer">Dosen otomatis mendapat teaching assignment kelas aktif.</string>
+    <string name="admin_role_hint_admin">Akun admin tidak mendapat enrollment atau teaching assignment.</string>
+
+    <!-- Admin — account detail & edit (mockups 35/36/38) -->
+    <string name="admin_detail_title">Detail akun</string>
+    <string name="admin_status_page_title">Status akun</string>
+    <string name="admin_deactivate_action">Nonaktifkan akun</string>
+    <string name="admin_user_not_found">Akun tidak ditemukan.</string>
+    <string name="admin_detail_subtitle">Identitas dan akses akun</string>
+    <string name="admin_field_status">Status</string>
+    <string name="admin_update_notice">Perubahan akun tidak mengubah materi, feedback, jawaban, atau nilai akademik.</string>
+    <string name="admin_save_changes">Simpan perubahan</string>
+    <string name="admin_reset_password_link">Reset kata sandi sementara</string>
+    <string name="admin_action_cancel">Batal</string>
+
+    <!-- Admin — enrollment panel -->
+    <string name="admin_enrollment_remove_title">Keluarkan dari kelas?</string>
+    <string name="admin_enrollment_activate_title">Aktifkan akses kelas?</string>
+    <string name="admin_enrollment_remove_body">Akses kelas dicabut; histori pengerjaan dan nilai tetap tersimpan.</string>
+    <string name="admin_enrollment_activate_body">Mahasiswa kembali mendapat akses kelas dan materinya.</string>
+    <string name="admin_enrollment_remove_action">Keluarkan dari kelas</string>
+    <string name="admin_enrollment_activate_action">Aktifkan akses kelas</string>
+    <string name="admin_enrollment_reactivate_link">Aktifkan kembali akses kelas</string>
+
+    <!-- Admin — deactivate confirmation (mockup 36) -->
+    <string name="admin_confirm_eyebrow">Konfirmasi admin</string>
+    <string name="admin_confirm_headline">Nonaktifkan akun ini?</string>
+    <string name="admin_confirm_body">Akun nonaktif tidak dapat memulai login baru.</string>
+    <string name="admin_user_role_status">%1$s • %2$s</string>
+    <string name="admin_confirm_role_status">%1$s • Saat ini %2$s</string>
+    <string name="admin_confirm_notice">Ini bukan penghapusan permanen akun. Kebijakan retensi dan nasib sesi yang sedang aktif masih perlu dikonfirmasi.</string>
+    <string name="admin_deactivating">Menonaktifkan…</string>
+    <string name="admin_confirm_deactivate">Ya, nonaktifkan akun</string>
+
+    <!-- Admin — inactive account state (mockup 38) -->
+    <string name="admin_login_rejected">LOGIN DITOLAK</string>
+    <string name="admin_inactive_title">Akun nonaktif</string>
+    <string name="admin_inactive_headline">Akses akunmu sedang dinonaktifkan.</string>
+    <string name="admin_inactive_body">Sesi belajar belum dapat dimulai.</string>
+    <string name="admin_inactive_help">Hubungi administrator kelas untuk memeriksa status akun dan mendapatkan bantuan.</string>
+    <string name="admin_inactive_notice">Hanya akun aktif yang dapat masuk ke EduVARK.</string>
+    <string name="admin_back_to_login">Kembali ke halaman masuk</string>
+
+    <!-- Admin — reset password panel (mockup 35) -->
+    <string name="admin_reset_password_title">Reset kata sandi</string>
+    <string name="admin_reset_password_body">Pengguna wajib mengganti kata sandi sementara ini saat masuk berikutnya.</string>
+    <string name="admin_temp_password_label">Kata sandi sementara</string>
+    <string name="admin_temp_password_confirm_label">Ulangi kata sandi sementara</string>
+    <string name="admin_temp_password_semantics">kata sandi sementara</string>
+    <string name="admin_temp_password_confirm_semantics">konfirmasi kata sandi sementara</string>
+    <string name="admin_save_temp_password">Simpan kata sandi sementara</string>
+</resources>

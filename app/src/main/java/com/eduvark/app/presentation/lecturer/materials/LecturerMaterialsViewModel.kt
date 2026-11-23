@@ -11,7 +11,7 @@ import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.domain.usecase.CreateLinkMaterialUseCase
 import com.eduvark.app.domain.usecase.DeleteMaterialUseCase
 import com.eduvark.app.domain.usecase.GetLecturerMaterialsUseCase
-import com.eduvark.app.domain.usecase.GetTopicUseCase
+import com.eduvark.app.domain.usecase.GetLecturerTopicUseCase
 import com.eduvark.app.domain.usecase.UploadMaterialUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -35,7 +35,7 @@ private const val MAX_TITLE_LENGTH = 200
 @HiltViewModel
 class LecturerMaterialsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getTopicUseCase: GetTopicUseCase,
+    private val getTopicUseCase: GetLecturerTopicUseCase,
     private val getMaterialsUseCase: GetLecturerMaterialsUseCase,
     private val createLinkMaterialUseCase: CreateLinkMaterialUseCase,
     private val uploadMaterialUseCase: UploadMaterialUseCase,

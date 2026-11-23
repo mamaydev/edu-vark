@@ -1,57 +1,80 @@
 package com.eduvark.app.ui.theme
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import com.eduvark.app.R
 
 /**
- * Palette taken directly from the EduVARK UI designs in `docs/Desain`.
- * Every value is sampled from the mockups so screens and designs stay in sync.
+ * Dark palette of the redesigned EduVARK mockups in `docs/Desain/redesain`
+ * (artboards "Tema gelap · 01…40").
+ *
+ * The literal colour values live in `res/values/colors.xml`; this class only
+ * exposes them with semantic names. Screens read the palette through
+ * [EduTheme.colors] so Kotlin code never hardcodes a colour.
  */
-object EduColors {
-    /** App background (very light blue-grey). */
-    val Page = Color(0xFFF7F8FC)
+data class EduPalette(
+    // surfaces
+    val page: Color = Color.Unspecified,
+    val surface: Color = Color.Unspecified,
+    // brand
+    val lavender: Color = Color.Unspecified,
+    val lavenderDim: Color = Color.Unspecified,
+    val lime: Color = Color.Unspecified,
+    val onBrand: Color = Color.Unspecified,
+    // text
+    val ink: Color = Color.Unspecified,
+    val muted: Color = Color.Unspecified,
+    val mutedSoft: Color = Color.Unspecified,
+    // tints
+    val purpleTint: Color = Color.Unspecified,
+    val successTint: Color = Color.Unspecified,
+    val amberTint: Color = Color.Unspecified,
+    val dangerTint: Color = Color.Unspecified,
+    // semantic hues
+    val success: Color = Color.Unspecified,
+    val amber: Color = Color.Unspecified,
+    val danger: Color = Color.Unspecified,
+    val dangerMuted: Color = Color.Unspecified,
+    val purple: Color = Color.Unspecified,
+    // lines
+    val border: Color = Color.Unspecified,
+    val fieldBorder: Color = Color.Unspecified,
+    // panels
+    val mediaNavy: Color = Color.Unspecified,
+)
 
-    /** Cards, sheets, top bars. */
-    val Surface = Color(0xFFFFFFFF)
+/**
+ * Palette provided by [EduVarkTheme]. The default is intentionally empty:
+ * a screen rendered outside the theme must not silently keep stale colours.
+ */
+val LocalEduPalette = staticCompositionLocalOf { EduPalette() }
 
-    /** Primary brand blue. */
-    val Primary = Color(0xFF2557DE)
-
-    /** Tinted blue used for selected cards, chips and info notes. */
-    val PrimaryTint = Color(0xFFEAF0FF)
-
-    /** Headline / body ink. */
-    val Ink = Color(0xFF162947)
-
-    /** Secondary text. */
-    val Muted = Color(0xFF64748B)
-
-    /** Inactive navigation icons and hints. */
-    val MutedSoft = Color(0xFF98A2B3)
-
-    /** Accent used for eyebrows, statuses and links. */
-    val Teal = Color(0xFF087F79)
-
-    /** Tinted teal used for success and objective metrics. */
-    val TealTint = Color(0xFFE4F5EF)
-
-    /** Warning text on [AmberTint]. */
-    val Amber = Color(0xFF995F0B)
-
-    /** Tinted amber used for pending / warning notes. */
-    val AmberTint = Color(0xFFFFF4DE)
-
-    /** Destructive text and buttons. */
-    val Danger = Color(0xFFB93240)
-
-    /** Tinted red used for errors and closed states. */
-    val DangerTint = Color(0xFFFFF1F1)
-
-    /** Hairlines and field borders. */
-    val Border = Color(0xFFDFE8F1)
-
-    /** Dark panel used by the video player card. */
-    val MediaNavy = Color(0xFF162E54)
-
-    /** Read/Write metric colour in analytics bars. */
-    val Purple = Color(0xFF7354B2)
-}
+/** Reads the palette from `res/values/colors.xml` inside a composition. */
+@Composable
+@ReadOnlyComposable
+fun eduPalette(): EduPalette = EduPalette(
+    page = colorResource(R.color.eduvark_page),
+    surface = colorResource(R.color.eduvark_surface),
+    lavender = colorResource(R.color.eduvark_lavender),
+    lavenderDim = colorResource(R.color.eduvark_lavender_dim),
+    lime = colorResource(R.color.eduvark_lime),
+    onBrand = colorResource(R.color.eduvark_on_brand),
+    ink = colorResource(R.color.eduvark_ink),
+    muted = colorResource(R.color.eduvark_muted),
+    mutedSoft = colorResource(R.color.eduvark_muted_soft),
+    purpleTint = colorResource(R.color.eduvark_purple_tint),
+    successTint = colorResource(R.color.eduvark_success_tint),
+    amberTint = colorResource(R.color.eduvark_amber_tint),
+    dangerTint = colorResource(R.color.eduvark_danger_tint),
+    success = colorResource(R.color.eduvark_success),
+    amber = colorResource(R.color.eduvark_amber),
+    danger = colorResource(R.color.eduvark_danger),
+    dangerMuted = colorResource(R.color.eduvark_danger_muted),
+    purple = colorResource(R.color.eduvark_purple),
+    border = colorResource(R.color.eduvark_border),
+    fieldBorder = colorResource(R.color.eduvark_field_border),
+    mediaNavy = colorResource(R.color.eduvark_media_navy),
+)

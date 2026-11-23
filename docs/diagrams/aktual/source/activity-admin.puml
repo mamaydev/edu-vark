@@ -1,0 +1,83 @@
+@startuml
+!theme plain
+skinparam dpi 150
+skinparam defaultFontName Arial
+skinparam activityBackgroundColor #FFF5E6
+skinparam activityBorderColor #9A6519
+skinparam ArrowColor #9A6519
+title EduVARK — Activity Administrasi Akun dan Enrollment
+|Admin|
+start
+:Masuk dengan sesi admin valid;\nselesaikan ganti password jika wajib;
+:Buka daftar akun; cari, filter,\natau pilih akun target;
+|Backend|
+:Periksa autentikasi, role ADMIN,\ndan status wajib ganti password;
+if (Akses diizinkan?) then (ya)
+else (tidak)
+  |Aplikasi Android|
+  :Tampilkan penolakan akses;
+  stop
+endif
+|Admin|
+switch (Operasi yang dipilih)
+case (Buat akun)
+  :Isi identitas, role,\ndan password sementara;
+  |Backend|
+  :Validasi login ID unik, role,\ndan password minimal enam karakter;
+  if (Valid?) then (ya)
+    :Hash password; buat akun;\nwajibkan ganti password pertama;
+    :Buat enrollment mahasiswa atau\npenugasan dosen pada kelas aktif;
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan pesan validasi;
+    stop
+  endif
+case (Ubah akun / role)
+  :Ubah nama atau role;
+  |Backend|
+  :Lindungi role admin sendiri\ndan admin aktif terakhir;
+  if (Perubahan diizinkan?) then (ya)
+    :Simpan perubahan; jika role berubah,\nsesuaikan enrollment / penugasan\ndan cabut seluruh sesi target;
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan penolakan perubahan;
+    stop
+  endif
+case (Reset password)
+  :Isi password sementara baru;
+  |Backend|
+  :Validasi minimal enam karakter;
+  if (Valid?) then (ya)
+    :Hash dan simpan password;\nwajibkan ganti password; cabut sesi target;
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan pesan validasi;
+    stop
+  endif
+case (Nonaktifkan akun)
+  :Konfirmasi penonaktifan akun;
+  |Backend|
+  :Lindungi akun admin sendiri\ndan admin aktif terakhir;
+  if (Penonaktifan diizinkan?) then (ya)
+    :Ubah status akun menjadi INACTIVE;\ncabut seluruh sesi target;
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan penolakan penonaktifan;
+    stop
+  endif
+case (Status enrollment)
+  :Pilih enrollment mahasiswa;\nkeluarkan dari kelas atau aktifkan kembali;
+  |Backend|
+  :Validasi enrollment target;\nsimpan LEFT + tanggal keluar\natau ACTIVE + tanggal keluar kosong;
+  note right
+    Histori akademik tetap disimpan.
+    Akses akademik memerlukan
+    enrollment berstatus ACTIVE.
+  end note
+endswitch
+|Backend|
+:Catat audit operasi;
+|Aplikasi Android|
+:Tampilkan hasil dan data akun terbaru;
+stop
+@enduml

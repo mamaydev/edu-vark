@@ -1,0 +1,92 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 160
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 65
+skinparam entity {
+ BackgroundColor #F0F6FF
+ BorderColor #325882
+ FontColor #15324F
+}
+hide circle
+title EduVARK | ERD detail identitas, kelas, sesi dan audit
+entity "users" as users {
+  * id : uuid <<PK>>
+  * login_id : text
+  * password_hash : text
+  * full_name : text
+  * role : text
+  * status : text
+  * must_change_password : boolean
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+entity "classes" as classes {
+  * id : uuid <<PK>>
+  * code : text
+  * name : text
+  * semester : text
+  * is_active : boolean
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+entity "enrollments" as enrollments {
+  * id : uuid <<PK>>
+  * class_id : uuid <<FK>>
+  * student_id : uuid <<FK>>
+  * status : text
+  * enrolled_at : timestamptz
+    left_at : timestamptz
+}
+entity "teaching_assignments" as teaching_assignments {
+  * id : uuid <<PK>>
+  * class_id : uuid <<FK>>
+  * lecturer_id : uuid <<FK>>
+  * assigned_at : timestamptz
+}
+entity "auth_sessions" as auth_sessions {
+  * id : uuid <<PK>>
+  * user_id : uuid <<FK>>
+  * token_hash : text
+  * refresh_token_hash : text
+    vark_type : text
+  * is_active : boolean
+  * created_at : timestamptz
+  * last_seen_at : timestamptz
+  * expires_at : timestamptz
+    revoked_at : timestamptz
+    user_agent : text
+    ip_hash : text
+}
+entity "audit_logs" as audit_logs {
+  * id : uuid <<PK>>
+    actor_id : uuid <<FK>>
+  * action : text
+  * entity : text
+    entity_id : uuid
+  * metadata : jsonb
+  * created_at : timestamptz
+}
+classes ||--o{ enrollments : class_id
+users ||--o{ enrollments : student_id
+classes ||--o{ teaching_assignments : class_id
+users ||--o{ teaching_assignments : lecturer_id
+users ||--o{ auth_sessions : user_id
+users |o--o{ audit_logs : actor_id
+note bottom of auth_sessions
+Maksimal satu sesi is_active per user.
+VARK write-once setelah dipilih.
+end note
+legend bottom left
+  PK = primary key; FK = foreign key; * = NOT NULL.
+  Crow's foot: || tepat satu; o| nol/satu; o{ nol/banyak.
+  Relasi menunjuk FK fisik; pembatasan role ditegakkan layanan.
+  schema_migrations adalah tabel teknis dan ditampilkan terpisah.
+endlegend
+@enduml

@@ -1,0 +1,59 @@
+@startuml
+!theme plain
+left to right direction
+skinparam dpi 150
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam usecaseBackgroundColor #FFF5E6
+skinparam usecaseBorderColor #9A6519
+skinparam actorBorderColor #9A6519
+skinparam ArrowColor #52687B
+title EduVARK — Use Case Admin
+actor Admin as A
+rectangle "Sistem EduVARK" {
+  package "Akun dan sesi" {
+    usecase "Login" as Login
+    usecase "Mengganti password" as Pass
+    usecase "Melihat akun dan sesi" as Me
+    usecase "Logout" as Logout
+  }
+  package "Administrasi" {
+    usecase "Mencari dan melihat akun" as Accounts
+    usecase "Membuat akun" as Create
+    usecase "Memperbarui nama / role" as Edit
+    usecase "Mereset password" as Reset
+    usecase "Menonaktifkan akun" as Deactivate
+    usecase "Mengubah status\nenrollment mahasiswa" as Enroll
+  }
+}
+A -- Login
+A -- Pass
+A -- Me
+A -- Logout
+A -- Accounts
+A -- Create
+A -- Edit
+A -- Reset
+A -- Deactivate
+A -- Enroll
+note right of Create
+  Role: mahasiswa, dosen, atau admin.
+  Password sementara minimal enam karakter;
+  pengguna wajib menggantinya saat login.
+end note
+note right of Reset
+  Password menjadi sementara;
+  seluruh sesi target dicabut.
+end note
+note right of Deactivate
+  Admin tidak boleh menonaktifkan diri
+  atau admin aktif terakhir.
+  Penonaktifan mencabut sesi target.
+end note
+note right of Enroll
+  LEFT mencabut akses kelas;
+  ACTIVE mengaktifkan enrollment kembali.
+  Histori akademik dipertahankan.
+end note
+@enduml

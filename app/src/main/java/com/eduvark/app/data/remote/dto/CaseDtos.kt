@@ -14,6 +14,9 @@ data class CaseDto(
     val submittedAt: String? = null,
     val score: Int? = null,
     val comment: String? = null,
+    val answer: String? = null,
+    val gradedAt: String? = null,
+    val gradedBy: String? = null,
     val submissionCount: Int? = null,
 )
 

@@ -39,7 +39,7 @@ async function createStudent(loginId: string) {
 }
 
 async function lecturerToken() {
-  return loginAs(app, 'lect1', 'LecturerPass123');
+  return loginAs(app, '1990010001', 'LecturerPass123');
 }
 
 async function upsertCase(
@@ -67,13 +67,13 @@ describeDb('Kinesthetic case integration', () => {
     resetLoginThrottle();
     classId = await createClass();
     lecturerId = await createUser({
-      loginId: 'lect1',
+      loginId: '1990010001',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createTeachingAssignment(classId, lecturerId);
-    await createStudent('stu1');
-    await createStudent('stu2');
+    await createStudent('2025000001');
+    await createStudent('2025000002');
     topicId = await createTopic({
       classId,
       createdBy: lecturerId,
@@ -112,7 +112,7 @@ describeDb('Kinesthetic case integration', () => {
   });
 
   it('returns the exact missing-case message', async () => {
-    const student = await loginStudent('stu1', 'KINESTHETIC');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
     const response = await request(app)
       .get('/api/v1/topics/' + topicId + '/case')
       .set('Authorization', bearer(student.accessToken))
@@ -126,7 +126,7 @@ describeDb('Kinesthetic case integration', () => {
     const lecturer = await lecturerToken();
     await upsertCase(lecturer.accessToken, new Date(Date.now() + 86400000).toISOString());
 
-    const visual = await loginStudent('stu2', 'VISUAL');
+    const visual = await loginStudent('2025000002', 'VISUAL');
     const response = await request(app)
       .get('/api/v1/topics/' + topicId + '/case')
       .set('Authorization', bearer(visual.accessToken))
@@ -138,7 +138,7 @@ describeDb('Kinesthetic case integration', () => {
   it('accepts one submission and rejects the second', async () => {
     const lecturer = await lecturerToken();
     await upsertCase(lecturer.accessToken, new Date(Date.now() + 86400000).toISOString());
-    const student = await loginStudent('stu1', 'KINESTHETIC');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
 
     const before = await request(app)
       .get('/api/v1/topics/' + topicId + '/case')
@@ -172,7 +172,7 @@ describeDb('Kinesthetic case integration', () => {
   it('rejects empty, whitespace-only, and overlong answers', async () => {
     const lecturer = await lecturerToken();
     await upsertCase(lecturer.accessToken, new Date(Date.now() + 86400000).toISOString());
-    const student = await loginStudent('stu1', 'KINESTHETIC');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
 
     await request(app)
       .post('/api/v1/topics/' + topicId + '/case/submission')
@@ -192,7 +192,7 @@ describeDb('Kinesthetic case integration', () => {
   it('rejects submission after the deadline without creating a row', async () => {
     const lecturer = await lecturerToken();
     await upsertCase(lecturer.accessToken, new Date(Date.now() - 60_000).toISOString());
-    const student = await loginStudent('stu1', 'KINESTHETIC');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
 
     const status = await request(app)
       .get('/api/v1/topics/' + topicId + '/case')
@@ -213,7 +213,7 @@ describeDb('Kinesthetic case integration', () => {
     const lecturer = await lecturerToken();
     const deadline = new Date(Date.now() + 86400000).toISOString();
     await upsertCase(lecturer.accessToken, deadline);
-    const student = await loginStudent('stu1', 'KINESTHETIC');
+    const student = await loginStudent('2025000001', 'KINESTHETIC');
 
     await request(app)
       .post('/api/v1/topics/' + topicId + '/case/submission')
@@ -238,7 +238,7 @@ describeDb('Kinesthetic case integration', () => {
     const lecturer = await lecturerToken();
     await upsertCase(lecturer.accessToken, new Date(Date.now() + 86400000).toISOString());
 
-    const noVark = await loginAs(app, 'stu1', 'StudentPass123');
+    const noVark = await loginAs(app, '2025000001', 'StudentPass123');
     const varkGate = await request(app)
       .get('/api/v1/topics/' + topicId + '/case')
       .set('Authorization', bearer(noVark.accessToken))

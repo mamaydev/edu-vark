@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { getPool } from '../../db/client';
 import { AppError, forbidden, unauthorized, unprocessable } from '../../lib/errors';
 import { parseDurationMs, parseDurationSeconds } from '../../lib/duration';
+import { isAcademicLoginId } from '../../lib/login-id';
 import { writeAudit } from '../../lib/audit';
 import {
   assertLoginAllowed,
@@ -90,7 +91,21 @@ export async function login(
     if (!user || !valid) {
       recordLoginFailure(identifierKey);
       recordLoginFailure(ipKey);
-      throw unauthorized('INVALID_CREDENTIALS', 'NIM/NIP atau password tidak valid.');
+      throw unauthorized(
+        'INVALID_CREDENTIALS',
+        'NIM/NIP/NIDN atau password tidak valid.',
+      );
+    }
+
+    // Every non-admin account must authenticate with a 10–11 digit NIM,
+    // NIP, or NIDN. Admin keeps its username.
+    if (user.role !== 'ADMIN' && !isAcademicLoginId(input.loginId)) {
+      recordLoginFailure(identifierKey);
+      recordLoginFailure(ipKey);
+      throw unauthorized(
+        'INVALID_CREDENTIALS',
+        'NIM/NIP/NIDN atau password tidak valid.',
+      );
     }
 
     if (user.status !== 'ACTIVE') {

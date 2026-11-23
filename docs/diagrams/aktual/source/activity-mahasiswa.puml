@@ -1,0 +1,77 @@
+@startuml
+!theme plain
+skinparam dpi 150
+skinparam defaultFontName Arial
+skinparam activityBackgroundColor #EAF7F1
+skinparam activityBorderColor #287356
+skinparam ArrowColor #287356
+title EduVARK — Activity Pembelajaran Mahasiswa
+|Mahasiswa|
+start
+:Login selesai, password sudah diganti\njika diwajibkan, dan VARK sesi aktif;
+:Buka daftar topik lalu pilih topik;
+|Backend|
+:Periksa sesi, role, enrollment aktif,\ndan status publikasi topik;
+if (Akses diizinkan?) then (ya)
+else (tidak)
+  |Aplikasi Android|
+  :Tampilkan penolakan akses;
+  stop
+endif
+|Backend|
+if (VARK sesi Kinesthetic?) then (ya)
+  :Muat studi kasus dan status\ndari deadline, submission, assessment;
+  if (Studi kasus tersedia?) then (ya)
+    |Aplikasi Android|
+    :Tampilkan teori opsional, instruksi,\ndeadline WIB, dan status;\nmateri pendukung dapat dibuka jika ada;
+    if (Sudah dinilai?) then (ya)
+      :Tampilkan nilai dan komentar jika ada;
+      stop
+    else (tidak)
+      if (Sudah mengirim?) then (ya)
+        :Tampilkan Menunggu Penilaian;\njawaban final terkunci;
+        stop
+      else (tidak)
+        if (Deadline sudah lewat?) then (ya)
+          :Tampilkan Tidak Mengumpulkan;\ntidak membuat submission atau nilai 0;
+          stop
+        else (belum)
+          |Mahasiswa|
+          :Ketik jawaban dan konfirmasi Kirim;\ntidak ada draft di server;
+          |Backend|
+          :Trim dan validasi 1–10.000 karakter;\nperiksa VARK, akses, dan topik;\nkunci baris kasus dalam transaksi;
+          :Periksa waktu database <= deadline\ndan belum ada submission;
+          if (Seluruh syarat terpenuhi?) then (ya)
+            :Simpan satu submission final\ndan audit secara atomik;
+            |Aplikasi Android|
+            :Tampilkan Menunggu Penilaian;\njawaban tidak dapat direvisi;
+          else (tidak)
+            |Aplikasi Android|
+            :Tampilkan kesalahan panjang,\ndeadline, atau kiriman duplikat;
+          endif
+        endif
+      endif
+    endif
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan studi kasus belum tersedia;
+  endif
+else (Visual / Aural / Read-Write)
+  |Backend|
+  :Ambil materi hanya untuk VARK sesi;
+  if (Materi tersedia?) then (ya)
+    :Kembalikan tautan atau URL file\nbertanda tangan (standar lima menit);\nmuat feedback lama kategori ini;
+    |Mahasiswa|
+    :Buka materi; atur slider 0–100%;\nkonfirmasi Simpan feedback;
+    |Backend|
+    :Validasi integer 0–100\ndan ketersediaan materi;
+    :Upsert feedback unik per\nmahasiswa–topik–VARK; catat audit;
+    |Aplikasi Android|
+    :Tampilkan nilai feedback terbaru;
+  else (tidak)
+    |Aplikasi Android|
+    :Tampilkan materi belum tersedia,\nharap hubungi dosen terlebih dahulu;
+  endif
+endif
+stop
+@enduml

@@ -24,7 +24,10 @@ data class CaseStudy(
     val submittedAt: String?,
     val score: Int?,
     val comment: String?,
-    val submissionCount: Int?,
+    val answer: String? = null,
+    val gradedAt: String? = null,
+    val gradedBy: String? = null,
+    val submissionCount: Int? = null,
 )
 
 data class SubmissionResult(

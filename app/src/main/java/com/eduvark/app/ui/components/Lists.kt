@@ -17,11 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
+import com.eduvark.app.ui.theme.dimenSp
 
 /** Base card for list rows (topic, user, submission). */
 @Composable
@@ -32,8 +35,8 @@ fun ListCard(
 ) {
     EduCard(
         modifier = modifier.fillMaxWidth(),
-        radius = 18.dp,
-        padding = 18.dp,
+        radius = dimen(R.dimen.dimen_18),
+        padding = dimen(R.dimen.dimen_18),
         onClick = onClick,
         content = content,
     )
@@ -44,12 +47,12 @@ fun ListCard(
 fun CardEyebrow(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text.uppercase(),
-        style = EduText.Meta.copy(
-            fontSize = 10.sp,
-            lineHeight = 14.sp,
-            letterSpacing = 0.7.sp,
+        style = EduTheme.type.meta.copy(
+            fontSize = dimenSp(R.dimen.text_size_10),
+            lineHeight = dimenSp(R.dimen.text_size_14),
+            letterSpacing = dimenSp(R.dimen.text_size_0_7),
             fontWeight = FontWeight.Bold,
-            color = EduColors.Muted,
+            color = EduTheme.colors.muted,
         ),
         modifier = modifier,
     )
@@ -60,16 +63,16 @@ fun CardEyebrow(text: String, modifier: Modifier = Modifier) {
 fun ArrowTitle(
     text: String,
     modifier: Modifier = Modifier,
-    color: androidx.compose.ui.graphics.Color = EduColors.Ink,
+    color: androidx.compose.ui.graphics.Color = EduTheme.colors.ink,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text(text = text, style = EduText.CardTitle.copy(color = color))
-        Spacer(Modifier.size(6.dp))
+        Text(text = text, style = EduTheme.type.cardTitle.copy(color = color))
+        Spacer(Modifier.size(dimen(R.dimen.space_6)))
         Icon(
             imageVector = EduIcons.ArrowRight,
             contentDescription = null,
             tint = color,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(dimen(R.dimen.size_16)),
         )
     }
 }
@@ -89,16 +92,16 @@ fun TopicCard(
 ) {
     ListCard(modifier = modifier, onClick = onClick) {
         CardEyebrow(orderLabel)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_8)))
         ArrowTitle(title)
         if (meta.isNotBlank()) {
-            Spacer(Modifier.height(6.dp))
-            Text(text = meta, style = EduText.BodySmall)
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(text = meta, style = EduTheme.type.bodySmall)
         }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
             text = status,
-            style = EduText.BodySmall.copy(
+            style = EduTheme.type.bodySmall.copy(
                 color = statusTone.content(),
                 fontWeight = FontWeight.Bold,
             ),
@@ -118,9 +121,9 @@ fun UserCard(
 ) {
     ListCard(modifier = modifier, onClick = onClick) {
         ArrowTitle(name)
-        Spacer(Modifier.height(6.dp))
-        Text(text = meta, style = EduText.BodySmall)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
+        Text(text = meta, style = EduTheme.type.bodySmall)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         TintBar(text = status, tone = statusTone)
     }
 }
@@ -131,16 +134,16 @@ fun KeyValueRow(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
-    valueColor: androidx.compose.ui.graphics.Color = EduColors.Ink,
+    valueColor: androidx.compose.ui.graphics.Color = EduTheme.colors.ink,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = label, style = EduText.BodySmall, modifier = Modifier.weight(1f))
+        Text(text = label, style = EduTheme.type.bodySmall, modifier = Modifier.weight(1f))
         Text(
             text = value,
-            style = EduText.BodySmall.copy(
+            style = EduTheme.type.bodySmall.copy(
                 color = valueColor,
                 fontWeight = FontWeight.SemiBold,
             ),
@@ -154,22 +157,22 @@ fun MetricBar(
     fraction: Float,
     color: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier,
-    height: androidx.compose.ui.unit.Dp = 8.dp,
+    height: androidx.compose.ui.unit.Dp = dimen(R.dimen.dimen_8),
 ) {
     val safe = fraction.coerceIn(0f, 1f)
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .clip(RoundedCornerShape(999.dp))
-            .background(EduColors.Border),
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_999)))
+            .background(EduTheme.colors.border),
     ) {
         if (safe > 0f) {
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth(safe)
                     .height(height)
-                    .clip(RoundedCornerShape(999.dp))
+                    .clip(RoundedCornerShape(dimen(R.dimen.radius_999)))
                     .background(color),
             )
         }
@@ -181,7 +184,7 @@ fun MetricBar(
 fun DotMeta(parts: List<String>, modifier: Modifier = Modifier) {
     Text(
         text = parts.filter { it.isNotBlank() }.joinToString("  •  "),
-        style = EduText.BodySmall,
+        style = EduTheme.type.bodySmall,
         modifier = modifier,
     )
 }
@@ -198,15 +201,15 @@ fun ContentCard(
     EduCard(modifier = modifier) {
         if (eyebrow != null) {
             Eyebrow(eyebrow)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
         }
-        Text(text = title, style = EduText.CardTitle)
+        Text(text = title, style = EduTheme.type.cardTitle)
         if (meta != null) {
-            Spacer(Modifier.height(4.dp))
-            Text(text = meta, style = EduText.BodySmall)
+            Spacer(Modifier.height(dimen(R.dimen.space_4)))
+            Text(text = meta, style = EduTheme.type.bodySmall)
         }
-        Spacer(Modifier.height(10.dp))
-        Text(text = body, style = EduText.Body)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = body, style = EduTheme.type.body)
     }
 }
 
@@ -222,27 +225,30 @@ fun TonePanel(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(tone.tint(), RoundedCornerShape(18.dp))
-            .padding(18.dp),
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_18)))
+            .background(tone.tint(), RoundedCornerShape(dimen(R.dimen.radius_18)))
+            .padding(dimen(R.dimen.radius_18)),
     ) {
         if (title != null) {
             Text(
                 text = title,
-                style = EduText.CardTitle.copy(color = tone.content(), fontSize = 17.sp),
+                style = EduTheme.type.cardTitle.copy(color = tone.content(), fontSize = dimenSp(R.dimen.text_size_17)),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
         }
         if (bullets.isEmpty()) {
-            Text(text = body, style = EduText.BodySmall.copy(color = tone.content()))
+            Text(text = body, style = EduTheme.type.bodySmall.copy(color = tone.content()))
         } else {
             bullets.forEach { bullet ->
-                Row(modifier = Modifier.padding(bottom = 4.dp)) {
-                    Text(text = "•", style = EduText.BodySmall.copy(color = tone.content()))
-                    Spacer(Modifier.size(8.dp))
+                Row(modifier = Modifier.padding(bottom = dimen(R.dimen.space_4))) {
+                    Text(
+                        text = stringResource(R.string.common_bullet),
+                        style = EduTheme.type.bodySmall.copy(color = tone.content()),
+                    )
+                    Spacer(Modifier.size(dimen(R.dimen.space_8)))
                     Text(
                         text = bullet,
-                        style = EduText.BodySmall.copy(color = tone.content()),
+                        style = EduTheme.type.bodySmall.copy(color = tone.content()),
                     )
                 }
             }
@@ -259,14 +265,14 @@ fun InlineChip(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(tone.tint(), RoundedCornerShape(999.dp))
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_999)))
+            .background(tone.tint(), RoundedCornerShape(dimen(R.dimen.radius_999)))
+            .padding(horizontal = dimen(R.dimen.radius_14), vertical = dimen(R.dimen.radius_8)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = text,
-            style = EduText.Chip.copy(color = tone.content(), fontWeight = FontWeight.SemiBold),
+            style = EduTheme.type.chip.copy(color = tone.content(), fontWeight = FontWeight.SemiBold),
         )
     }
 }
@@ -276,20 +282,20 @@ fun InlineChip(
 fun LetterBadge(letter: String, highlighted: Boolean, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
-            .size(28.dp)
-            .clip(RoundedCornerShape(9.dp))
+            .size(dimen(R.dimen.size_28))
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_9)))
             .background(
-                if (highlighted) EduColors.Surface else EduColors.PrimaryTint,
-                RoundedCornerShape(9.dp),
+                if (highlighted) EduTheme.colors.lavender else EduTheme.colors.purpleTint,
+                RoundedCornerShape(dimen(R.dimen.radius_9)),
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
     ) {
         Text(
             text = letter,
-            style = EduText.CardTitle.copy(
-                color = EduColors.Primary,
-                fontSize = 15.sp,
+            style = EduTheme.type.cardTitle.copy(
+                color = if (highlighted) EduTheme.colors.onBrand else EduTheme.colors.lavender,
+                fontSize = dimenSp(R.dimen.text_size_15),
             ),
         )
     }
@@ -305,9 +311,9 @@ fun ClickableRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_12)))
             .clickable(onClick = onClick)
-            .padding(vertical = 6.dp),
+            .padding(vertical = dimen(R.dimen.radius_6)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         content()

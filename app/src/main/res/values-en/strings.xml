@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Global strings only. Module files: strings_common.xml, strings_home.xml,
+     strings_student.xml, strings_lecturer_a.xml, strings_lecturer_b.xml,
+     strings_admin.xml (same keys in values/ and values-en/). -->
+<resources>
+    <string name="app_name">EduVARK</string>
+</resources>

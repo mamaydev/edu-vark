@@ -1,5 +1,6 @@
 package com.eduvark.app.presentation.lecturer.analytics
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -36,10 +38,11 @@ import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.SecondaryButton
 import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintTone
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 private val FEEDBACK_CATEGORIES = listOf(
     VarkType.VISUAL,
@@ -85,7 +88,11 @@ fun LecturerAnalyticsScreen(
     val kinesthetic = state.analytics?.kinesthetic
 
     EduScreen(
-        title = if (feedbackOpen) "Feedback mahasiswa" else "Analitik kelas",
+        title = if (feedbackOpen) {
+            stringResource(R.string.lec_analytics_screen_feedback_title)
+        } else {
+            stringResource(R.string.lec_analytics_screen_title)
+        },
         onBack = { if (feedbackOpen) feedbackOpen = false else onBack() },
         modifier = modifier,
         bottomBar = bottomBar,
@@ -97,7 +104,7 @@ fun LecturerAnalyticsScreen(
             error != null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 ErrorBlock(message = error, onRetry = { viewModel.load() })
             }
@@ -105,12 +112,12 @@ fun LecturerAnalyticsScreen(
             state.analytics == null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 EmptyBlock(
-                    title = "Analitik belum tersedia",
-                    message = "Data pemahaman kelas tidak dapat dimuat.",
-                    actionLabel = "Muat ulang",
+                    title = stringResource(R.string.lec_analytics_empty_unavailable_title),
+                    message = stringResource(R.string.lec_analytics_empty_unavailable_message),
+                    actionLabel = stringResource(R.string.lec_analytics_action_reload),
                     onAction = { viewModel.load() },
                 )
             }
@@ -148,59 +155,70 @@ private fun AnalyticsMain(
     onOpenFeedback: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Implementasi Basis Data")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Dengarkan data.\nPahami kelas.", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.lec_analytics_intro_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "Feedback subjektif dan nilai objektif dipisahkan.",
-            style = EduText.Body,
+            text = stringResource(R.string.lec_analytics_intro_title),
+            style = EduTheme.type.display,
         )
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = stringResource(R.string.lec_analytics_intro_body),
+            style = EduTheme.type.body,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
-        FieldLabel("Topik")
+        FieldLabel(stringResource(R.string.lec_analytics_topic_label))
         EduDropdown(
-            value = "Topik saat ini",
-            options = listOf("Topik saat ini"),
+            value = stringResource(R.string.lec_analytics_current_topic),
+            options = listOf(stringResource(R.string.lec_analytics_current_topic)),
             onSelect = {},
             enabled = false,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Feedback pemahaman", style = EduText.Section)
-            Spacer(Modifier.height(4.dp))
-            Eyebrow("Subjektif • V/A/R saja")
-            Spacer(Modifier.height(14.dp))
+            Text(
+                text = stringResource(R.string.lec_analytics_feedback_understanding_title),
+                style = EduTheme.type.section,
+            )
+            Spacer(Modifier.height(dimen(R.dimen.space_4)))
+            Eyebrow(stringResource(R.string.lec_analytics_feedback_understanding_eyebrow))
+            Spacer(Modifier.height(dimen(R.dimen.space_14)))
 
-            stats.forEach { stat ->
+            for (stat in stats) {
                 val color = categoryColor(stat.category)
+                val mean = stat.mean
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = subjectLabel(stat.category),
-                        style = EduText.Label,
-                        modifier = Modifier.width(78.dp),
+                        text = stringResource(subjectLabel(stat.category)),
+                        style = EduTheme.type.label,
+                        modifier = Modifier.width(dimen(R.dimen.size_78)),
                     )
                     Text(
-                        text = stat.mean?.let { "${it.roundToInt()}%" } ?: "—",
-                        style = EduText.BodySmall.copy(
-                            color = EduColors.Ink,
+                        text = if (mean == null) {
+                            stringResource(R.string.lec_analytics_no_value)
+                        } else {
+                            stringResource(R.string.lec_analytics_percent, mean.roundToInt())
+                        },
+                        style = EduTheme.type.bodySmall.copy(
+                            color = EduTheme.colors.ink,
                             fontWeight = FontWeight.Bold,
                         ),
                     )
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(dimen(R.dimen.space_8)))
                     Text(
-                        text = "•  n = ${stat.respondents}",
-                        style = EduText.BodySmall,
+                        text = stringResource(R.string.lec_analytics_sample_size, stat.respondents),
+                        style = EduTheme.type.bodySmall,
                     )
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_8)))
                 MetricBar(
                     fraction = ((stat.mean ?: 0.0) / 100.0).toFloat(),
                     color = color,
                 )
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_14)))
             }
 
             Row(
@@ -208,27 +226,29 @@ private fun AnalyticsMain(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "0%",
-                    style = EduText.BodySmall.copy(color = EduColors.MutedSoft),
+                    text = stringResource(R.string.lec_analytics_axis_zero),
+                    style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.mutedSoft),
                 )
                 Text(
-                    text = "100%",
-                    style = EduText.BodySmall.copy(color = EduColors.MutedSoft),
+                    text = stringResource(R.string.lec_analytics_axis_full),
+                    style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.mutedSoft),
                 )
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "Rerata aritmetika feedback terbaru per mahasiswa–topik–kategori. " +
-                    "Belum merespons tidak dihitung sebagai 0%.",
-                style = EduText.BodySmall,
+                text = stringResource(R.string.lec_analytics_feedback_note),
+                style = EduTheme.type.bodySmall,
             )
-            Spacer(Modifier.height(12.dp))
-            TextLink(text = "Lihat feedback mahasiswa", onClick = onOpenFeedback)
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
+            TextLink(
+                text = stringResource(R.string.lec_analytics_feedback_link),
+                onClick = onOpenFeedback,
+            )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         KinestheticCard(
-            title = "Kinesthetic",
+            title = stringResource(R.string.lec_analytics_kinesthetic_title),
             mean = kinestheticMean,
             assessedCount = assessedCount,
             compact = false,
@@ -243,54 +263,62 @@ private fun EmptyAnalytics(
     onPickTopic: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Analitik kelas")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Belum ada data\nuntuk ditampilkan.", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.lec_analytics_screen_title))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "Grafik akan muncul setelah mahasiswa mengirim feedback.",
-            style = EduText.Body,
+            text = stringResource(R.string.lec_analytics_empty_title),
+            style = EduTheme.type.display,
         )
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = stringResource(R.string.lec_analytics_empty_body),
+            style = EduTheme.type.body,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
-        FieldLabel("Topik")
+        FieldLabel(stringResource(R.string.lec_analytics_topic_label))
         EduDropdown(
-            value = "Topik saat ini",
-            options = listOf("Topik saat ini"),
+            value = stringResource(R.string.lec_analytics_current_topic),
+            options = listOf(stringResource(R.string.lec_analytics_current_topic)),
             onSelect = {},
             enabled = false,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         EduCard(
             modifier = Modifier.fillMaxWidth(),
-            containerColor = EduColors.PrimaryTint,
+            containerColor = EduTheme.colors.purpleTint,
         ) {
             Text(
-                text = "— %",
-                style = EduText.Numeral.copy(color = EduColors.Primary),
+                text = stringResource(R.string.lec_analytics_no_percent),
+                style = EduTheme.type.numeral.copy(color = EduTheme.colors.lavender),
             )
-            Spacer(Modifier.height(10.dp))
-            Text(text = "0 responden", style = EduText.CardTitle)
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "Tidak ada feedback V/A/R pada topik ini.\n" +
-                    "Belum merespons tidak dihitung sebagai 0%.",
-                style = EduText.BodySmall,
+                text = stringResource(R.string.lec_analytics_respondents_count, 0),
+                style = EduTheme.type.cardTitle,
+            )
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(
+                text = stringResource(R.string.lec_analytics_no_feedback_message),
+                style = EduTheme.type.bodySmall,
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         KinestheticCard(
-            title = "Nilai Kinesthetic",
+            title = stringResource(R.string.lec_analytics_kinesthetic_score_title),
             mean = kinestheticMean,
             assessedCount = assessedCount,
             compact = true,
         )
 
-        Spacer(Modifier.height(18.dp))
-        SecondaryButton(text = "Pilih topik lain", onClick = onPickTopic)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
+        SecondaryButton(
+            text = stringResource(R.string.lec_analytics_pick_other_topic),
+            onClick = onPickTopic,
+        )
     }
 }
 
@@ -301,37 +329,41 @@ private fun KinestheticCard(
     assessedCount: Int,
     compact: Boolean,
 ) {
-    val score = mean?.let { String.format(Locale.forLanguageTag("id-ID"), "%.1f", it) } ?: "—"
+    val formattedScore = mean?.let { String.format(Locale.forLanguageTag("id-ID"), "%.1f", it) }
+    val score = formattedScore ?: stringResource(R.string.lec_analytics_no_value)
     EduCard(
         modifier = Modifier.fillMaxWidth(),
-        containerColor = EduColors.TealTint,
+        containerColor = EduTheme.colors.successTint,
     ) {
         if (compact) {
             Text(
                 text = title,
-                style = EduText.CardTitle.copy(color = EduColors.Teal),
+                style = EduTheme.type.cardTitle.copy(color = EduTheme.colors.lime),
             )
         } else {
-            Eyebrow(text = "$title • Objektif", color = EduColors.Teal)
+            Eyebrow(
+                text = stringResource(R.string.lec_analytics_objective_eyebrow, title),
+                color = EduTheme.colors.lime,
+            )
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_8)))
         Text(
-            text = "$score / 100",
-            style = EduText.Numeral.copy(color = EduColors.Teal),
+            text = stringResource(R.string.lec_analytics_score_out_of, score),
+            style = EduTheme.type.numeral.copy(color = EduTheme.colors.lime),
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_8)))
         Text(
             text = if (assessedCount == 0) {
-                "Belum ada kiriman yang dinilai."
+                stringResource(R.string.lec_analytics_no_assessed)
             } else {
-                "Rerata $assessedCount kiriman yang sudah dinilai."
+                stringResource(R.string.lec_analytics_assessed_mean, assessedCount)
             },
-            style = EduText.BodySmall,
+            style = EduTheme.type.bodySmall,
         )
         if (!compact) {
             Text(
-                text = "Tidak digabungkan dengan feedback V/A/R.",
-                style = EduText.BodySmall,
+                text = stringResource(R.string.lec_analytics_not_combined),
+                style = EduTheme.type.bodySmall,
             )
         }
     }
@@ -355,113 +387,123 @@ private fun FeedbackList(
         value != null
     }
 
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Feedback subjektif")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Lihat setiap suara.", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.lec_analytics_feedback_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "${students.size} mahasiswa pada topik ini",
-            style = EduText.Body,
+            text = stringResource(R.string.lec_analytics_feedback_title),
+            style = EduTheme.type.display,
         )
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = stringResource(R.string.lec_analytics_students_count, students.size),
+            style = EduTheme.type.body,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
-        FieldLabel("Kategori asal feedback")
+        FieldLabel(stringResource(R.string.lec_analytics_category_label))
+        val allCategoryLabel = stringResource(R.string.lec_analytics_filter_all)
+        val visualLabel = stringResource(R.string.lec_analytics_vark_visual)
+        val auralLabel = stringResource(R.string.lec_analytics_vark_aural)
+        val readWriteLabel = stringResource(R.string.lec_analytics_vark_read_write)
         EduDropdown(
-            value = categoryFilterLabel(selected),
-            options = listOf(
-                "Semua kategori",
-                subjectLabel(VarkType.VISUAL),
-                subjectLabel(VarkType.AURAL),
-                subjectLabel(VarkType.READ_WRITE),
-            ),
-            onSelect = { label -> onCategoryChange(categoryFilterKey(label)) },
+            value = if (selected == null) {
+                allCategoryLabel
+            } else {
+                stringResource(subjectLabel(selected))
+            },
+            options = listOf(allCategoryLabel, visualLabel, auralLabel, readWriteLabel),
+            onSelect = { label ->
+                onCategoryChange(
+                    when (label) {
+                        visualLabel -> VarkType.VISUAL.wireValue
+                        auralLabel -> VarkType.AURAL.wireValue
+                        readWriteLabel -> VarkType.READ_WRITE.wireValue
+                        else -> FILTER_ALL
+                    },
+                )
+            },
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         NoticeCard(
-            text = "Filter memakai kategori saat feedback dibuat, bukan pilihan login " +
-                "terakhir.",
+            text = stringResource(R.string.lec_analytics_category_notice),
             tone = TintTone.Primary,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "$respondents responden",
-                style = EduText.Numeral.copy(color = EduColors.Primary),
+                text = stringResource(R.string.lec_analytics_respondents_count, respondents),
+                style = EduTheme.type.numeral.copy(color = EduTheme.colors.lavender),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "Satu feedback terbaru per mahasiswa pada topik dan kategori ini.",
-                style = EduText.BodySmall,
+                text = stringResource(R.string.lec_analytics_respondent_note),
+                style = EduTheme.type.bodySmall,
             )
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         if (visible.isEmpty()) {
             NoticeCard(
-                text = "Belum ada mahasiswa untuk kategori ini.",
+                text = stringResource(R.string.lec_analytics_no_students_notice),
                 tone = TintTone.Neutral,
             )
         } else {
-            visible.forEach { student ->
+            for (student in visible) {
                 val value = if (selected == null) {
                     student.valueFor(student.vark)
                 } else {
                     student.valueFor(selected)
                 }
                 EduCard(modifier = Modifier.fillMaxWidth()) {
-                    Text(text = student.fullName, style = EduText.CardTitle)
-                    Spacer(Modifier.height(6.dp))
+                    Text(text = student.fullName, style = EduTheme.type.cardTitle)
+                    Spacer(Modifier.height(dimen(R.dimen.space_6)))
                     Text(
-                        text = "${student.loginId} • ${subjectLabel(student.vark)}",
-                        style = EduText.BodySmall,
+                        text = stringResource(
+                            R.string.lec_analytics_student_meta,
+                            student.loginId,
+                            stringResource(subjectLabel(student.vark)),
+                        ),
+                        style = EduTheme.type.bodySmall,
                     )
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_10)))
                     if (value == null) {
                         Text(
-                            text = "Belum merespons",
-                            style = EduText.Headline.copy(color = EduColors.Muted),
+                            text = stringResource(R.string.lec_analytics_no_respond),
+                            style = EduTheme.type.headline.copy(color = EduTheme.colors.muted),
                         )
                     } else {
                         Text(
-                            text = "$value%",
-                            style = EduText.Numeral.copy(color = EduColors.Primary),
+                            text = stringResource(R.string.lec_analytics_percent, value),
+                            style = EduTheme.type.numeral.copy(color = EduTheme.colors.lavender),
                         )
                     }
                 }
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
             }
         }
 
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_4)))
         Text(
-            text = "0% adalah feedback valid. Belum merespons bukan 0%.",
-            style = EduText.BodySmall,
+            text = stringResource(R.string.lec_analytics_footer_note),
+            style = EduTheme.type.bodySmall,
         )
     }
 }
 
-private fun subjectLabel(vark: VarkType): String = when (vark) {
-    VarkType.VISUAL -> "Visual"
-    VarkType.AURAL -> "Aural"
-    VarkType.READ_WRITE -> "Read/Write"
-    VarkType.KINESTHETIC -> "Kinesthetic"
+@StringRes
+private fun subjectLabel(vark: VarkType): Int = when (vark) {
+    VarkType.VISUAL -> R.string.lec_analytics_vark_visual
+    VarkType.AURAL -> R.string.lec_analytics_vark_aural
+    VarkType.READ_WRITE -> R.string.lec_analytics_vark_read_write
+    VarkType.KINESTHETIC -> R.string.lec_analytics_vark_kinesthetic
 }
 
+@Composable
 private fun categoryColor(vark: VarkType) = when (vark) {
-    VarkType.VISUAL -> EduColors.Primary
-    VarkType.AURAL -> EduColors.Teal
-    VarkType.READ_WRITE -> EduColors.Purple
-    VarkType.KINESTHETIC -> EduColors.Teal
-}
-
-private fun categoryFilterLabel(selected: VarkType?): String =
-    selected?.let { subjectLabel(it) } ?: "Semua kategori"
-
-private fun categoryFilterKey(label: String): String = when (label) {
-    subjectLabel(VarkType.VISUAL) -> VarkType.VISUAL.wireValue
-    subjectLabel(VarkType.AURAL) -> VarkType.AURAL.wireValue
-    subjectLabel(VarkType.READ_WRITE) -> VarkType.READ_WRITE.wireValue
-    else -> FILTER_ALL
+    VarkType.VISUAL -> EduTheme.colors.lavender
+    VarkType.AURAL -> EduTheme.colors.lime
+    VarkType.READ_WRITE -> EduTheme.colors.danger
+    VarkType.KINESTHETIC -> EduTheme.colors.purple
 }

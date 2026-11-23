@@ -69,6 +69,9 @@ class CaseRepositoryImpl @Inject constructor(
             submittedAt = submittedAt,
             score = score,
             comment = comment,
+            answer = answer,
+            gradedAt = gradedAt,
+            gradedBy = gradedBy,
             submissionCount = submissionCount,
         )
     }

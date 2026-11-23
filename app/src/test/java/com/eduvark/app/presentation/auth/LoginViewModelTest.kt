@@ -35,7 +35,7 @@ class LoginViewModelTest {
     fun `success exposes navigation flags`() = runTest {
         val viewModel = LoginViewModel(LoginUseCase(FakeAuthRepository()))
 
-        viewModel.submit("stu1", "StudentPass123")
+        viewModel.submit("2025000001", "StudentPass123")
         advanceUntilIdle()
 
         assertEquals(LoginSuccess(mustChangePassword = false, varkRequired = true), viewModel.state.value.success)
@@ -48,7 +48,7 @@ class LoginViewModelTest {
 
         viewModel.submit("", "")
 
-        assertEquals("NIM/NIP dan password wajib diisi.", viewModel.state.value.error)
+        assertEquals("NIM/NIP/NIDN dan password wajib diisi.", viewModel.state.value.error)
     }
 
     @Test
@@ -58,16 +58,42 @@ class LoginViewModelTest {
                 FakeAuthRepository(
                     loginFailure = AppFailure.Api(
                         code = "INVALID_CREDENTIALS",
-                        message = "NIM/NIP atau password tidak valid.",
+                        message = "NIM/NIP/NIDN atau password tidak valid.",
                         statusCode = 401,
                     ),
                 ),
             ),
         )
 
-        viewModel.submit("stu1", "wrong")
+        viewModel.submit("2025000001", "wrong")
         advanceUntilIdle()
 
-        assertEquals("NIM/NIP atau password tidak valid.", viewModel.state.value.error)
+        assertEquals("NIM/NIP/NIDN atau password tidak valid.", viewModel.state.value.error)
     }
+    @Test
+    fun `rejects non academic identifiers before calling the API`() {
+        val viewModel = LoginViewModel(LoginUseCase(FakeAuthRepository()))
+
+        viewModel.submit("stu1", "StudentPass123")
+
+        assertEquals(
+            "NIM/NIP/NIDN harus 10–11 digit, atau gunakan username admin.",
+            viewModel.state.value.error,
+        )
+        assertNull(viewModel.state.value.success)
+    }
+
+    @Test
+    fun `accepts the admin username`() = runTest {
+        val viewModel = LoginViewModel(LoginUseCase(FakeAuthRepository()))
+
+        viewModel.submit("admin", "AdminPass1234")
+        advanceUntilIdle()
+
+        assertEquals(
+            LoginSuccess(mustChangePassword = false, varkRequired = true),
+            viewModel.state.value.success,
+        )
+    }
+
 }

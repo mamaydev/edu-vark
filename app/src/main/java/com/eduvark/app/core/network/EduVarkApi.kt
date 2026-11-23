@@ -79,6 +79,9 @@ interface EduVarkApi {
     @GET("topics/{id}")
     suspend fun getTopic(@Path("id") topicId: String): TopicResponse
 
+    @GET("lecturer/topics/{id}")
+    suspend fun getLecturerTopic(@Path("id") topicId: String): TopicResponse
+
     @GET("student/dashboard")
     suspend fun getStudentDashboard(): StudentDashboardResponse
 

@@ -17,18 +17,22 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
-private val ButtonShape = RoundedCornerShape(28.dp)
+@Composable
+@ReadOnlyComposable
+private fun buttonShape() = RoundedCornerShape(dimen(R.dimen.radius_28))
 
-/** Solid blue pill button. */
+/** Solid lime pill button (primary action). */
 @Composable
 fun PrimaryButton(
     text: String,
@@ -37,15 +41,15 @@ fun PrimaryButton(
     enabled: Boolean = true,
     loading: Boolean = false,
     showArrow: Boolean = false,
-    height: Dp = 56.dp,
+    height: Dp = dimen(R.dimen.dimen_56),
 ) {
     val active = enabled && !loading
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .clip(ButtonShape)
-            .background(if (active) EduColors.Primary else EduColors.Primary.copy(alpha = 0.45f))
+            .clip(buttonShape())
+            .background(if (active) EduTheme.colors.lime else EduTheme.colors.lime.copy(alpha = 0.4f))
             .clickable(enabled = active, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -55,47 +59,46 @@ fun PrimaryButton(
         ) {
             if (loading) {
                 CircularProgressIndicator(
-                    color = Color.White,
-                    strokeWidth = 2.dp,
-                    modifier = Modifier.size(18.dp),
+                    color = EduTheme.colors.onBrand,
+                    strokeWidth = dimen(R.dimen.dimen_2),
+                    modifier = Modifier.size(dimen(R.dimen.size_18)),
                 )
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(dimen(R.dimen.space_10)))
             }
-            Text(text = text, style = EduText.Button)
+            Text(text = text, style = EduTheme.type.button)
             if (showArrow && !loading) {
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(dimen(R.dimen.space_8)))
                 Icon(
                     imageVector = EduIcons.ArrowRight,
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp),
+                    tint = EduTheme.colors.onBrand,
+                    modifier = Modifier.size(dimen(R.dimen.size_18)),
                 )
             }
         }
     }
 }
 
-/** White pill button with a hairline border. */
+/** Outlined (lavender-dim) pill button for secondary actions. */
 @Composable
 fun SecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    height: Dp = 56.dp,
-    textColor: Color = EduColors.Ink,
+    height: Dp = dimen(R.dimen.dimen_56),
+    textColor: Color = EduTheme.colors.ink,
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .clip(ButtonShape)
-            .background(EduColors.Surface)
-            .border(1.dp, EduColors.Border, ButtonShape)
+            .clip(buttonShape())
+            .border(dimen(R.dimen.size_1), EduTheme.colors.lavenderDim, buttonShape())
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = text, style = EduText.Button.copy(color = textColor))
+        Text(text = text, style = EduTheme.type.button.copy(color = textColor))
     }
 }
 
@@ -106,22 +109,22 @@ fun DangerButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    height: Dp = 56.dp,
+    height: Dp = dimen(R.dimen.dimen_56),
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .clip(ButtonShape)
-            .background(if (enabled) EduColors.Danger else EduColors.Danger.copy(alpha = 0.45f))
+            .clip(buttonShape())
+            .background(if (enabled) EduTheme.colors.danger else EduTheme.colors.danger.copy(alpha = 0.45f))
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = text, style = EduText.Button)
+        Text(text = text, style = EduTheme.type.button.copy(color = Color.White))
     }
 }
 
-/** White pill placed inside a blue hero card. */
+/** Ghost pill placed on a lavender hero card: dark ink, no fill. */
 @Composable
 fun LightButton(
     text: String,
@@ -132,66 +135,65 @@ fun LightButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(EduColors.Surface)
+            .height(dimen(R.dimen.size_48))
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_14)))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = text, style = EduText.Button.copy(color = EduColors.Ink))
+            Text(text = text, style = EduTheme.type.button.copy(color = EduTheme.colors.onBrand))
             if (showArrow) {
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(dimen(R.dimen.space_8)))
                 Icon(
                     imageVector = EduIcons.ArrowRight,
                     contentDescription = null,
-                    tint = EduColors.Ink,
-                    modifier = Modifier.size(16.dp),
+                    tint = EduTheme.colors.onBrand,
+                    modifier = Modifier.size(dimen(R.dimen.size_16)),
                 )
             }
         }
     }
 }
 
-/** Inline teal link with an arrow, as used inside cards. */
+/** Inline lavender-dim link with an arrow, as used inside cards. */
 @Composable
 fun TextLink(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = EduColors.Teal,
+    color: Color = EduTheme.colors.lavenderDim,
     icon: Boolean = true,
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_6)))
             .clickable(onClick = onClick)
-            .padding(vertical = 2.dp),
+            .padding(vertical = dimen(R.dimen.radius_2)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = text, style = EduText.Link.copy(color = color))
+        Text(text = text, style = EduTheme.type.link.copy(color = color))
         if (icon) {
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(dimen(R.dimen.space_4)))
             Icon(
                 imageVector = EduIcons.ArrowRight,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(dimen(R.dimen.size_16)),
             )
         }
     }
 }
 
-/** Tappable white row used by lists (name + chevron). */
+/** Tappable row used by lists (name + chevron). */
 @Composable
 fun RowChevron(
     modifier: Modifier = Modifier,
-    tint: Color = EduColors.MutedSoft,
+    tint: Color = EduTheme.colors.mutedSoft,
 ) {
     Icon(
         imageVector = EduIcons.ChevronRight,
         contentDescription = null,
         tint = tint,
-        modifier = modifier.size(18.dp),
+        modifier = modifier.size(dimen(R.dimen.size_18)),
     )
 }

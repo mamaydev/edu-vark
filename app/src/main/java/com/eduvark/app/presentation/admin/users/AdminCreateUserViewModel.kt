@@ -2,6 +2,7 @@ package com.eduvark.app.presentation.admin.users
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eduvark.app.core.common.LoginIdRules
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.UserRole
 import com.eduvark.app.domain.usecase.CreateAdminUserUseCase
@@ -34,7 +35,11 @@ class AdminCreateUserViewModel @Inject constructor(
         temporaryPassword: String,
     ) {
         if (loginId.trim().isEmpty() || fullName.trim().isEmpty()) {
-            _state.update { it.copy(error = "NIM/NIP dan nama wajib diisi.") }
+            _state.update { it.copy(error = "NIM/NIP/NIDN dan nama wajib diisi.") }
+            return
+        }
+        if (role != UserRole.ADMIN && !LoginIdRules.isAcademicId(loginId)) {
+            _state.update { it.copy(error = LoginIdRules.ACADEMIC_ID_MESSAGE) }
             return
         }
         if (temporaryPassword.length < 6) {

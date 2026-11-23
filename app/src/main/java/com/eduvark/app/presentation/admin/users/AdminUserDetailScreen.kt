@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -41,8 +42,9 @@ import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TonePanel
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 @Composable
 fun AdminUserDetailScreen(
@@ -73,9 +75,9 @@ fun AdminUserDetailScreen(
 
     EduScreen(
         title = when {
-            inactive -> "Status akun"
-            confirming -> "Nonaktifkan akun"
-            else -> "Detail akun"
+            inactive -> stringResource(R.string.admin_status_page_title)
+            confirming -> stringResource(R.string.admin_deactivate_action)
+            else -> stringResource(R.string.admin_detail_title)
         },
         onBack = {
             if (confirming) {
@@ -96,10 +98,10 @@ fun AdminUserDetailScreen(
                 Column(
                     modifier = Modifier
                         .padding(padding)
-                        .padding(24.dp),
+                        .padding(dimen(R.dimen.space_24)),
                 ) {
                     ErrorBlock(
-                        message = state.error ?: "Akun tidak ditemukan.",
+                        message = state.error ?: stringResource(R.string.admin_user_not_found),
                         onRetry = { viewModel.load() },
                     )
                 }
@@ -124,39 +126,46 @@ fun AdminUserDetailScreen(
             }
 
             else -> {
-                ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
+                ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
                     TintBar(
-                        text = "${user.role.label} • ${user.status.label}".uppercase(),
+                        text = stringResource(
+                            R.string.admin_user_role_status,
+                            user.role.label,
+                            user.status.label,
+                        ).uppercase(),
                         tone = if (user.status == AdminAccountStatus.ACTIVE) {
                             TintTone.Teal
                         } else {
                             TintTone.Danger
                         },
                     )
-                    Spacer(Modifier.height(16.dp))
-                    Text(text = user.fullName, style = EduText.Display)
-                    Spacer(Modifier.height(10.dp))
-                    Text(text = "Identitas dan akses akun", style = EduText.Body)
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                    Text(text = user.fullName, style = EduTheme.type.display)
+                    Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                    Text(
+                        text = stringResource(R.string.admin_detail_subtitle),
+                        style = EduTheme.type.body,
+                    )
 
-                    Spacer(Modifier.height(22.dp))
-                    FieldLabel("Nama lengkap")
+                    Spacer(Modifier.height(dimen(R.dimen.space_22)))
+                    FieldLabel(stringResource(R.string.admin_full_name))
                     EduField(
                         value = fullName,
                         onValueChange = { fullName = it },
-                        placeholder = "Nama lengkap",
+                        placeholder = stringResource(R.string.admin_full_name),
                         enabled = !state.isSaving,
                     )
 
-                    Spacer(Modifier.height(16.dp))
-                    FieldLabel("Identitas login unik")
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                    FieldLabel(stringResource(R.string.admin_login_id_label))
                     EduField(
                         value = user.loginId,
                         onValueChange = { },
                         enabled = false,
                     )
 
-                    Spacer(Modifier.height(16.dp))
-                    FieldLabel("Role")
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                    FieldLabel(stringResource(R.string.admin_field_role))
                     EduDropdown(
                         value = role.label,
                         options = roleLabels,
@@ -166,8 +175,8 @@ fun AdminUserDetailScreen(
                         enabled = !state.isSaving,
                     )
 
-                    Spacer(Modifier.height(16.dp))
-                    FieldLabel("Status")
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                    FieldLabel(stringResource(R.string.admin_field_status))
                     EduDropdown(
                         value = user.status.label,
                         options = statusLabels,
@@ -179,44 +188,43 @@ fun AdminUserDetailScreen(
                         enabled = !state.isSaving,
                     )
 
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_18)))
                     NoticeCard(
-                        text = "Perubahan akun tidak mengubah materi, feedback, jawaban, " +
-                            "atau nilai akademik.",
+                        text = stringResource(R.string.admin_update_notice),
                         tone = TintTone.Primary,
                     )
 
                     val loadError = state.error
                     if (loadError != null) {
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_16)))
                         NoticeCard(text = loadError, tone = TintTone.Danger)
                     }
                     val actionMessage = state.actionMessage
                     if (actionMessage != null) {
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_16)))
                         NoticeCard(text = actionMessage, tone = TintTone.Teal)
                     }
                     val actionError = state.actionError
                     if (actionError != null) {
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_16)))
                         NoticeCard(text = actionError, tone = TintTone.Danger)
                     }
 
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_20)))
                     PrimaryButton(
-                        text = "Simpan perubahan",
+                        text = stringResource(R.string.admin_save_changes),
                         onClick = { viewModel.updateProfile(fullName, role) },
                         enabled = !state.isSaving,
                         loading = state.isSaving,
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_12)))
                     SecondaryButton(
-                        text = "Nonaktifkan akun",
+                        text = stringResource(R.string.admin_deactivate_action),
                         onClick = { confirmingDeactivate = true },
                         enabled = !state.isSaving,
                     )
 
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_18)))
                     if (resetOpen) {
                         ResetPasswordPanel(
                             enabled = !state.isSaving,
@@ -228,7 +236,7 @@ fun AdminUserDetailScreen(
                         )
                     } else {
                         TextLink(
-                            text = "Reset kata sandi sementara",
+                            text = stringResource(R.string.admin_reset_password_link),
                             onClick = {
                                 resetOpen = true
                                 enrollmentConfirmOpen = false
@@ -239,31 +247,31 @@ fun AdminUserDetailScreen(
 
                     if (user.role == UserRole.STUDENT && user.enrollmentId != null) {
                         val enrollmentActive = user.enrollmentStatus == EnrollmentStatus.ACTIVE
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_10)))
                         if (enrollmentConfirmOpen) {
                             TonePanel(
                                 title = if (enrollmentActive) {
-                                    "Keluarkan dari kelas?"
+                                    stringResource(R.string.admin_enrollment_remove_title)
                                 } else {
-                                    "Aktifkan akses kelas?"
+                                    stringResource(R.string.admin_enrollment_activate_title)
                                 },
                                 body = if (enrollmentActive) {
-                                    "Akses kelas dicabut; histori pengerjaan dan nilai tetap tersimpan."
+                                    stringResource(R.string.admin_enrollment_remove_body)
                                 } else {
-                                    "Mahasiswa kembali mendapat akses kelas dan materinya."
+                                    stringResource(R.string.admin_enrollment_activate_body)
                                 },
                                 tone = if (enrollmentActive) TintTone.Amber else TintTone.Primary,
                             )
-                            Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(dimen(R.dimen.space_12)))
                             SecondaryButton(
-                                text = "Batal",
+                                text = stringResource(R.string.admin_action_cancel),
                                 onClick = { enrollmentConfirmOpen = false },
                                 enabled = !state.isSaving,
                             )
-                            Spacer(Modifier.height(10.dp))
+                            Spacer(Modifier.height(dimen(R.dimen.space_10)))
                             if (enrollmentActive) {
                                 DangerButton(
-                                    text = "Keluarkan dari kelas",
+                                    text = stringResource(R.string.admin_enrollment_remove_action),
                                     onClick = {
                                         enrollmentConfirmOpen = false
                                         viewModel.setEnrollment(false)
@@ -272,7 +280,7 @@ fun AdminUserDetailScreen(
                                 )
                             } else {
                                 PrimaryButton(
-                                    text = "Aktifkan akses kelas",
+                                    text = stringResource(R.string.admin_enrollment_activate_action),
                                     onClick = {
                                         enrollmentConfirmOpen = false
                                         viewModel.setEnrollment(true)
@@ -283,15 +291,19 @@ fun AdminUserDetailScreen(
                         } else {
                             TextLink(
                                 text = if (enrollmentActive) {
-                                    "Keluarkan dari kelas"
+                                    stringResource(R.string.admin_enrollment_remove_action)
                                 } else {
-                                    "Aktifkan kembali akses kelas"
+                                    stringResource(R.string.admin_enrollment_reactivate_link)
                                 },
                                 onClick = {
                                     enrollmentConfirmOpen = true
                                     resetOpen = false
                                 },
-                                color = if (enrollmentActive) EduColors.Danger else EduColors.Teal,
+                                color = if (enrollmentActive) {
+                                    EduTheme.colors.danger
+                                } else {
+                                    EduTheme.colors.lavenderDim
+                                },
                                 icon = false,
                             )
                         }
@@ -311,59 +323,69 @@ private fun ConfirmDeactivateState(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Konfirmasi admin")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Nonaktifkan akun ini?", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.admin_confirm_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "Akun nonaktif tidak dapat memulai login baru.",
-            style = EduText.Body,
+            text = stringResource(R.string.admin_confirm_headline),
+            style = EduTheme.type.display,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = stringResource(R.string.admin_confirm_body),
+            style = EduTheme.type.body,
         )
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_22)))
         EduCard(
             modifier = Modifier.fillMaxWidth(),
-            containerColor = EduColors.DangerTint,
-            padding = 20.dp,
+            containerColor = EduTheme.colors.dangerTint,
+            padding = dimen(R.dimen.dimen_20),
         ) {
             Text(
                 text = user.fullName,
-                style = EduText.Headline.copy(color = EduColors.Danger),
+                style = EduTheme.type.headline.copy(color = EduTheme.colors.dangerMuted),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
                 text = user.loginId,
-                style = EduText.BodySmall.copy(color = EduColors.Muted),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.dangerMuted),
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_4)))
             Text(
-                text = "${user.role.label} • Saat ini ${user.status.label.lowercase()}",
-                style = EduText.BodySmall.copy(color = EduColors.Danger),
+                text = stringResource(
+                    R.string.admin_confirm_role_status,
+                    user.role.label,
+                    user.status.label.lowercase(),
+                ),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.dangerMuted),
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Ini bukan penghapusan permanen akun. Kebijakan retensi dan " +
-                "nasib sesi yang sedang aktif masih perlu dikonfirmasi.",
+            text = stringResource(R.string.admin_confirm_notice),
             tone = TintTone.Amber,
         )
 
         if (error != null) {
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
             NoticeCard(text = error, tone = TintTone.Danger)
         }
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_22)))
         PrimaryButton(
-            text = "Batal",
+            text = stringResource(R.string.admin_action_cancel),
             onClick = onCancel,
             enabled = !isSaving,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         DangerButton(
-            text = if (isSaving) "Menonaktifkan…" else "Ya, nonaktifkan akun",
+            text = if (isSaving) {
+                stringResource(R.string.admin_deactivating)
+            } else {
+                stringResource(R.string.admin_confirm_deactivate)
+            },
             onClick = onConfirm,
             enabled = !isSaving,
         )
@@ -375,44 +397,52 @@ private fun InactiveAccountState(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        TintBar(text = "LOGIN DITOLAK", tone = TintTone.Danger)
-        Spacer(Modifier.height(18.dp))
-        Eyebrow("Akun nonaktif")
-        Spacer(Modifier.height(10.dp))
-        Text(
-            text = "Akses akunmu sedang dinonaktifkan.",
-            style = EduText.Display,
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        TintBar(
+            text = stringResource(R.string.admin_login_rejected),
+            tone = TintTone.Danger,
         )
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Sesi belajar belum dapat dimulai.", style = EduText.Body)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
+        Eyebrow(stringResource(R.string.admin_inactive_title))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = stringResource(R.string.admin_inactive_headline),
+            style = EduTheme.type.display,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = stringResource(R.string.admin_inactive_body),
+            style = EduTheme.type.body,
+        )
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_22)))
         EduCard(
             modifier = Modifier.fillMaxWidth(),
-            containerColor = EduColors.DangerTint,
-            padding = 20.dp,
+            containerColor = EduTheme.colors.dangerTint,
+            padding = dimen(R.dimen.dimen_20),
         ) {
             Text(
-                text = "Akun nonaktif",
-                style = EduText.Headline.copy(color = EduColors.Danger),
+                text = stringResource(R.string.admin_inactive_title),
+                style = EduTheme.type.headline.copy(color = EduTheme.colors.dangerMuted),
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "Hubungi administrator kelas untuk memeriksa status akun " +
-                    "dan mendapatkan bantuan.",
-                style = EduText.BodySmall.copy(color = EduColors.Danger),
+                text = stringResource(R.string.admin_inactive_help),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.dangerMuted),
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Hanya akun aktif yang dapat masuk ke EduVARK.",
+            text = stringResource(R.string.admin_inactive_notice),
             tone = TintTone.Primary,
         )
 
-        Spacer(Modifier.height(22.dp))
-        PrimaryButton(text = "Kembali ke halaman masuk", onClick = onBack)
+        Spacer(Modifier.height(dimen(R.dimen.space_22)))
+        PrimaryButton(
+            text = stringResource(R.string.admin_back_to_login),
+            onClick = onBack,
+        )
     }
 }
 
@@ -426,10 +456,12 @@ private fun ResetPasswordPanel(
     var confirmation by rememberSaveable { mutableStateOf("") }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
 
+    val passwordMinMessage = stringResource(R.string.admin_error_password_min)
+    val passwordMismatchMessage = stringResource(R.string.admin_error_password_mismatch)
     val save: () -> Unit = {
         error = when {
-            password.length < 6 -> "Kata sandi minimal 6 karakter."
-            password != confirmation -> "Konfirmasi kata sandi tidak sama."
+            password.length < 6 -> passwordMinMessage
+            password != confirmation -> passwordMismatchMessage
             else -> null
         }
         if (error == null) onSave(password)
@@ -437,39 +469,39 @@ private fun ResetPasswordPanel(
 
     EduCard(
         modifier = Modifier.fillMaxWidth(),
-        padding = 18.dp,
+        padding = dimen(R.dimen.dimen_18),
     ) {
-        Text(text = "Reset kata sandi", style = EduText.Section)
-        Spacer(Modifier.height(6.dp))
+        Text(text = stringResource(R.string.admin_reset_password_title), style = EduTheme.type.section)
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
         Text(
-            text = "Pengguna wajib mengganti kata sandi sementara ini saat masuk berikutnya.",
-            style = EduText.BodySmall,
+            text = stringResource(R.string.admin_reset_password_body),
+            style = EduTheme.type.bodySmall,
         )
 
-        Spacer(Modifier.height(16.dp))
-        FieldLabel("Kata sandi sementara")
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        FieldLabel(stringResource(R.string.admin_temp_password_label))
         PasswordField(
             value = password,
             onValueChange = {
                 password = it
                 error = null
             },
-            placeholder = "Minimal 6 karakter",
+            placeholder = stringResource(R.string.admin_password_min_placeholder),
             enabled = enabled,
-            leadingLabel = "kata sandi sementara",
+            leadingLabel = stringResource(R.string.admin_temp_password_semantics),
         )
 
-        Spacer(Modifier.height(12.dp))
-        FieldLabel("Ulangi kata sandi sementara")
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        FieldLabel(stringResource(R.string.admin_temp_password_confirm_label))
         PasswordField(
             value = confirmation,
             onValueChange = {
                 confirmation = it
                 error = null
             },
-            placeholder = "Ulangi kata sandi",
+            placeholder = stringResource(R.string.admin_password_repeat_placeholder),
             enabled = enabled,
-            leadingLabel = "konfirmasi kata sandi sementara",
+            leadingLabel = stringResource(R.string.admin_temp_password_confirm_semantics),
         )
 
         val errorText = error
@@ -477,15 +509,15 @@ private fun ResetPasswordPanel(
             FieldHelper(text = errorText, isError = true)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         PrimaryButton(
-            text = "Simpan kata sandi sementara",
+            text = stringResource(R.string.admin_save_temp_password),
             onClick = save,
             enabled = enabled,
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         SecondaryButton(
-            text = "Batal",
+            text = stringResource(R.string.admin_action_cancel),
             onClick = onCancel,
             enabled = enabled,
         )

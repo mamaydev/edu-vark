@@ -3,7 +3,7 @@ package com.eduvark.app.presentation.lecturer.cases
 import androidx.lifecycle.SavedStateHandle
 import com.eduvark.app.domain.usecase.GetLecturerCaseUseCase
 import com.eduvark.app.domain.usecase.GetLecturerMaterialsUseCase
-import com.eduvark.app.domain.usecase.GetTopicUseCase
+import com.eduvark.app.domain.usecase.GetLecturerTopicUseCase
 import com.eduvark.app.domain.usecase.UpsertCaseUseCase
 import com.eduvark.app.testutil.FakeCaseRepository
 import com.eduvark.app.testutil.FakeTopicRepository
@@ -41,7 +41,7 @@ class LecturerCaseViewModelTest {
         val viewModel = LecturerCaseViewModel(
             savedStateHandle = SavedStateHandle(mapOf("topicId" to "topic-1")),
             getLecturerCaseUseCase = GetLecturerCaseUseCase(repository),
-            getTopicUseCase = GetTopicUseCase(topicRepository),
+            getTopicUseCase = GetLecturerTopicUseCase(topicRepository),
             getMaterialsUseCase = GetLecturerMaterialsUseCase(topicRepository),
             upsertCaseUseCase = UpsertCaseUseCase(repository),
         )

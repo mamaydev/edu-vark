@@ -13,6 +13,9 @@ export interface CaseRow {
   submitted_at: Date | null;
   score: number | null;
   comment: string | null;
+  answer_text: string | null;
+  assessed_at: Date | null;
+  assessed_by_name: string | null;
 }
 
 export async function findCaseForStudent(
@@ -28,8 +31,11 @@ export async function findCaseForStudent(
         (now() <= cs.deadline_at) AS before_deadline,
         s.id AS submission_id,
         s.submitted_at,
+        s.answer_text,
         a.score,
-        a.comment
+        a.comment,
+        a.assessed_at,
+        grader.full_name AS assessed_by_name
       FROM case_studies cs
       JOIN topics t
         ON t.id = cs.topic_id
@@ -44,6 +50,7 @@ export async function findCaseForStudent(
         ON s.case_study_id = cs.id
        AND s.student_id = $2
       LEFT JOIN assessments a ON a.submission_id = s.id
+      LEFT JOIN users grader ON grader.id = a.assessed_by
       WHERE cs.topic_id = $1 AND cs.deleted_at IS NULL
       LIMIT 1
     `,
@@ -66,7 +73,10 @@ export async function findCaseForLecturer(
         NULL::uuid AS submission_id,
         NULL::timestamptz AS submitted_at,
         NULL::integer AS score,
-        NULL::text AS comment
+        NULL::text AS comment,
+        NULL::text AS answer_text,
+        NULL::timestamptz AS assessed_at,
+        NULL::text AS assessed_by_name
       FROM case_studies cs
       JOIN topics t ON t.id = cs.topic_id AND t.deleted_at IS NULL
       JOIN teaching_assignments ta
@@ -93,7 +103,10 @@ export async function findCaseByTopic(
         NULL::uuid AS submission_id,
         NULL::timestamptz AS submitted_at,
         NULL::integer AS score,
-        NULL::text AS comment
+        NULL::text AS comment,
+        NULL::text AS answer_text,
+        NULL::timestamptz AS assessed_at,
+        NULL::text AS assessed_by_name
       FROM case_studies cs
       WHERE cs.topic_id = $1 AND cs.deleted_at IS NULL
       LIMIT 1

@@ -25,6 +25,13 @@ class GetTopicUseCase @Inject constructor(
     suspend operator fun invoke(topicId: String): Topic = repository.getTopic(topicId)
 }
 
+class GetLecturerTopicUseCase @Inject constructor(
+    private val repository: TopicRepository,
+) {
+    suspend operator fun invoke(topicId: String): Topic =
+        repository.getLecturerTopic(topicId)
+}
+
 class GetMaterialsUseCase @Inject constructor(
     private val repository: TopicRepository,
 ) {

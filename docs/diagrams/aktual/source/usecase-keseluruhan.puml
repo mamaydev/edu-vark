@@ -1,0 +1,88 @@
+@startuml
+!theme plain
+left to right direction
+skinparam dpi 150
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam usecaseBackgroundColor #EDF4FA
+skinparam usecaseBorderColor #24527A
+skinparam actorBorderColor #24527A
+skinparam ArrowColor #52687B
+title EduVARK — Use Case Sistem Aktual
+actor Pengguna as U
+actor Mahasiswa as M
+actor Dosen as D
+actor Admin as A
+M -|> U
+D -|> U
+A -|> U
+rectangle "Sistem EduVARK (Android dan Backend)" {
+  package "Akun dan sesi" {
+    usecase "Login" as Login
+    usecase "Mengganti password" as Pass
+    usecase "Logout" as Logout
+    usecase "Melihat akun dan sesi" as Me
+  }
+  package "Pembelajaran mahasiswa" {
+    usecase "Memilih VARK sesi" as Vark
+    usecase "Melihat topik terbit" as Topics
+    usecase "Membuka materi\nsesuai VARK" as Materials
+    usecase "Mengisi / memperbarui\nfeedback V/A/R" as Feedback
+    usecase "Mengirim jawaban\nKinesthetic final" as Submit
+    usecase "Melihat status dan\nhasil penilaian sendiri" as Result
+  }
+  package "Pengajaran dosen" {
+    usecase "Mengelola topik\ndan urutan" as ManageTopic
+    usecase "Menerbitkan / menarik\npublikasi topik" as Publish
+    usecase "Mengelola file / tautan\nmateri per VARK" as ManageMaterial
+    usecase "Mengelola studi kasus\ndan deadline" as Case
+    usecase "Memeriksa daftar\npengumpulan dan jawaban" as Review
+    usecase "Memberikan penilaian final" as Assess
+    usecase "Melihat analitik kelas" as Analytics
+  }
+  package "Administrasi" {
+    usecase "Mencari dan melihat akun" as Accounts
+    usecase "Membuat akun" as Create
+    usecase "Memperbarui nama / role" as Edit
+    usecase "Mereset password" as Reset
+    usecase "Menonaktifkan akun" as Deactivate
+    usecase "Mengubah status\nenrollment mahasiswa" as Enroll
+  }
+}
+U -- Login
+U -- Pass
+U -- Logout
+U -- Me
+M -- Vark
+M -- Topics
+M -- Materials
+M -- Feedback
+M -- Submit
+M -- Result
+D -- ManageTopic
+D -- Publish
+D -- ManageMaterial
+D -- Case
+D -- Review
+D -- Assess
+D -- Analytics
+A -- Accounts
+A -- Create
+A -- Edit
+A -- Reset
+A -- Deactivate
+A -- Enroll
+note bottom of Vark
+  Satu pilihan per sesi mahasiswa;
+  perubahan memerlukan login baru.
+end note
+note bottom of Feedback
+  Hanya Visual, Aural, Read/Write;
+  materi kategori harus tersedia.
+end note
+note bottom of Assess
+  Nilai final 0–100;
+  komentar opsional <= 1.000 karakter.
+end note
+@enduml

@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -32,18 +33,14 @@ import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.format.formatDeadline
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 private const val FILTER_ALL = "ALL"
 private const val FILTER_WAITING = "WAITING"
 private const val FILTER_GRADED = "GRADED"
 private const val FILTER_MISSING = "MISSING"
-
-private const val LABEL_ALL = "Semua status"
-private const val LABEL_WAITING = "Menunggu penilaian"
-private const val LABEL_GRADED = "Sudah dinilai"
-private const val LABEL_MISSING = "Tidak mengumpulkan"
 
 /**
  * Daftar pengumpulan studi kasus (mockup 25).
@@ -91,7 +88,7 @@ fun LecturerSubmissionsScreen(
     }
 
     EduScreen(
-        title = "Pengumpulan",
+        title = stringResource(R.string.lec_assess_submissions_title),
         onBack = onBack,
         modifier = modifier,
         bottomBar = bottomBar,
@@ -103,85 +100,102 @@ fun LecturerSubmissionsScreen(
             error != null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 ErrorBlock(message = error, onRetry = viewModel::load)
             }
 
-            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
-                TintBar(text = "KINESTHETIC • STUDI KASUS", tone = TintTone.Primary, uppercase = true)
-                Spacer(Modifier.height(16.dp))
-                Text(text = "Pengumpulan\nstudi kasus", style = EduText.Display)
-                Spacer(Modifier.height(10.dp))
+            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
+                TintBar(
+                    text = stringResource(R.string.lec_assess_submissions_tintbar),
+                    tone = TintTone.Primary,
+                    uppercase = true,
+                )
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 Text(
-                    text = "Pilih mahasiswa untuk melihat jawaban dan memberi nilai.",
-                    style = EduText.Body,
+                    text = stringResource(R.string.lec_assess_submissions_headline),
+                    style = EduTheme.type.display,
+                )
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(
+                    text = stringResource(R.string.lec_assess_submissions_body),
+                    style = EduTheme.type.body,
                 )
 
                 if (rows.isEmpty()) {
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_18)))
                     EmptyBlock(
-                        title = "Belum ada mahasiswa",
-                        message = "Belum ada mahasiswa Kinesthetic pada kelas ini.",
-                        actionLabel = "Muat ulang",
+                        title = stringResource(R.string.lec_assess_submissions_empty_title),
+                        message = stringResource(R.string.lec_assess_submissions_empty_message),
+                        actionLabel = stringResource(R.string.lec_assess_action_reload),
                         onAction = viewModel::load,
                     )
                 } else {
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_18)))
                     HeroCard(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "$submitted / $total",
-                            style = EduText.NumeralLarge.copy(color = EduColors.Surface),
+                            text = stringResource(R.string.lec_assess_hero_ratio, submitted, total),
+                            style = EduTheme.type.numeralLarge.copy(color = EduTheme.colors.onBrand),
                         )
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_10)))
                         Text(
-                            text = "Terkumpul • $waiting menunggu penilaian",
-                            style = EduText.BodySmall.copy(
-                                color = EduColors.Surface.copy(alpha = 0.9f),
+                            text = stringResource(R.string.lec_assess_hero_collected, waiting),
+                            style = EduTheme.type.bodySmall.copy(
+                                color = EduTheme.colors.onBrand.copy(alpha = 0.9f),
                             ),
                         )
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_6)))
                         Text(
-                            text = "$graded sudah dinilai • $notSubmitted tidak mengumpulkan",
-                            style = EduText.BodySmall.copy(
-                                color = EduColors.Surface.copy(alpha = 0.75f),
+                            text = stringResource(
+                                R.string.lec_assess_hero_graded,
+                                graded,
+                                notSubmitted,
+                            ),
+                            style = EduTheme.type.bodySmall.copy(
+                                color = EduTheme.colors.onBrand.copy(alpha = 0.75f),
                             ),
                         )
                     }
 
-                    Spacer(Modifier.height(18.dp))
-                    FieldLabel("Filter status")
-                    EduDropdown(
-                        value = filterLabel(filter),
-                        options = listOf(
-                            LABEL_ALL,
-                            LABEL_WAITING,
-                            LABEL_GRADED,
-                            LABEL_MISSING,
-                        ),
-                        onSelect = { selected -> filter = filterKey(selected) },
+                    Spacer(Modifier.height(dimen(R.dimen.space_18)))
+                    FieldLabel(stringResource(R.string.lec_assess_filter_label))
+                    val filterOptions = listOf(
+                        FILTER_ALL to stringResource(R.string.lec_assess_filter_all),
+                        FILTER_WAITING to stringResource(R.string.lec_assess_filter_waiting),
+                        FILTER_GRADED to stringResource(R.string.lec_assess_filter_graded),
+                        FILTER_MISSING to stringResource(R.string.lec_assess_filter_missing),
                     )
-                    Spacer(Modifier.height(16.dp))
+                    EduDropdown(
+                        value = filterOptions.firstOrNull { it.first == filter }?.second.orEmpty(),
+                        options = filterOptions.map { it.second },
+                        onSelect = { selected ->
+                            filter = filterOptions
+                                .firstOrNull { it.second == selected }
+                                ?.first
+                                ?: FILTER_ALL
+                        },
+                    )
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
                     if (visible.isEmpty()) {
                         NoticeCard(
-                            text = "Tidak ada mahasiswa dengan status ini.",
+                            text = stringResource(R.string.lec_assess_filter_empty_notice),
                             tone = TintTone.Neutral,
                         )
                     } else {
-                        visible.forEach { row ->
+                        for (row in visible) {
                             SubmissionCard(
                                 row = row,
                                 onClick = { row.submissionId?.let(onOpenSubmission) },
                             )
-                            Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(dimen(R.dimen.space_12)))
                         }
                     }
 
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_4)))
                     Text(
-                        text = "Ketuk mahasiswa untuk membuka jawaban dan penilaian.",
-                        style = EduText.BodySmall,
+                        text = stringResource(R.string.lec_assess_list_footer),
+                        style = EduTheme.type.bodySmall,
                     )
                 }
             }
@@ -197,21 +211,31 @@ private fun SubmissionCard(row: CaseSubmissionSummary, onClick: () -> Unit) {
         else -> TintTone.Danger
     }
     val statusText = when (row.status) {
-        SubmissionStatus.SUDAH_DINILAI ->
-            row.score?.let { "Sudah dinilai • $it/100" } ?: "Sudah dinilai"
+        SubmissionStatus.SUDAH_DINILAI -> {
+            val score = row.score
+            if (score == null) {
+                stringResource(R.string.lec_assess_status_graded)
+            } else {
+                stringResource(R.string.lec_assess_status_graded_scored, score)
+            }
+        }
 
-        SubmissionStatus.MENUNGGU_PENILAIAN -> "Menunggu penilaian"
+        SubmissionStatus.MENUNGGU_PENILAIAN ->
+            stringResource(R.string.lec_assess_status_waiting)
+
         SubmissionStatus.TIDAK_MENGUMPULKAN,
         SubmissionStatus.BELUM_MENGUMPULKAN,
-        -> "Tidak Mengumpulkan"
+        -> stringResource(R.string.lec_assess_status_missing)
     }
     val meta = when {
-        row.status == SubmissionStatus.SUDAH_DINILAI -> "Nilai dan komentar terkunci"
+        row.status == SubmissionStatus.SUDAH_DINILAI ->
+            stringResource(R.string.lec_assess_meta_locked)
+
         row.submittedAt != null -> formatDeadline(row.submittedAt) ?: row.submittedAt.orEmpty()
         row.status == SubmissionStatus.MENUNGGU_PENILAIAN ->
-            "Jawaban terkirim • menunggu penilaian"
+            stringResource(R.string.lec_assess_meta_waiting)
 
-        else -> "Tidak ada pengiriman • bukan nilai 0"
+        else -> stringResource(R.string.lec_assess_meta_no_submission)
     }
 
     ListCard(
@@ -219,25 +243,12 @@ private fun SubmissionCard(row: CaseSubmissionSummary, onClick: () -> Unit) {
         onClick = if (row.submissionId != null) onClick else null,
     ) {
         ArrowTitle(text = row.fullName)
-        Spacer(Modifier.height(6.dp))
-        Text(text = row.loginId, style = EduText.BodySmall)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
+        Text(text = row.loginId, style = EduTheme.type.bodySmall)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         TintBar(text = statusText, tone = tone)
-        Spacer(Modifier.height(10.dp))
-        Text(text = meta, style = EduText.BodySmall)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = meta, style = EduTheme.type.bodySmall)
     }
 }
 
-private fun filterLabel(key: String): String = when (key) {
-    FILTER_WAITING -> LABEL_WAITING
-    FILTER_GRADED -> LABEL_GRADED
-    FILTER_MISSING -> LABEL_MISSING
-    else -> LABEL_ALL
-}
-
-private fun filterKey(label: String): String = when (label) {
-    LABEL_WAITING -> FILTER_WAITING
-    LABEL_GRADED -> FILTER_GRADED
-    LABEL_MISSING -> FILTER_MISSING
-    else -> FILTER_ALL
-}

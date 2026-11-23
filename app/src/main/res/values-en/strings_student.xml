@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Student materials (mockups 07-11) and case study (mockups 13-17) copy.
+    English translation, same keys/placeholders as res/values/strings_student.xml.
+-->
+<resources>
+    <!-- Materials screen title -->
+    <string name="st_material_title_missing">Materials not available</string>
+    <string name="st_material_title_default">Materials</string>
+    <string name="st_material_title_with_vark">%1$s materials</string>
+
+    <!-- VARK category names (brand terms) -->
+    <string name="st_material_vark_visual">Visual</string>
+    <string name="st_material_vark_aural">Aural</string>
+    <string name="st_material_vark_read_write">Read/Write</string>
+    <string name="st_material_vark_kinesthetic">Kinesthetic</string>
+    <string name="st_material_vark_default">VARK</string>
+
+    <!-- Topic + category bars -->
+    <string name="st_material_topic_bar">Topic %1$s • %2$s</string>
+    <string name="st_material_topic_default">Topic</string>
+
+    <!-- Video player -->
+    <string name="st_material_video_eyebrow">LEARNING VIDEO</string>
+    <string name="st_material_video_play">Play video</string>
+    <string name="st_material_video_meta_default">Video</string>
+
+    <!-- Audio player -->
+    <string name="st_material_audio_play">Play audio</string>
+    <string name="st_material_audio_meta_default">Audio</string>
+
+    <!-- Read/write module -->
+    <string name="st_material_read_eyebrow">Module • %1$s</string>
+    <string name="st_material_read_link">Continue reading module</string>
+
+    <!-- Feedback slider -->
+    <string name="st_material_feedback_title">How well do you understand it?</string>
+    <string name="st_material_feedback_subtitle">Personal feedback, not an academic grade.</string>
+    <string name="st_material_percent">%1$d%%</string>
+    <string name="st_material_feedback_min">0%</string>
+    <string name="st_material_feedback_max">100%</string>
+    <string name="st_material_feedback_stored">Saved: %1$d%%</string>
+    <string name="st_material_feedback_save">Save feedback</string>
+
+    <!-- Saved feedback state -->
+    <string name="st_material_saved_eyebrow">Feedback saved</string>
+    <string name="st_material_saved_title">Your understanding\nhas been recorded.</string>
+    <string name="st_material_saved_body">You can update your feedback for the same topic and format.</string>
+    <string name="st_material_saved_meta">%1$s • Latest feedback</string>
+    <string name="st_material_saved_notice">The latest score replaces your previous feedback on this topic and category. Feedback for other categories stays saved.</string>
+    <string name="st_material_saved_back">Back to material</string>
+    <string name="st_material_saved_topics">See other topics</string>
+
+    <!-- Missing material state -->
+    <string name="st_material_missing_message">materials are not available yet, please contact the lecturer first</string>
+    <string name="st_material_missing_body">The topic has been published, but materials for the %1$s category have not been uploaded.</string>
+    <string name="st_material_category_default">this</string>
+    <string name="st_material_missing_notice">Your session stays %1$s. Other formats cannot be accessed in this session.</string>
+    <string name="st_material_format_default">this format</string>
+    <string name="st_material_missing_back">Back to topic list</string>
+
+    <!-- Shared fallbacks / section headers -->
+    <string name="st_material_description_default">Materials for this topic are available in your session format.</string>
+    <string name="st_material_section_audio">About this recording</string>
+    <string name="st_material_section_read">Module contents</string>
+    <string name="st_material_section_default">About this material</string>
+
+    <!-- Case study screen titles -->
+    <string name="st_case_title_status">Submission status</string>
+    <string name="st_case_title_result">Assessment results</string>
+    <string name="st_case_title_confirm">Submit answer</string>
+    <string name="st_case_title_default">Case study</string>
+    <string name="st_case_topic_label">Topic %1$s • Kinesthetic</string>
+    <string name="st_case_topic_default">Case study</string>
+    <string name="st_case_not_available">The case study for this topic is not available yet.</string>
+
+    <!-- Answer editor -->
+    <string name="st_case_theory">Brief theory</string>
+    <string name="st_case_instructions">Case study instructions</string>
+    <string name="st_case_answer_title">My answer</string>
+    <string name="st_case_answer_meta">Plain text • No file upload</string>
+    <string name="st_case_answer_placeholder">Write your answer here…</string>
+    <string name="st_case_answer_counter">%1$d / 10,000 characters</string>
+    <string name="st_case_no_draft_notice">There is no draft or autosave. An unsubmitted answer may be lost if the page is closed.</string>
+    <string name="st_case_submit">Submit final answer</string>
+    <string name="st_case_answer_hint">1–10,000 characters • One submission only</string>
+    <string name="st_case_supporting_title">Kinesthetic supporting materials</string>
+    <string name="st_case_supporting_body">Read the lecturer\'s materials before answering the case study.</string>
+    <string name="st_case_deadline">Deadline: %1$s</string>
+    <string name="st_case_deadline_note">Acceptance reference: server time.</string>
+
+    <!-- Submission confirmation -->
+    <string name="st_case_confirm_eyebrow">Submission confirmation</string>
+    <string name="st_case_confirm_title">Are you sure about\nyour answer?</string>
+    <string name="st_case_confirm_body">Read it again before submitting.</string>
+    <string name="st_case_confirm_ready">Ready to submit • %1$d characters</string>
+    <string name="st_case_confirm_final_title">Submission is final</string>
+    <string name="st_case_confirm_bullet_1">Only one answer per case study.</string>
+    <string name="st_case_confirm_bullet_2">The answer cannot be changed or resubmitted.</string>
+    <string name="st_case_confirm_bullet_3">No draft storage.</string>
+    <string name="st_case_confirm_bullet_4">The server checks the deadline when Submit is processed.</string>
+    <string name="st_case_confirm_submit">Yes, submit final answer</string>
+    <string name="st_case_confirm_cancel">Go back and check answer</string>
+    <string name="st_case_confirm_footnote">A submission is accepted if server time ≤ deadline. After the deadline, the answer is not saved.</string>
+
+    <!-- Waiting for grading -->
+    <string name="st_case_waiting_eyebrow">Submitted successfully</string>
+    <string name="st_case_waiting_title">Your answer\nhas been received.</string>
+    <string name="st_case_waiting_body">The lecturer will grade your final answer.</string>
+    <string name="st_case_waiting_status">Waiting for grading</string>
+    <string name="st_case_waiting_submitted">Submitted on</string>
+    <string name="st_case_waiting_answer_meta">Final answer • %1$d characters</string>
+    <string name="st_case_waiting_view">View submitted answer</string>
+    <string name="st_case_waiting_notice">The answer is locked. There is no revision or resubmission option before or after grading.</string>
+    <string name="st_case_back_home">Back to home</string>
+
+    <!-- Graded result -->
+    <string name="st_case_graded_tintbar">Graded • Final</string>
+    <string name="st_case_graded_title">The result of your hard work.</string>
+    <string name="st_case_graded_eyebrow">CASE STUDY SCORE</string>
+    <string name="st_case_graded_score">%1$d / 100</string>
+    <string name="st_case_graded_meta">%1$s • Kinesthetic</string>
+    <string name="st_case_graded_by_default">Course lecturer</string>
+    <string name="st_case_graded_comment_default">The lecturer did not add a comment.</string>
+    <string name="st_case_graded_at">Graded %1$s</string>
+    <string name="st_case_graded_note">The grade is visible right after the lecturer saves it and cannot be changed.</string>
+    <string name="st_case_graded_view">View final answer</string>
+
+    <!-- Closed / not submitted -->
+    <string name="st_case_closed_tintbar">Deadline passed</string>
+    <string name="st_case_closed_eyebrow">Submission status</string>
+    <string name="st_case_closed_title">Did Not\nSubmit</string>
+    <string name="st_case_closed_body">You did not submit an answer before the deadline ended.</string>
+    <string name="st_case_closed_status">No submission</string>
+    <string name="st_case_closed_score">— / 100</string>
+    <string name="st_case_closed_score_note">Not a zero score</string>
+    <string name="st_case_closed_score_body">No answer or score is created automatically for this status.</string>
+    <string name="st_case_closed_notice">Submissions are closed. Answers received by the server after the deadline will be rejected.</string>
+    <string name="st_case_closed_back">Back to topic list</string>
+</resources>

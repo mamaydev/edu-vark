@@ -1,35 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Global strings only. Each UI module keeps its own file:
+    strings_common.xml, strings_home.xml, strings_student.xml,
+    strings_lecturer_a.xml, strings_lecturer_b.xml, strings_admin.xml
+    (English copies live in values-en/ with the same keys).
+-->
 <resources>
     <string name="app_name">EduVARK</string>
-    <string name="login_title">EduVARK</string>
-    <string name="login_subtitle">Masuk untuk memulai sesi pembelajaran IBD.</string>
-    <string name="login_id_label">NIM / NIP</string>
-    <string name="password_label">Password</string>
-    <string name="login_button">Masuk</string>
-    <string name="login_loading">Memproses…</string>
-    <string name="login_empty_error">NIM/NIP dan password wajib diisi.</string>
-    <string name="change_password_title">Ganti Password</string>
-    <string name="change_password_subtitle">Password sementara wajib diganti sebelum melanjutkan.</string>
-    <string name="current_password_label">Password saat ini</string>
-    <string name="new_password_label">Password baru</string>
-    <string name="confirm_password_label">Konfirmasi password baru</string>
-    <string name="save_password">Simpan Password</string>
-    <string name="password_min_error">Password minimal 6 karakter.</string>
-    <string name="password_mismatch_error">Konfirmasi password tidak sama.</string>
-    <string name="password_same_error">Password baru harus berbeda dari password saat ini.</string>
-    <string name="vark_title">Pilih Preferensi VARK</string>
-    <string name="vark_subtitle">Pilihan ini dikunci sampai Anda logout dan login kembali.</string>
-    <string name="vark_locked_note">Materi hanya dapat diakses sesuai kategori yang dipilih.</string>
-    <string name="vark_loading">Menyimpan pilihan…</string>
-    <string name="home_title">EduVARK</string>
-    <string name="home_welcome">Selamat datang</string>
-    <string name="home_role">Role</string>
-    <string name="home_login_id">NIM/NIP</string>
-    <string name="home_active_vark">VARK aktif</string>
-    <string name="home_no_vark">Belum dipilih</string>
-    <string name="home_logout">Logout</string>
-    <string name="home_health">Status backend</string>
-    <string name="home_health_ok">Terhubung</string>
-    <string name="home_health_error">Tidak terhubung</string>
-    <string name="retry">Coba lagi</string>
-    <string name="back">Kembali</string>
 </resources>

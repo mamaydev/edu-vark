@@ -60,7 +60,16 @@ class StudentMaterialsViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true, error = null, feedbackError = null) }
             try {
                 val topic = getTopicUseCase(topicId)
-                val materials = getMaterialsUseCase(topicId)
+                val materials = try {
+                    getMaterialsUseCase(topicId)
+                } catch (error: AppFailure.Api) {
+                    // A published topic without uploads is a designed empty state, not a failure.
+                    if (error.code == "MATERIAL_NOT_AVAILABLE") {
+                        emptyList()
+                    } else {
+                        throw error
+                    }
+                }
                 val user = getMeUseCase()
                 val vark = user.activeVark
 

@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,22 +41,25 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
-private val FieldShape = RoundedCornerShape(12.dp)
+@Composable
+@ReadOnlyComposable
+private fun fieldShape() = RoundedCornerShape(dimen(R.dimen.radius_12))
 
 /** Small caption placed above an input, matching the designs. */
 @Composable
 fun FieldLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        style = EduText.Label,
-        modifier = modifier.padding(bottom = 8.dp),
+        style = EduTheme.type.label,
+        modifier = modifier.padding(bottom = dimen(R.dimen.space_8)),
     )
 }
 
-/** White rounded input used for every form field in the redesign. */
+/** Outlined, transparent input used for every form field in the redesign. */
 @Composable
 fun EduField(
     value: String,
@@ -64,51 +69,50 @@ fun EduField(
     error: Boolean = false,
     enabled: Boolean = true,
     singleLine: Boolean = true,
-    minHeight: Dp = 52.dp,
+    minHeight: Dp = dimen(R.dimen.dimen_52),
     keyboardType: KeyboardType = KeyboardType.Text,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    textStyle: TextStyle = EduText.Body.copy(color = EduColors.Ink),
+    textStyle: TextStyle = EduTheme.type.body.copy(color = EduTheme.colors.ink),
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val borderColor = if (error) EduColors.Danger else EduColors.Border
+    val borderColor = if (error) EduTheme.colors.danger else EduTheme.colors.fieldBorder
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
         enabled = enabled,
         singleLine = singleLine,
         textStyle = textStyle,
-        cursorBrush = SolidColor(EduColors.Primary),
+        cursorBrush = SolidColor(EduTheme.colors.lime),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         visualTransformation = visualTransformation,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = minHeight)
-            .clip(FieldShape)
-            .background(EduColors.Surface, FieldShape)
-            .border(1.dp, borderColor, FieldShape),
+            .clip(fieldShape())
+            .border(dimen(R.dimen.size_1), borderColor, fieldShape()),
         decorationBox = { innerTextField ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = minHeight)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = dimen(R.dimen.space_16)),
                 verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
             ) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(vertical = if (singleLine) 0.dp else 14.dp),
+                        .padding(vertical = if (singleLine) dimen(R.dimen.space_0) else dimen(R.dimen.space_14)),
                 ) {
                     if (value.isEmpty()) {
                         Text(
                             text = placeholder,
-                            style = EduText.Body.copy(color = EduColors.Muted),
+                            style = EduTheme.type.body.copy(color = EduTheme.colors.muted),
                         )
                     }
                     innerTextField()
                 }
                 if (trailing != null) {
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(dimen(R.dimen.space_10)))
                     trailing()
                 }
             }
@@ -130,9 +134,10 @@ fun PasswordField(
     enabled: Boolean = true,
     error: Boolean = false,
     fieldLabel: String? = null,
-    leadingLabel: String = "password",
+    leadingLabel: String? = null,
 ) {
     var visible by rememberSaveable { mutableStateOf(false) }
+    val label = leadingLabel ?: stringResource(R.string.common_password)
     Column(modifier = modifier.fillMaxWidth()) {
         if (fieldLabel != null) {
             FieldLabel(fieldLabel)
@@ -154,12 +159,12 @@ fun PasswordField(
                     Icon(
                         imageVector = if (visible) EduIcons.EyeOff else EduIcons.Eye,
                         contentDescription = if (visible) {
-                            "Sembunyikan $leadingLabel"
+                            stringResource(R.string.common_hide_password, label)
                         } else {
-                            "Tampilkan $leadingLabel"
+                            stringResource(R.string.common_show_password, label)
                         },
-                        tint = EduColors.Muted,
-                        modifier = Modifier.size(20.dp),
+                        tint = EduTheme.colors.muted,
+                        modifier = Modifier.size(dimen(R.dimen.size_20)),
                     )
                 }
             },
@@ -182,12 +187,11 @@ fun EduDropdown(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 52.dp)
-                .clip(FieldShape)
-                .background(EduColors.Surface, FieldShape)
-                .border(1.dp, EduColors.Border, FieldShape)
+                .heightIn(min = dimen(R.dimen.size_52))
+                .clip(fieldShape())
+                .border(dimen(R.dimen.size_1), EduTheme.colors.fieldBorder, fieldShape())
                 .clickable(enabled = enabled && options.isNotEmpty()) { expanded = true }
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = dimen(R.dimen.space_16)),
             contentAlignment = Alignment.CenterStart,
         ) {
             Row(
@@ -196,28 +200,28 @@ fun EduDropdown(
             ) {
                 Text(
                     text = value.ifBlank { placeholder },
-                    style = EduText.Body.copy(
-                        color = if (value.isBlank()) EduColors.Muted else EduColors.Ink,
+                    style = EduTheme.type.body.copy(
+                        color = if (value.isBlank()) EduTheme.colors.muted else EduTheme.colors.ink,
                     ),
                     modifier = Modifier.weight(1f),
                 )
                 Icon(
                     imageVector = EduIcons.ChevronDown,
                     contentDescription = null,
-                    tint = EduColors.Muted,
-                    modifier = Modifier.size(18.dp),
+                    tint = EduTheme.colors.muted,
+                    modifier = Modifier.size(dimen(R.dimen.size_18)),
                 )
             }
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            containerColor = EduColors.Surface,
-            shape = RoundedCornerShape(12.dp),
+            containerColor = EduTheme.colors.surface,
+            shape = RoundedCornerShape(dimen(R.dimen.radius_12)),
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(text = option, style = EduText.BodyStrong) },
+                    text = { Text(text = option, style = EduTheme.type.bodyStrong) },
                     onClick = {
                         expanded = false
                         onSelect(option)
@@ -239,21 +243,20 @@ fun EduStepper(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 52.dp)
-            .clip(FieldShape)
-            .background(EduColors.Surface, FieldShape)
-            .border(1.dp, EduColors.Border, FieldShape)
-            .padding(horizontal = 16.dp),
+            .heightIn(min = dimen(R.dimen.size_52))
+            .clip(fieldShape())
+            .border(dimen(R.dimen.size_1), EduTheme.colors.fieldBorder, fieldShape())
+            .padding(horizontal = dimen(R.dimen.space_16)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = value.toString().padStart(2, '0'),
-            style = EduText.BodyStrong,
+            style = EduTheme.type.bodyStrong,
             modifier = Modifier.weight(1f),
         )
-        StepButton(label = "−", onClick = onDecrease)
-        Spacer(Modifier.width(10.dp))
-        StepButton(label = "+", onClick = onIncrease)
+        StepButton(label = stringResource(R.string.common_stepper_decrease), onClick = onDecrease)
+        Spacer(Modifier.width(dimen(R.dimen.space_10)))
+        StepButton(label = stringResource(R.string.common_stepper_increase), onClick = onIncrease)
     }
 }
 
@@ -261,12 +264,12 @@ fun EduStepper(
 private fun StepButton(label: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .size(30.dp)
+            .size(dimen(R.dimen.size_30))
             .clip(CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = label, style = EduText.CardTitle.copy(color = EduColors.Muted))
+        Text(text = label, style = EduTheme.type.cardTitle.copy(color = EduTheme.colors.muted))
     }
 }
 
@@ -281,18 +284,18 @@ fun EduRadioRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_8)))
             .clickable(onClick = onClick)
-            .padding(vertical = 9.dp),
+            .padding(vertical = dimen(R.dimen.radius_9)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(18.dp)
+                .size(dimen(R.dimen.size_18))
                 .clip(CircleShape)
                 .border(
-                    width = 1.6.dp,
-                    color = if (selected) EduColors.Primary else EduColors.MutedSoft,
+                    width = dimen(R.dimen.size_1_6),
+                    color = if (selected) EduTheme.colors.lime else EduTheme.colors.mutedSoft,
                     shape = CircleShape,
                 ),
             contentAlignment = Alignment.Center,
@@ -300,17 +303,17 @@ fun EduRadioRow(
             if (selected) {
                 Box(
                     modifier = Modifier
-                        .size(9.dp)
+                        .size(dimen(R.dimen.size_9))
                         .clip(CircleShape)
-                        .background(EduColors.Primary),
+                        .background(EduTheme.colors.lime),
                 )
             }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(dimen(R.dimen.space_12)))
         Text(
             text = label,
-            style = EduText.BodyStrong.copy(
-                color = if (selected) EduColors.Primary else EduColors.Ink,
+            style = EduTheme.type.bodyStrong.copy(
+                color = if (selected) EduTheme.colors.lime else EduTheme.colors.ink,
             ),
         )
     }
@@ -321,10 +324,10 @@ fun EduRadioRow(
 fun FieldHelper(text: String, modifier: Modifier = Modifier, isError: Boolean = false) {
     Text(
         text = text,
-        style = EduText.BodySmall.copy(
-            color = if (isError) EduColors.Danger else EduColors.Muted,
+        style = EduTheme.type.bodySmall.copy(
+            color = if (isError) EduTheme.colors.danger else EduTheme.colors.muted,
         ),
-        modifier = modifier.padding(top = 6.dp),
+        modifier = modifier.padding(top = dimen(R.dimen.space_6)),
     )
 }
 
@@ -335,7 +338,7 @@ fun MetaRow(label: String, value: String, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(text = label, style = EduText.BodySmall)
-        Text(text = value, style = EduText.BodySmall.copy(color = EduColors.Ink))
+        Text(text = label, style = EduTheme.type.bodySmall)
+        Text(text = value, style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.ink))
     }
 }

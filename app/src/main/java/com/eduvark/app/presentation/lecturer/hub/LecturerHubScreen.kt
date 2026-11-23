@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,7 +23,9 @@ import com.eduvark.app.ui.components.NoticeCard
 import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TopicCard
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 /** Which flow the shared lecturer hub is showing. */
 enum class LecturerHubMode { GRADING, ANALYTICS }
@@ -45,26 +48,24 @@ fun LecturerHubScreen(
     }
 
     val title = when (mode) {
-        LecturerHubMode.GRADING -> "Penilaian"
-        LecturerHubMode.ANALYTICS -> "Analitik"
+        LecturerHubMode.GRADING -> stringResource(R.string.lec_hub_title_grading)
+        LecturerHubMode.ANALYTICS -> stringResource(R.string.lec_hub_title_analytics)
     }
     val headline = when (mode) {
-        LecturerHubMode.GRADING -> "Pilih topik untuk\ndinilai."
-        LecturerHubMode.ANALYTICS -> "Pilih topik untuk\ndianalisis."
+        LecturerHubMode.GRADING -> stringResource(R.string.lec_hub_headline_grading)
+        LecturerHubMode.ANALYTICS -> stringResource(R.string.lec_hub_headline_analytics)
     }
     val body = when (mode) {
-        LecturerHubMode.GRADING ->
-            "Buka pengumpulan studi kasus pada topik yang dipilih, lalu beri nilai final."
-
-        LecturerHubMode.ANALYTICS ->
-            "Buka topik untuk melihat feedback pemahaman V/A/R dan nilai Kinesthetic."
+        LecturerHubMode.GRADING -> stringResource(R.string.lec_hub_body_grading)
+        LecturerHubMode.ANALYTICS -> stringResource(R.string.lec_hub_body_analytics)
     }
+    val courseName = stringResource(R.string.lec_hub_eyebrow)
 
     EduScreen(title = title, onBack = onBack, modifier = modifier, bottomBar = bottomBar) { padding ->
         when {
             state.isLoading -> LoadingBlock(Modifier.padding(padding))
 
-            state.error != null -> Column(Modifier.padding(padding).padding(24.dp)) {
+            state.error != null -> Column(Modifier.padding(padding).padding(dimen(R.dimen.space_24))) {
                 ErrorBlock(message = state.error.orEmpty(), onRetry = viewModel::load)
             }
 
@@ -73,23 +74,23 @@ fun LecturerHubScreen(
                 onRefresh = viewModel::refresh,
                 modifier = Modifier.padding(padding),
             ) {
-                ScrollColumn(spacing = 0.dp) {
+                ScrollColumn(spacing = dimen(R.dimen.space_0)) {
                 if (state.refreshError != null) {
                     NoticeCard(text = state.refreshError.orEmpty(), tone = TintTone.Danger)
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 }
-                Eyebrow("Implementasi Basis Data")
-                Spacer(Modifier.height(10.dp))
-                Text(text = headline, style = EduText.Display)
-                Spacer(Modifier.height(12.dp))
-                Text(text = body, style = EduText.Body)
-                Spacer(Modifier.height(18.dp))
+                Eyebrow(courseName)
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(text = headline, style = EduTheme.type.display)
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
+                Text(text = body, style = EduTheme.type.body)
+                Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
                 if (state.topics.isEmpty()) {
                     EmptyBlock(
-                        title = "Belum ada topik",
-                        message = "Topik yang diterbitkan dosen akan muncul di sini.",
-                        actionLabel = "Muat ulang",
+                        title = stringResource(R.string.lec_hub_empty_title),
+                        message = stringResource(R.string.lec_hub_empty_body),
+                        actionLabel = stringResource(R.string.lec_hub_empty_action),
                         onAction = viewModel::load,
                     )
                 } else {
@@ -99,29 +100,35 @@ fun LecturerHubScreen(
                             LecturerHubMode.GRADING -> {
                                 val count = item.submissionCount
                                 when {
-                                    !hasCase -> "Buat studi kasus" to TintTone.Neutral
-                                    count != null && count > 0 -> "$count pengumpulan" to TintTone.Teal
-                                    else -> "Belum ada pengumpulan" to TintTone.Neutral
+                                    !hasCase -> stringResource(R.string.lec_hub_status_create_case) to TintTone.Neutral
+                                    count != null && count > 0 -> stringResource(
+                                        R.string.lec_hub_status_submissions,
+                                        count,
+                                    ) to TintTone.Teal
+                                    else -> stringResource(R.string.lec_hub_status_no_submissions) to TintTone.Neutral
                                 }
                             }
 
                             LecturerHubMode.ANALYTICS ->
-                                "Buka analitik" to TintTone.Teal
+                                stringResource(R.string.lec_hub_status_analytics) to TintTone.Teal
                         }
                         TopicCard(
-                            orderLabel = "Topik ${item.topic.sortOrder.toString().padStart(2, '0')}  /  " +
-                                "Implementasi Basis Data",
+                            orderLabel = stringResource(
+                                R.string.lec_hub_order,
+                                item.topic.sortOrder.toString().padStart(2, '0'),
+                                courseName,
+                            ),
                             title = item.topic.title,
                             meta = when (mode) {
                                 LecturerHubMode.GRADING ->
                                     if (hasCase) {
-                                        "Studi kasus Kinesthetic • nilai final"
+                                        stringResource(R.string.lec_hub_meta_case)
                                     } else {
-                                        "Topik ini belum punya studi kasus. Ketuk untuk membuat."
+                                        stringResource(R.string.lec_hub_meta_no_case)
                                     }
 
                                 LecturerHubMode.ANALYTICS ->
-                                    "Feedback V/A/R dan nilai Kinesthetic"
+                                    stringResource(R.string.lec_hub_meta_analytics)
                             },
                             status = card.first,
                             statusTone = card.second,
@@ -135,7 +142,7 @@ fun LecturerHubScreen(
                                 }
                             },
                         )
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_12)))
                     }
                 }
                 }

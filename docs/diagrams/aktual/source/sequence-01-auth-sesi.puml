@@ -1,0 +1,71 @@
+@startuml
+title EduVARK — Login, VARK, Refresh, dan Logout
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+autonumber
+actor Pengguna as U
+participant "Aplikasi Android" as A
+participant "API Auth" as API
+database PostgreSQL as DB
+note over A, API: Awalan path /api/v1; alur password dan VARK bersyarat.
+U -> A: Masukkan login ID dan password
+A -> API: POST /auth/login
+API -> API: Validasi input dan pembatasan login
+API -> DB: Cari akun dan hash password
+DB --> API: Akun atau kosong
+API -> API: Verifikasi Argon2id dan status ACTIVE
+alt Kredensial salah / akun nonaktif / dibatasi
+  API --> A: Error autentikasi
+  A --> U: Tampilkan pesan
+else Login valid
+  API -> DB: BEGIN; cabut sesi lama; INSERT sesi baru; audit; COMMIT
+  API --> A: Access token, refresh token, role, mustChangePassword
+  A -> A: Simpan sesi pada SessionStore
+  opt Wajib ganti password awal
+    U -> A: Password saat ini, baru, dan konfirmasi
+    A -> API: POST /auth/change-password
+    API -> API: Cek password saat ini; baru 6–200 karakter;\nkonfirmasi sama; baru berbeda dari sebelumnya
+    API -> DB: BEGIN; ubah hash; cabut semua sesi; audit; COMMIT
+    API --> A: Berhasil
+    A -> A: Hapus SessionStore
+    A --> U: Login ulang diperlukan
+    ref over U, DB: Ulangi alur login untuk mendapatkan sesi dan token baru
+  end
+  opt Mahasiswa sudah login dan password sudah diganti
+    U -> A: Pilih Visual / Aural / Read-Write / Kinesthetic
+    A -> API: POST /auth/vark + Bearer token
+    API -> DB: Verifikasi sesi dan role mahasiswa
+    alt VARK sesi belum ditetapkan
+      API -> DB: BEGIN; UPDATE VARK jika NULL; audit; COMMIT
+      API --> A: Kategori aktif
+      A -> A: Simpan kategori dan tampilkan dashboard
+    else Sudah ditetapkan
+      API --> A: 409 VARK_ALREADY_SET
+    end
+  end
+end
+== Sesi berjalan ==
+opt Permintaan terlindungi mendapat 401
+  A -> A: Kunci refresh (Mutex) dan periksa token terbaru
+  A -> API: POST /auth/refresh
+  API -> DB: Cari hash refresh dan periksa sesi / akun
+  alt Sesi aktif, belum idle / absolut kedaluwarsa
+    API -> DB: BEGIN; rotasi hash token; COMMIT
+    API --> A: Pasangan token baru
+    A -> A: Simpan token dan ulangi permintaan
+  else Refresh tidak valid atau sesi berakhir
+    API --> A: Error; sesi dicabut bila kedaluwarsa
+    A -> A: Hapus sesi lokal
+  end
+end
+U -> A: Logout
+A -> API: POST /auth/logout + Bearer token
+API -> DB: BEGIN; cabut sesi; audit; COMMIT
+API --> A: Berhasil
+A -> A: Hapus sesi lokal meskipun permintaan logout gagal
+A --> U: Halaman login
+note over API, DB: Default: akses 15 menit; refresh/absolut 12 jam; idle 8 jam.\nVARK tetap terikat pada sesi saat refresh.\nKegagalan transaksi menyebabkan rollback.
+@enduml

@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -54,8 +55,9 @@ import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TonePanel
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 /**
  * Kelola topik (mockups 19, 20 and 24).
@@ -115,9 +117,9 @@ fun LecturerTopicsScreen(
     }
 
     val screenTitle = when {
-        deleteTarget != null -> "Hapus topik"
-        editorOpen -> "Detail topik"
-        else -> "Topik pembelajaran"
+        deleteTarget != null -> stringResource(R.string.lec_topic_screen_title_delete)
+        editorOpen -> stringResource(R.string.lec_topic_screen_title_editor)
+        else -> stringResource(R.string.lec_topic_screen_title_list)
     }
 
     val handleBack: () -> Unit = {
@@ -146,7 +148,7 @@ fun LecturerTopicsScreen(
             error != null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 ErrorBlock(message = error, onRetry = viewModel::load)
             }
@@ -276,45 +278,49 @@ private fun TopicListState(
         onRefresh = onRefresh,
         modifier = modifier,
     ) {
-    ScrollColumn(spacing = 0.dp) {
+    ScrollColumn(spacing = dimen(R.dimen.dimen_0)) {
         if (actionError != null) {
             NoticeCard(text = actionError, tone = TintTone.Danger)
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
         }
 
-        Eyebrow("Kelas A • IBD")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Susun perjalanan\nbelajar kelas.", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
+        Eyebrow(stringResource(R.string.lec_topic_eyebrow_class))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.lec_topic_headline), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "$publishedCount terbit · $draftCount draf",
-            style = EduText.Body,
+            text = stringResource(
+                R.string.lec_topic_count_summary,
+                publishedCount,
+                draftCount,
+            ),
+            style = EduTheme.type.body,
         )
-        Spacer(Modifier.height(18.dp))
-        PrimaryButton(text = "+ Buat topik", onClick = onCreate)
-        Spacer(Modifier.height(18.dp))
-        FieldLabel("Cari topik")
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
+        PrimaryButton(text = stringResource(R.string.lec_topic_create), onClick = onCreate)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
+        FieldLabel(stringResource(R.string.lec_topic_search_label))
         EduField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = "Cari judul topik…",
+            placeholder = stringResource(R.string.lec_topic_search_placeholder),
             trailing = {
                 Icon(
                     imageVector = EduIcons.Search,
                     contentDescription = null,
-                    tint = EduColors.Muted,
-                    modifier = Modifier.size(18.dp),
+                    tint = EduTheme.colors.muted,
+                    modifier = Modifier.size(dimen(R.dimen.size_18)),
                 )
             },
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         if (visible.isEmpty()) {
             NoticeCard(
                 text = if (topics.isEmpty()) {
-                    "Belum ada topik. Buat topik pertama untuk kelas ini."
+                    stringResource(R.string.lec_topic_empty)
                 } else {
-                    "Tidak ada topik yang cocok dengan \"$query\"."
+                    stringResource(R.string.lec_topic_empty_search, query)
                 },
                 tone = TintTone.Neutral,
             )
@@ -337,16 +343,15 @@ private fun TopicListState(
                         onMoveDown = { onMove(index, 1) },
                     )
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_14)))
             }
         }
 
         if (topics.isNotEmpty()) {
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_4)))
             Text(
-                text = "Gunakan kontrol urutan untuk mengatur daftar yang akan dilihat " +
-                    "mahasiswa.",
-                style = EduText.BodySmall,
+                text = stringResource(R.string.lec_topic_order_hint),
+                style = EduTheme.type.bodySmall,
             )
         }
     }
@@ -372,44 +377,47 @@ private fun LecturerTopicCard(
     var menuOpen by remember { mutableStateOf(false) }
     val published = topic.status == TopicStatus.PUBLISHED
 
-    EduCard(modifier = Modifier.fillMaxWidth(), radius = 18.dp, padding = 18.dp) {
+    EduCard(modifier = Modifier.fillMaxWidth(), radius = dimen(R.dimen.dimen_20), padding = dimen(R.dimen.dimen_18)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CardEyebrow(
-                text = "Urutan ${order.toString().padStart(2, '0')}",
+                text = stringResource(
+                    R.string.lec_topic_card_order,
+                    order.toString().padStart(2, '0'),
+                ),
                 modifier = Modifier.weight(1f),
             )
             Box {
                 Box(
                     modifier = Modifier
-                        .size(30.dp)
+                        .size(dimen(R.dimen.size_30))
                         .clip(CircleShape)
                         .clickable { menuOpen = true },
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = EduIcons.More,
-                        contentDescription = "Aksi topik",
-                        tint = EduColors.Muted,
-                        modifier = Modifier.size(18.dp),
+                        contentDescription = stringResource(R.string.lec_topic_menu_content_desc),
+                        tint = EduTheme.colors.muted,
+                        modifier = Modifier.size(dimen(R.dimen.size_18)),
                     )
                 }
                 DropdownMenu(
                     expanded = menuOpen,
                     onDismissRequest = { menuOpen = false },
-                    containerColor = EduColors.Surface,
+                    containerColor = EduTheme.colors.surface,
                 ) {
                     DropdownMenuItem(
-                        text = { Text(text = "Atur studi kasus", style = EduText.BodyStrong) },
+                        text = { Text(text = stringResource(R.string.lec_topic_menu_case), style = EduTheme.type.bodyStrong) },
                         onClick = {
                             menuOpen = false
                             onCase()
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text(text = "Analitik topik", style = EduText.BodyStrong) },
+                        text = { Text(text = stringResource(R.string.lec_topic_menu_analytics), style = EduTheme.type.bodyStrong) },
                         onClick = {
                             menuOpen = false
                             onAnalytics()
@@ -418,8 +426,12 @@ private fun LecturerTopicCard(
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = if (published) "Tarik ke draf" else "Terbitkan topik",
-                                style = EduText.BodyStrong,
+                                text = if (published) {
+                                    stringResource(R.string.lec_topic_menu_unpublish)
+                                } else {
+                                    stringResource(R.string.lec_topic_menu_publish)
+                                },
+                                style = EduTheme.type.bodyStrong,
                             )
                         },
                         enabled = enabled,
@@ -429,7 +441,7 @@ private fun LecturerTopicCard(
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text(text = "Naikkan urutan", style = EduText.BodyStrong) },
+                        text = { Text(text = stringResource(R.string.lec_topic_menu_move_up), style = EduTheme.type.bodyStrong) },
                         enabled = enabled && canMoveUp,
                         onClick = {
                             menuOpen = false
@@ -437,7 +449,7 @@ private fun LecturerTopicCard(
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text(text = "Turunkan urutan", style = EduText.BodyStrong) },
+                        text = { Text(text = stringResource(R.string.lec_topic_menu_move_down), style = EduTheme.type.bodyStrong) },
                         enabled = enabled && canMoveDown,
                         onClick = {
                             menuOpen = false
@@ -445,7 +457,7 @@ private fun LecturerTopicCard(
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text(text = "Hapus topik", style = EduText.BodyStrong) },
+                        text = { Text(text = stringResource(R.string.lec_topic_action_delete), style = EduTheme.type.bodyStrong) },
                         enabled = enabled,
                         onClick = {
                             menuOpen = false
@@ -456,26 +468,30 @@ private fun LecturerTopicCard(
             }
         }
 
-        Spacer(Modifier.height(8.dp))
-        Text(text = topic.title, style = EduText.CardTitle)
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_8)))
+        Text(text = topic.title, style = EduTheme.type.cardTitle)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         TintBar(
-            text = if (published) "Terbit" else "Draf",
+            text = if (published) {
+                stringResource(R.string.lec_topic_status_published)
+            } else {
+                stringResource(R.string.lec_topic_status_draft)
+            },
             tone = if (published) TintTone.Teal else TintTone.Amber,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         AvailabilityRow(available = topic.materialAvailable)
-        Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_16))) {
             TextLink(
-                text = "Edit detail",
+                text = stringResource(R.string.lec_topic_link_edit),
                 onClick = onEdit,
-                color = EduColors.Primary,
+                color = EduTheme.colors.lavender,
             )
             TextLink(
-                text = "Kelola materi",
+                text = stringResource(R.string.lec_topic_link_materials),
                 onClick = onMaterials,
-                color = EduColors.Primary,
+                color = EduTheme.colors.lavender,
             )
         }
     }
@@ -488,13 +504,13 @@ private fun LecturerTopicCard(
 @Composable
 private fun AvailabilityRow(available: Boolean) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(18.dp),
+        horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_18)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AvailabilityMark(letter = "V", available = available)
-        AvailabilityMark(letter = "A", available = available)
-        AvailabilityMark(letter = "R", available = available)
-        AvailabilityMark(letter = "K", available = false)
+        AvailabilityMark(letter = stringResource(R.string.lec_topic_letter_visual), available = available)
+        AvailabilityMark(letter = stringResource(R.string.lec_topic_letter_aural), available = available)
+        AvailabilityMark(letter = stringResource(R.string.lec_topic_letter_read_write), available = available)
+        AvailabilityMark(letter = stringResource(R.string.lec_topic_letter_kinesthetic), available = false)
     }
 }
 
@@ -503,23 +519,23 @@ private fun AvailabilityMark(letter: String, available: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = letter,
-            style = EduText.BodySmall.copy(
+            style = EduTheme.type.bodySmall.copy(
                 fontWeight = FontWeight.SemiBold,
-                color = EduColors.Muted,
+                color = EduTheme.colors.muted,
             ),
         )
-        Spacer(Modifier.size(4.dp))
+        Spacer(Modifier.size(dimen(R.dimen.space_4)))
         if (available) {
             Icon(
                 imageVector = EduIcons.Check,
                 contentDescription = null,
-                tint = EduColors.Teal,
-                modifier = Modifier.size(13.dp),
+                tint = EduTheme.colors.muted,
+                modifier = Modifier.size(dimen(R.dimen.size_13)),
             )
         } else {
             Text(
-                text = "—",
-                style = EduText.BodySmall.copy(color = EduColors.MutedSoft),
+                text = stringResource(R.string.lec_topic_availability_none),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.mutedSoft),
             )
         }
     }
@@ -549,63 +565,66 @@ private fun TopicEditorState(
     var localError by rememberSaveable(focusKey) { mutableStateOf<String?>(null) }
 
     val availableCount = if (topic?.materialAvailable == true) 3 else 0
+    val publishedLabel = stringResource(R.string.lec_topic_status_published)
+    val draftLabel = stringResource(R.string.lec_topic_status_draft)
+    val titleRequiredError = stringResource(R.string.lec_topic_editor_title_error)
 
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Editor topik")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Atur detail topik", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Buat atau perbarui informasi pembelajaran.", style = EduText.Body)
-        Spacer(Modifier.height(18.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.lec_topic_editor_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.lec_topic_editor_headline), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.lec_topic_editor_body), style = EduTheme.type.body)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
-        FieldLabel("Judul topik")
+        FieldLabel(stringResource(R.string.lec_topic_editor_title_label))
         EduField(
             value = title,
             onValueChange = {
                 title = it
                 localError = null
             },
-            placeholder = "Contoh: Normalisasi basis data",
+            placeholder = stringResource(R.string.lec_topic_editor_title_placeholder),
             enabled = isCreate && !isSaving,
             error = localError != null,
         )
         if (localError != null) {
             FieldHelper(text = localError.orEmpty(), isError = true)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-        FieldLabel("Deskripsi")
+        FieldLabel(stringResource(R.string.lec_topic_editor_desc_label))
         EduField(
             value = description,
             onValueChange = { description = it },
-            placeholder = "Ringkas tujuan topik untuk mahasiswa",
+            placeholder = stringResource(R.string.lec_topic_editor_desc_placeholder),
             enabled = isCreate && !isSaving,
             singleLine = false,
-            minHeight = 96.dp,
+            minHeight = dimen(R.dimen.dimen_96),
         )
         if (!isCreate) {
             FieldHelper(
-                text = "Judul dan deskripsi topik hanya dapat diatur saat topik dibuat.",
+                text = stringResource(R.string.lec_topic_editor_desc_locked),
             )
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-        FieldLabel("Urutan topik")
+        FieldLabel(stringResource(R.string.lec_topic_editor_order_label))
         if (isCreate) {
-            EduCard(modifier = Modifier.fillMaxWidth(), radius = 12.dp, padding = 16.dp) {
+            EduCard(modifier = Modifier.fillMaxWidth(), radius = dimen(R.dimen.size_20), padding = dimen(R.dimen.dimen_16)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = position.toString().padStart(2, '0'),
-                        style = EduText.BodyStrong,
+                        style = EduTheme.type.bodyStrong,
                         modifier = Modifier.weight(1f),
                     )
-                    Text(text = "otomatis", style = EduText.BodySmall)
+                    Text(text = stringResource(R.string.lec_topic_editor_order_auto), style = EduTheme.type.bodySmall)
                 }
             }
-            FieldHelper(text = "Topik baru masuk di urutan terakhir.")
+            FieldHelper(text = stringResource(R.string.lec_topic_editor_order_auto_helper))
         } else {
             EduStepper(
                 value = position,
@@ -613,76 +632,89 @@ private fun TopicEditorState(
                 onIncrease = { onMove(1) },
             )
             FieldHelper(
-                text = "Urutan menentukan tampilan daftar untuk mahasiswa.",
+                text = stringResource(R.string.lec_topic_editor_order_helper),
             )
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-        FieldLabel("Status publikasi")
+        FieldLabel(stringResource(R.string.lec_topic_editor_status_label))
         EduDropdown(
-            value = if (published) "Terbit" else "Draf",
-            options = listOf("Terbit", "Draf"),
-            onSelect = { published = it == "Terbit" },
+            value = if (published) publishedLabel else draftLabel,
+            options = listOf(publishedLabel, draftLabel),
+            onSelect = { published = it == publishedLabel },
             enabled = !isSaving,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = if (availableCount == 0) {
-                    "Belum ada kategori tersedia"
+                    stringResource(R.string.lec_topic_editor_availability_empty_title)
                 } else {
-                    "$availableCount dari 4 kategori tersedia"
+                    stringResource(R.string.lec_topic_editor_availability_title, availableCount)
                 },
-                style = EduText.CardTitle,
+                style = EduTheme.type.cardTitle,
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                CategoryAvailability(label = "Visual", available = availableCount > 0)
+                CategoryAvailability(
+                    label = stringResource(R.string.lec_topic_vark_visual),
+                    available = availableCount > 0,
+                )
                 CategoryDot()
-                CategoryAvailability(label = "Aural", available = availableCount > 0)
+                CategoryAvailability(
+                    label = stringResource(R.string.lec_topic_vark_aural),
+                    available = availableCount > 0,
+                )
                 CategoryDot()
-                CategoryAvailability(label = "Read/Write", available = availableCount > 0)
+                CategoryAvailability(
+                    label = stringResource(R.string.lec_topic_vark_read_write),
+                    available = availableCount > 0,
+                )
             }
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
             Text(
                 text = if (availableCount == 0) {
-                    "Lengkapi materi setelah topik dibuat. Kinesthetic memakai studi kasus."
+                    stringResource(R.string.lec_topic_editor_availability_empty_helper)
                 } else {
-                    "Kinesthetic belum tersedia • diatur lewat studi kasus"
+                    stringResource(R.string.lec_topic_editor_availability_helper)
                 },
-                style = EduText.BodySmall,
+                style = EduTheme.type.bodySmall,
             )
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         NoticeCard(
-            text = "Topik boleh diterbitkan meskipun belum semua format tersedia.",
+            text = stringResource(R.string.lec_topic_editor_notice),
             tone = TintTone.Primary,
         )
 
         if (actionError != null) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             NoticeCard(text = actionError, tone = TintTone.Danger)
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         PrimaryButton(
-            text = if (published) "Simpan & terbitkan" else "Simpan sebagai draf",
+            text = if (published) {
+                stringResource(R.string.lec_topic_editor_save_publish)
+            } else {
+                stringResource(R.string.lec_topic_editor_save_draft)
+            },
             enabled = !isSaving,
             loading = isSaving,
             onClick = {
                 if (isCreate && title.trim().isEmpty()) {
-                    localError = "Judul topik wajib diisi."
+                    localError = titleRequiredError
                 } else {
                     onSave(title.trim(), description.trim(), published)
                 }
             },
         )
         if (!isCreate) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             SecondaryButton(
-                text = "Hapus topik",
+                text = stringResource(R.string.lec_topic_action_delete),
                 enabled = !isSaving,
                 onClick = onDelete,
             )
@@ -693,25 +725,28 @@ private fun TopicEditorState(
 @Composable
 private fun CategoryDot() {
     Text(
-        text = "  •  ",
-        style = EduText.BodySmall.copy(color = EduColors.MutedSoft),
+        text = stringResource(R.string.lec_topic_availability_dot),
+        style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.mutedSoft),
     )
 }
 
 @Composable
 private fun CategoryAvailability(label: String, available: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, style = EduText.BodySmall)
-        Spacer(Modifier.size(4.dp))
+        Text(text = label, style = EduTheme.type.bodySmall)
+        Spacer(Modifier.size(dimen(R.dimen.space_4)))
         if (available) {
             Icon(
                 imageVector = EduIcons.Check,
                 contentDescription = null,
-                tint = EduColors.Teal,
-                modifier = Modifier.size(13.dp),
+                tint = EduTheme.colors.muted,
+                modifier = Modifier.size(dimen(R.dimen.size_13)),
             )
         } else {
-            Text(text = "—", style = EduText.BodySmall.copy(color = EduColors.MutedSoft))
+            Text(
+                text = stringResource(R.string.lec_topic_availability_none),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.mutedSoft),
+            )
         }
     }
 }
@@ -726,56 +761,59 @@ private fun DeleteTopicState(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Konfirmasi tindakan")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Hapus topik ini?", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Pastikan topik yang dipilih sudah benar.", style = EduText.Body)
-        Spacer(Modifier.height(18.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.lec_topic_delete_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.lec_topic_delete_headline), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.lec_topic_delete_body), style = EduTheme.type.body)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
         EduCard(
             modifier = Modifier.fillMaxWidth(),
-            containerColor = EduColors.DangerTint,
+            containerColor = EduTheme.colors.dangerTint,
         ) {
             Eyebrow(
-                text = "Topik ${position.toString().padStart(2, '0')} • " +
+                text = stringResource(
+                    R.string.lec_topic_delete_card_eyebrow,
+                    position.toString().padStart(2, '0'),
                     topic.status.label,
-                color = EduColors.Danger,
+                ),
+                color = EduTheme.colors.dangerMuted,
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
                 text = topic.title,
-                style = EduText.Headline.copy(color = EduColors.Danger),
+                style = EduTheme.type.headline.copy(color = EduTheme.colors.dangerMuted),
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "Topik yang dihapus tidak akan tampil dalam daftar pembelajaran.",
-                style = EduText.BodySmall.copy(color = EduColors.Danger),
+                text = stringResource(R.string.lec_topic_delete_card_body),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.dangerMuted),
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         TonePanel(
             title = null,
-            body = "Periksa kembali materi dan data yang terkait sebelum melanjutkan.",
+            body = stringResource(R.string.lec_topic_delete_check),
             tone = TintTone.Amber,
         )
 
         if (actionError != null) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             NoticeCard(text = actionError, tone = TintTone.Danger)
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         PrimaryButton(
-            text = "Batal, pertahankan topik",
+            text = stringResource(R.string.lec_topic_delete_cancel),
             enabled = !isSaving,
             onClick = onCancel,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         DangerButton(
-            text = "Ya, hapus topik",
+            text = stringResource(R.string.lec_topic_delete_confirm),
             enabled = !isSaving,
             onClick = onConfirm,
         )

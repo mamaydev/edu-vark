@@ -30,11 +30,11 @@ function bearer(token: string): string {
 
 async function adminLogin(): Promise<{ token: string; userId: string }> {
   const userId = await createUser({
-    loginId: 'admin1',
+    loginId: 'admin',
     password: 'AdminPass1234',
     role: 'ADMIN',
   });
-  const data = await login('admin1', 'AdminPass1234');
+  const data = await login('admin', 'AdminPass1234');
   return { token: data.accessToken, userId };
 }
 
@@ -75,7 +75,7 @@ describeDb('admin integration', () => {
 
   it('creates a student with enrollment and lists users', async () => {
     const admin = await adminLogin();
-    const student = await createStudentViaApi(admin.token, 'stu-admin-1');
+    const student = await createStudentViaApi(admin.token, '2025000101');
 
     expect(student.enrollmentId).toBeTruthy();
     expect(student.enrollmentStatus).toBe('ACTIVE');
@@ -88,21 +88,21 @@ describeDb('admin integration', () => {
       .expect(200);
 
     expect(list.body.meta.total).toBe(2);
-    expect(list.body.data.some((item: { loginId: string }) => item.loginId === 'stu-admin-1')).toBe(true);
+    expect(list.body.data.some((item: { loginId: string }) => item.loginId === '2025000101')).toBe(true);
 
-    const studentLogin = await login('stu-admin-1', 'StudentPass123');
+    const studentLogin = await login('2025000101', 'StudentPass123');
     expect(studentLogin.user.role).toBe('STUDENT');
   });
 
   it('rejects duplicate login IDs', async () => {
     const admin = await adminLogin();
-    await createStudentViaApi(admin.token, 'stu-admin-2');
+    await createStudentViaApi(admin.token, '2025000102');
 
     const response = await request(app)
       .post('/api/v1/admin/users')
       .set('Authorization', bearer(admin.token))
       .send({
-        loginId: 'stu-admin-2',
+        loginId: '2025000102',
         fullName: 'Duplicate',
         role: 'STUDENT',
         temporaryPassword: 'StudentPass123',
@@ -112,10 +112,31 @@ describeDb('admin integration', () => {
     expect(response.body.error.code).toBe('LOGIN_ID_TAKEN');
   });
 
+  it('requires 10–11 digit academic identifiers for new accounts', async () => {
+    const admin = await adminLogin();
+
+    for (const loginId of ['202500020', '202500020012', 'student-x']) {
+      const response = await request(app)
+        .post('/api/v1/admin/users')
+        .set('Authorization', bearer(admin.token))
+        .send({
+          loginId,
+          fullName: 'Invalid ID',
+          role: 'STUDENT',
+          temporaryPassword: 'StudentPass123',
+        })
+        .expect(422);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+    }
+
+    const valid = await createStudentViaApi(admin.token, '20250002001');
+    expect(valid.loginId).toBe('20250002001');
+  });
+
   it('updates a role, revokes sessions, and assigns the new role', async () => {
     const admin = await adminLogin();
-    const student = await createStudentViaApi(admin.token, 'stu-admin-3');
-    const studentLogin = await login('stu-admin-3', 'StudentPass123');
+    const student = await createStudentViaApi(admin.token, '2025000103');
+    const studentLogin = await login('2025000103', 'StudentPass123');
 
     const updated = await request(app)
       .patch('/api/v1/admin/users/' + student.id)
@@ -132,14 +153,14 @@ describeDb('admin integration', () => {
       .set('Authorization', bearer(studentLogin.accessToken))
       .expect(401);
 
-    const lecturerLogin = await login('stu-admin-3', 'StudentPass123');
+    const lecturerLogin = await login('2025000103', 'StudentPass123');
     expect(lecturerLogin.user.role).toBe('LECTURER');
   });
 
   it('resets a password and invalidates existing sessions', async () => {
     const admin = await adminLogin();
-    const student = await createStudentViaApi(admin.token, 'stu-admin-4');
-    const studentLogin = await login('stu-admin-4', 'StudentPass123');
+    const student = await createStudentViaApi(admin.token, '2025000104');
+    const studentLogin = await login('2025000104', 'StudentPass123');
 
     await request(app)
       .post('/api/v1/admin/users/' + student.id + '/reset-password')
@@ -152,13 +173,13 @@ describeDb('admin integration', () => {
       .set('Authorization', bearer(studentLogin.accessToken))
       .expect(401);
 
-    const newLogin = await login('stu-admin-4', 'TemporaryPass123');
+    const newLogin = await login('2025000104', 'TemporaryPass123');
     expect(newLogin.user.role).toBe('STUDENT');
   });
 
   it('deactivates an account and blocks login', async () => {
     const admin = await adminLogin();
-    const student = await createStudentViaApi(admin.token, 'stu-admin-5');
+    const student = await createStudentViaApi(admin.token, '2025000105');
 
     await request(app)
       .post('/api/v1/admin/users/' + student.id + '/deactivate')
@@ -167,7 +188,7 @@ describeDb('admin integration', () => {
 
     await request(app)
       .post('/api/v1/auth/login')
-      .send({ loginId: 'stu-admin-5', password: 'StudentPass123' })
+      .send({ loginId: '2025000105', password: 'StudentPass123' })
       .expect(403);
   });
 
@@ -184,8 +205,8 @@ describeDb('admin integration', () => {
 
   it('blocks students from admin endpoints', async () => {
     const admin = await adminLogin();
-    await createStudentViaApi(admin.token, 'stu-admin-6');
-    const studentLogin = await login('stu-admin-6', 'StudentPass123');
+    await createStudentViaApi(admin.token, '2025000106');
+    const studentLogin = await login('2025000106', 'StudentPass123');
 
     const response = await request(app)
       .get('/api/v1/admin/users')
@@ -197,7 +218,7 @@ describeDb('admin integration', () => {
 
   it('marks an enrollment as LEFT and can reactivate it', async () => {
     const admin = await adminLogin();
-    const student = await createStudentViaApi(admin.token, 'stu-admin-7');
+    const student = await createStudentViaApi(admin.token, '2025000107');
 
     const left = await request(app)
       .patch('/api/v1/admin/enrollments/' + student.enrollmentId)
@@ -246,7 +267,7 @@ describeDb('admin integration', () => {
       .post('/api/v1/admin/users')
       .set('Authorization', bearer(admin.accessToken))
       .send({
-        loginId: 'stu-no-class',
+        loginId: '2025000199',
         fullName: 'No Class',
         role: 'STUDENT',
         temporaryPassword: 'StudentPass123',

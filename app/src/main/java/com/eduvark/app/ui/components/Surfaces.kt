@@ -23,13 +23,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
+import com.eduvark.app.ui.theme.dimenSp
 
 /** Visual tone for tinted bars, notices and status pills. */
 enum class TintTone {
@@ -40,29 +43,31 @@ enum class TintTone {
     Neutral,
 }
 
+@Composable
 fun TintTone.tint(): Color = when (this) {
-    TintTone.Primary -> EduColors.PrimaryTint
-    TintTone.Teal -> EduColors.TealTint
-    TintTone.Amber -> EduColors.AmberTint
-    TintTone.Danger -> EduColors.DangerTint
-    TintTone.Neutral -> EduColors.Border.copy(alpha = 0.45f)
+    TintTone.Primary -> EduTheme.colors.purpleTint
+    TintTone.Teal -> EduTheme.colors.successTint
+    TintTone.Amber -> EduTheme.colors.amberTint
+    TintTone.Danger -> EduTheme.colors.dangerTint
+    TintTone.Neutral -> EduTheme.colors.surface
 }
 
+@Composable
 fun TintTone.content(): Color = when (this) {
-    TintTone.Primary -> EduColors.Primary
-    TintTone.Teal -> EduColors.Teal
-    TintTone.Amber -> EduColors.Amber
-    TintTone.Danger -> EduColors.Danger
-    TintTone.Neutral -> EduColors.Muted
+    TintTone.Primary -> EduTheme.colors.lavender
+    TintTone.Teal -> EduTheme.colors.success
+    TintTone.Amber -> EduTheme.colors.amber
+    TintTone.Danger -> EduTheme.colors.dangerMuted
+    TintTone.Neutral -> EduTheme.colors.muted
 }
 
-/** White rounded container used for almost every block in the designs. */
+/** Dark rounded container used for almost every block in the designs. */
 @Composable
 fun EduCard(
     modifier: Modifier = Modifier,
-    containerColor: Color = EduColors.Surface,
-    radius: Dp = 20.dp,
-    padding: Dp = 20.dp,
+    containerColor: Color = EduTheme.colors.surface,
+    radius: Dp = dimen(R.dimen.dimen_20),
+    padding: Dp = dimen(R.dimen.dimen_20),
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -78,17 +83,17 @@ fun EduCard(
     )
 }
 
-/** Blue card used for the primary summary block of a screen. */
+/** Lavender brand card used for the primary summary block of a screen. */
 @Composable
 fun HeroCard(
     modifier: Modifier = Modifier,
-    radius: Dp = 20.dp,
+    radius: Dp = dimen(R.dimen.dimen_20),
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     EduCard(
         modifier = modifier,
-        containerColor = EduColors.Primary,
+        containerColor = EduTheme.colors.lavender,
         radius = radius,
         onClick = onClick,
         content = content,
@@ -100,12 +105,12 @@ fun HeroCard(
 fun Eyebrow(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = EduColors.Teal,
+    color: Color = EduTheme.colors.lime,
     align: TextAlign? = null,
 ) {
     Text(
         text = text.uppercase(),
-        style = EduText.Eyebrow.copy(color = color),
+        style = EduTheme.type.eyebrow.copy(color = color),
         modifier = modifier,
         textAlign = align,
     )
@@ -118,21 +123,23 @@ fun TintBar(
     modifier: Modifier = Modifier,
     tone: TintTone = TintTone.Primary,
     uppercase: Boolean = false,
+    background: Color? = null,
+    contentColor: Color? = null,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(tone.tint(), RoundedCornerShape(10.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_10)))
+            .background(background ?: tone.tint(), RoundedCornerShape(dimen(R.dimen.radius_10)))
+            .padding(horizontal = dimen(R.dimen.radius_12), vertical = dimen(R.dimen.radius_8)),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
         Text(
             text = if (uppercase) text.uppercase() else text,
-            style = EduText.Chip.copy(
-                color = tone.content(),
-                letterSpacing = if (uppercase) 0.8.sp else 0.2.sp,
+            style = EduTheme.type.chip.copy(
+                color = contentColor ?: tone.content(),
+                letterSpacing = if (uppercase) dimenSp(R.dimen.text_tracking_0_8) else dimenSp(R.dimen.text_tracking_0_2),
             ),
             modifier = Modifier.weight(1f, fill = false),
             textAlign = TextAlign.Center,
@@ -149,11 +156,11 @@ fun StatusPill(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(tone.tint(), RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 7.dp),
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_8)))
+            .background(tone.tint(), RoundedCornerShape(dimen(R.dimen.radius_8)))
+            .padding(horizontal = dimen(R.dimen.radius_12), vertical = dimen(R.dimen.radius_7)),
     ) {
-        Text(text = text, style = EduText.Chip.copy(color = tone.content()))
+        Text(text = text, style = EduTheme.type.chip.copy(color = tone.content()))
     }
 }
 
@@ -168,20 +175,20 @@ fun NoticeCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(tone.tint(), RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_16)))
+            .background(tone.tint(), RoundedCornerShape(dimen(R.dimen.radius_16)))
+            .padding(horizontal = dimen(R.dimen.radius_16), vertical = dimen(R.dimen.radius_14)),
     ) {
         if (title != null) {
             Text(
                 text = title,
-                style = EduText.BodyStrong.copy(color = tone.content()),
+                style = EduTheme.type.bodyStrong.copy(color = tone.content()),
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_4)))
         }
         Text(
             text = text,
-            style = EduText.BodySmall.copy(color = tone.content()),
+            style = EduTheme.type.bodySmall.copy(color = tone.content()),
         )
     }
 }
@@ -197,24 +204,24 @@ fun SectionHeader(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = title, style = EduText.Section, modifier = Modifier.weight(1f))
+        Text(text = title, style = EduTheme.type.section, modifier = Modifier.weight(1f))
         if (actionLabel != null && onAction != null) {
             TextLink(text = actionLabel, onClick = onAction)
         }
     }
 }
 
-/** White tile with a big number and a caption (dashboard stats). */
+/** Surface tile with a big number and a caption (dashboard stats). */
 @Composable
 fun StatCard(
     value: String,
     label: String,
     modifier: Modifier = Modifier,
 ) {
-    EduCard(modifier = modifier, radius = 18.dp, padding = 18.dp) {
-        Text(text = value, style = EduText.Numeral.copy(color = EduColors.Primary))
-        Spacer(Modifier.height(6.dp))
-        Text(text = label, style = EduText.BodySmall)
+    EduCard(modifier = modifier, radius = dimen(R.dimen.dimen_18), padding = dimen(R.dimen.dimen_18)) {
+        Text(text = value, style = EduTheme.type.numeral.copy(color = EduTheme.colors.ink))
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
+        Text(text = label, style = EduTheme.type.bodySmall)
     }
 }
 
@@ -222,21 +229,21 @@ fun StatCard(
 @Composable
 fun SuccessPanel(
     modifier: Modifier = Modifier,
-    height: Dp = 110.dp,
+    height: Dp = dimen(R.dimen.dimen_110),
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .clip(RoundedCornerShape(20.dp))
-            .background(EduColors.TealTint, RoundedCornerShape(20.dp)),
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_20)))
+            .background(EduTheme.colors.successTint, RoundedCornerShape(dimen(R.dimen.radius_20))),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = EduIcons.Check,
             contentDescription = null,
-            tint = EduColors.Teal,
-            modifier = Modifier.size(42.dp),
+            tint = EduTheme.colors.success,
+            modifier = Modifier.size(dimen(R.dimen.size_42)),
         )
     }
 }
@@ -247,8 +254,8 @@ fun Hairline(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(1.dp)
-            .background(EduColors.Border),
+            .height(dimen(R.dimen.size_1))
+            .background(EduTheme.colors.border),
     )
 }
 
@@ -265,15 +272,15 @@ fun EmptyBlock(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(tone.tint(), RoundedCornerShape(20.dp))
-            .padding(22.dp),
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_20)))
+            .background(tone.tint(), RoundedCornerShape(dimen(R.dimen.radius_20)))
+            .padding(dimen(R.dimen.radius_22)),
     ) {
-        Text(text = title, style = EduText.CardTitle)
-        Spacer(Modifier.height(6.dp))
-        Text(text = message, style = EduText.BodySmall)
+        Text(text = title, style = EduTheme.type.cardTitle)
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
+        Text(text = message, style = EduTheme.type.bodySmall)
         if (actionLabel != null && onAction != null) {
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_14)))
             SecondaryButton(text = actionLabel, onClick = onAction)
         }
     }
@@ -283,20 +290,21 @@ fun EmptyBlock(
 @Composable
 fun LoadingBlock(
     modifier: Modifier = Modifier,
-    message: String = "Memuat…",
+    message: String? = null,
 ) {
+    val text = message ?: stringResource(R.string.common_loading)
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             androidx.compose.material3.CircularProgressIndicator(
-                color = EduColors.Primary,
-                modifier = Modifier.size(28.dp),
-                strokeWidth = 2.5.dp,
+                color = EduTheme.colors.lime,
+                modifier = Modifier.size(dimen(R.dimen.size_28)),
+                strokeWidth = dimen(R.dimen.size_2_5),
             )
-            Spacer(Modifier.height(12.dp))
-            Text(text = message, style = EduText.BodySmall)
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
+            Text(text = text, style = EduTheme.type.bodySmall)
         }
     }
 }
@@ -309,10 +317,14 @@ fun ErrorBlock(
     onRetry: (() -> Unit)? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        NoticeCard(text = message, tone = TintTone.Danger, title = "Tidak dapat dimuat")
+        NoticeCard(
+            text = message,
+            tone = TintTone.Danger,
+            title = stringResource(R.string.common_load_error_title),
+        )
         if (onRetry != null) {
-            Spacer(Modifier.height(12.dp))
-            SecondaryButton(text = "Coba lagi", onClick = onRetry)
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
+            SecondaryButton(text = stringResource(R.string.common_retry), onClick = onRetry)
         }
     }
 }

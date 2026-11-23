@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -42,9 +43,10 @@ import com.eduvark.app.ui.components.PrimaryButton
 import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.UserCard
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
 import kotlinx.coroutines.delay
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 /** Debounce applied while typing in the search field before asking the ViewModel. */
 private const val SEARCH_DEBOUNCE_MS = 400L
@@ -82,9 +84,13 @@ fun AdminUsersScreen(
         state.query.isNotBlank() ||
         state.roleFilter != null ||
         state.statusFilter != null
+    val allRolesLabel = stringResource(R.string.admin_filter_all_roles)
+    val allStatusLabel = stringResource(R.string.admin_filter_all_status)
+    val filterFormat = stringResource(R.string.admin_filter_label)
+    val activeFilterLabel = filterLabel(activeFilter, allRolesLabel, allStatusLabel, filterFormat)
 
     EduScreen(
-        title = "Manajemen akun",
+        title = stringResource(R.string.admin_users_title),
         onBack = onBack,
         modifier = modifier,
         bottomBar = bottomBar,
@@ -94,32 +100,36 @@ fun AdminUsersScreen(
             onRefresh = viewModel::refresh,
             modifier = Modifier.padding(padding),
         ) {
-        ScrollColumn(spacing = 0.dp) {
+        ScrollColumn(spacing = dimen(R.dimen.space_0)) {
             if (state.refreshError != null) {
                 NoticeCard(text = state.refreshError.orEmpty(), tone = TintTone.Danger)
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
             }
-            Eyebrow("${state.total} akun terdaftar")
-            Spacer(Modifier.height(10.dp))
-            Text(text = "Kelola akses pengguna.", style = EduText.Display)
-            Spacer(Modifier.height(10.dp))
-            Text(text = "Mahasiswa, dosen, dan admin", style = EduText.Body)
+            Eyebrow(stringResource(R.string.admin_users_registered_count, state.total))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
+            Text(text = stringResource(R.string.admin_users_headline), style = EduTheme.type.display)
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
+            Text(text = stringResource(R.string.admin_users_subtitle), style = EduTheme.type.body)
 
-            Spacer(Modifier.height(22.dp))
-            FieldLabel("Cari akun")
+            Spacer(Modifier.height(dimen(R.dimen.space_22)))
+            FieldLabel(stringResource(R.string.admin_users_search_label))
             EduField(
                 value = query,
                 onValueChange = { query = it },
-                placeholder = "Nama atau identitas login…",
+                placeholder = stringResource(R.string.admin_users_search_placeholder),
             )
 
-            Spacer(Modifier.height(16.dp))
-            FieldLabel("Filter")
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
+            FieldLabel(stringResource(R.string.admin_users_filter_label))
             EduDropdown(
-                value = activeFilter.label,
-                options = AdminUsersFilters.map { it.label },
+                value = activeFilterLabel,
+                options = AdminUsersFilters.map {
+                    filterLabel(it, allRolesLabel, allStatusLabel, filterFormat)
+                },
                 onSelect = { label ->
-                    val picked = AdminUsersFilters.firstOrNull { it.label == label }
+                    val picked = AdminUsersFilters.firstOrNull {
+                        filterLabel(it, allRolesLabel, allStatusLabel, filterFormat) == label
+                    }
                     if (picked != null) {
                         if (picked.role != state.roleFilter) viewModel.setRoleFilter(picked.role)
                         if (picked.status != state.statusFilter) {
@@ -129,17 +139,17 @@ fun AdminUsersScreen(
                 },
             )
 
-            Spacer(Modifier.height(18.dp))
-            PrimaryButton(text = "+ Buat akun", onClick = onCreateUser)
+            Spacer(Modifier.height(dimen(R.dimen.space_18)))
+            PrimaryButton(text = stringResource(R.string.admin_users_create_button), onClick = onCreateUser)
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_20)))
             val error = state.error
             when {
                 state.isLoading && state.users.isEmpty() -> {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp),
+                            .height(dimen(R.dimen.size_180)),
                     ) {
                         LoadingBlock()
                     }
@@ -155,9 +165,9 @@ fun AdminUsersScreen(
                 state.users.isEmpty() -> {
                     NoticeCard(
                         text = if (hasFilter) {
-                            "Tidak ada akun yang cocok dengan pencarian atau filter ini."
+                            stringResource(R.string.admin_users_empty_filtered)
                         } else {
-                            "Belum ada akun terdaftar."
+                            stringResource(R.string.admin_users_empty)
                         },
                         tone = TintTone.Neutral,
                     )
@@ -166,13 +176,17 @@ fun AdminUsersScreen(
                 else -> {
                     if (error != null) {
                         NoticeCard(text = error, tone = TintTone.Danger)
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_12)))
                     }
                     state.users.forEachIndexed { index, user ->
-                        if (index > 0) Spacer(Modifier.height(12.dp))
+                        if (index > 0) Spacer(Modifier.height(dimen(R.dimen.space_12)))
                         UserCard(
                             name = user.fullName,
-                            meta = "${user.loginId} • ${user.role.label}",
+                            meta = stringResource(
+                                R.string.admin_user_meta,
+                                user.loginId,
+                                user.role.label,
+                            ),
                             status = user.status.label,
                             statusTone = if (user.status == AdminAccountStatus.ACTIVE) {
                                 TintTone.Teal
@@ -184,13 +198,13 @@ fun AdminUsersScreen(
                     }
 
                     if (pageCount > 1) {
-                        Spacer(Modifier.height(18.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_18)))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             PageLink(
-                                text = "Sebelumnya",
+                                text = stringResource(R.string.admin_users_prev_page),
                                 icon = EduIcons.ChevronLeft,
                                 iconAfter = false,
                                 enabled = state.page > 1 && !state.isLoading,
@@ -198,12 +212,16 @@ fun AdminUsersScreen(
                             )
                             Spacer(Modifier.weight(1f))
                             Text(
-                                text = "Halaman ${state.page} dari $pageCount",
-                                style = EduText.BodySmall,
+                                text = stringResource(
+                                    R.string.admin_users_page_of,
+                                    state.page,
+                                    pageCount,
+                                ),
+                                style = EduTheme.type.bodySmall,
                             )
                             Spacer(Modifier.weight(1f))
                             PageLink(
-                                text = "Berikutnya",
+                                text = stringResource(R.string.admin_users_next_page),
                                 icon = EduIcons.ChevronRight,
                                 iconAfter = true,
                                 enabled = state.page < pageCount && !state.isLoading,
@@ -222,10 +240,21 @@ fun AdminUsersScreen(
 private data class AdminUsersFilter(
     val role: UserRole?,
     val status: AdminAccountStatus?,
-) {
-    val label: String
-        get() = (role?.label ?: "Semua role") + " • " + (status?.label ?: "Semua status")
-}
+)
+
+/**
+ * Localised dropdown label of a filter combination. The caller resolves the
+ * literal labels from resources because this helper runs outside composition.
+ */
+private fun filterLabel(
+    filter: AdminUsersFilter,
+    allRoles: String,
+    allStatus: String,
+    format: String,
+): String = format.format(
+    filter.role?.label ?: allRoles,
+    filter.status?.label ?: allStatus,
+)
 
 private val AdminUsersFilters: List<AdminUsersFilter> = buildList {
     add(AdminUsersFilter(role = null, status = null))
@@ -248,12 +277,12 @@ private fun PageLink(
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
-    val color = if (enabled) EduColors.Teal else EduColors.MutedSoft
+    val color = if (enabled) EduTheme.colors.lavenderDim else EduTheme.colors.mutedSoft
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(dimen(R.dimen.radius_8)))
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 6.dp),
+            .padding(horizontal = dimen(R.dimen.radius_4), vertical = dimen(R.dimen.radius_6)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (!iconAfter) {
@@ -261,18 +290,18 @@ private fun PageLink(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(dimen(R.dimen.size_16)),
             )
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(dimen(R.dimen.space_4)))
         }
-        Text(text = text, style = EduText.Link.copy(color = color))
+        Text(text = text, style = EduTheme.type.link.copy(color = color))
         if (iconAfter) {
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(dimen(R.dimen.space_4)))
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(dimen(R.dimen.size_16)),
             )
         }
     }

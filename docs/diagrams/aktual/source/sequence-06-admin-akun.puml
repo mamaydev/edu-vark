@@ -1,0 +1,68 @@
+@startuml
+title EduVARK — Pengelolaan Akun, Password dan Enrollment
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+autonumber
+actor Admin as D
+participant "Aplikasi Android" as A
+participant "API Admin" as API
+database PostgreSQL as DB
+note over A, API: Awalan /api/v1; token, sesi aktif, role ADMIN dan\npassword sudah diganti diperiksa pada semua endpoint admin.
+D -> A: Buka / cari daftar akun
+A -> API: GET /admin/users?q&role&status&page&pageSize
+API -> DB: BEGIN; SELECT akun + enrollment / assignment; COMMIT
+API --> A: Daftar dan total pagination
+alt Membuat akun
+  D -> A: Isi login ID, nama, role dan password sementara
+  A -> API: POST /admin/users
+  API -> API: Validasi input; hash Argon2id
+  API -> DB: BEGIN; INSERT user (must_change_password=true)
+  alt Login ID terpakai / kelas aktif tidak tersedia untuk role akademik
+    API -> DB: ROLLBACK
+    API --> A: 409 konflik
+  else Dapat dibuat
+    opt Role STUDENT atau LECTURER
+      API -> DB: Enrollment mahasiswa / teaching assignment dosen\npada kelas aktif
+    end
+    API -> DB: Audit ACCOUNT_CREATED; COMMIT
+    API --> A: Akun baru
+  end
+else Memperbarui nama / role
+  A -> API: PATCH /admin/users/{id}
+  API -> DB: BEGIN; cari target; cek perlindungan admin
+  alt Menurunkan role sendiri / admin aktif terakhir
+    API -> DB: ROLLBACK
+    API --> A: 409 LAST_ADMIN_PROTECTED
+  else Diizinkan
+    API -> DB: UPDATE akun
+    opt Role berubah
+      API -> DB: Sesuaikan enrollment / assignment; cabut semua sesi target
+    end
+    API -> DB: Audit ACCOUNT_UPDATED; COMMIT
+    API --> A: Data terbaru
+  end
+else Reset password
+  A -> API: POST /admin/users/{id}/reset-password
+  API -> API: Validasi dan hash password sementara
+  API -> DB: BEGIN; ubah hash; wajib ganti password;\ncabut semua sesi target; audit; COMMIT
+  API --> A: Berhasil
+else Menonaktifkan akun
+  A -> API: POST /admin/users/{id}/deactivate
+  API -> DB: BEGIN; cari target; cek bukan diri sendiri / admin terakhir
+  alt Target dilindungi
+    API -> DB: ROLLBACK
+    API --> A: 409 LAST_ADMIN_PROTECTED
+  else Diizinkan
+    API -> DB: status INACTIVE; cabut sesi; audit; COMMIT
+    API --> A: Berhasil
+  end
+else Mengubah enrollment
+  A -> API: PATCH /admin/enrollments/{id} {LEFT / ACTIVE}
+  API -> DB: BEGIN; cari enrollment; update status dan left_at; audit; COMMIT
+  API --> A: Status enrollment terbaru
+end
+note over API, DB: Riwayat akademik dipertahankan saat enrollment LEFT.\nFungsi enrollment LEFT tidak mencabut sesi;\nakses akademik selanjutnya diperiksa terhadap enrollment.\nTarget yang tidak ditemukan menghasilkan error dan rollback.
+@enduml

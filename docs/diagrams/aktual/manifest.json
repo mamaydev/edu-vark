@@ -1,0 +1,30 @@
+{
+  "reviewed_on": "2026-11-23",
+  "counts": {
+    "source": 17,
+    "png": 17,
+    "svg": 17
+  },
+  "database_domain_tables": 12,
+  "foreign_keys": 18,
+  "basis": "Kode lokal dan dokumentasi; server produksi tidak diperiksa",
+  "files": [
+    "activity-admin",
+    "activity-dosen",
+    "activity-login",
+    "activity-mahasiswa",
+    "erd-akademik",
+    "erd-identitas",
+    "erd-keseluruhan",
+    "sequence-01-auth-sesi",
+    "sequence-02-materi-r2",
+    "sequence-03-feedback-analitik",
+    "sequence-04-submission-kinesthetic",
+    "sequence-05-penilaian-final",
+    "sequence-06-admin-akun",
+    "usecase-admin",
+    "usecase-dosen",
+    "usecase-keseluruhan",
+    "usecase-mahasiswa"
+  ]
+}

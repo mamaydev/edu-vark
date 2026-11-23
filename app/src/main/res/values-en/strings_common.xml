@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared chrome / component copy -->
+    <string name="common_back">Back</string>
+    <string name="common_retry">Try again</string>
+    <string name="common_loading">Loading…</string>
+    <string name="common_load_error_title">Could not load</string>
+    <string name="common_password">password</string>
+    <string name="common_show_password">Show %1$s</string>
+    <string name="common_hide_password">Hide %1$s</string>
+    <string name="common_bullet">•</string>
+    <string name="common_stepper_decrease">−</string>
+    <string name="common_stepper_increase">+</string>
+    <string name="common_vark">VARK</string>
+    <string name="common_server_settings_debug">Server settings (debug)</string>
+
+    <!-- Bottom navigation labels -->
+    <string name="nav_beranda">Home</string>
+    <string name="nav_topik">Topics</string>
+    <string name="nav_penilaian">Grading</string>
+    <string name="nav_analitik">Analytics</string>
+    <string name="nav_akun">Account</string>
+    <string name="nav_profil">Profile</string>
+
+    <!-- Login -->
+    <string name="auth_hero_eyebrow">EDUVARK</string>
+    <string name="auth_hero_title">One class.\nMany ways\nto understand.</string>
+    <string name="auth_hero_subtitle">Database Implementation\nOdd Semester 2026/2027</string>
+    <string name="auth_welcome_eyebrow">Welcome</string>
+    <string name="auth_title">Sign in to learn</string>
+    <string name="auth_subtitle">Use the account provided by your admin.</string>
+    <string name="auth_login_id_label">NIM/NIDN</string>
+    <string name="auth_login_id_placeholder">NIM / NIDN</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_password_placeholder">Password</string>
+    <string name="auth_password_leading">password</string>
+    <string name="auth_submit">Sign in</string>
+    <string name="auth_submit_loading">Processing…</string>
+    <string name="auth_login_hint">Students and lecturers sign in with NIM/NIDN. Admins sign in with the admin username.</string>
+
+    <!-- Inactive account -->
+    <string name="auth_inactive_status_title">Account status</string>
+    <string name="auth_inactive_tintbar">Login rejected</string>
+    <string name="auth_inactive_eyebrow">Inactive account</string>
+    <string name="auth_inactive_headline">Your account access\nis currently disabled.</string>
+    <string name="auth_inactive_body">Your learning session cannot start yet.</string>
+    <string name="auth_inactive_notice_title">Inactive account</string>
+    <string name="auth_inactive_notice_text">Contact the class administrator to check your account status and get help.</string>
+    <string name="auth_inactive_notice_second">Only active accounts can sign in to EduVARK.</string>
+    <string name="auth_inactive_back">Back to sign in</string>
+
+    <!-- Change password -->
+    <string name="auth_change_password_title">Change password</string>
+    <string name="auth_security_eyebrow">Account security</string>
+    <string name="auth_forced_headline">Change your password\nbefore continuing.</string>
+    <string name="auth_self_headline">Change your\naccount password.</string>
+    <string name="auth_forced_body">Your temporary password must be changed before you start a learning session.</string>
+    <string name="auth_self_body">Enter your current password. All other sessions will be signed out after the password changes.</string>
+    <string name="auth_current_password_label">Current password</string>
+    <string name="auth_current_password_placeholder">Current password</string>
+    <string name="auth_current_password_leading">current password</string>
+    <string name="auth_new_password_label">New password</string>
+    <string name="auth_new_password_placeholder">New password</string>
+    <string name="auth_new_password_leading">new password</string>
+    <string name="auth_new_password_helper">At least 6 characters.</string>
+    <string name="auth_confirm_password_label">Confirm new password</string>
+    <string name="auth_confirm_password_placeholder">Repeat new password</string>
+    <string name="auth_confirm_password_leading">password confirmation</string>
+    <string name="auth_save_password">Save password</string>
+    <string name="auth_password_tip">Use a combination that is easy for you to remember but hard for others to guess.</string>
+
+    <!-- Debug server settings -->
+    <string name="auth_server_settings_title">Server settings</string>
+    <string name="auth_server_debug_eyebrow">Debug build</string>
+    <string name="auth_server_headline">Point the app at\na local backend.</string>
+    <string name="auth_server_body">On a physical phone, enter the LAN IP of the computer running the backend.</string>
+    <string name="auth_server_url_label">Backend base URL</string>
+    <string name="auth_server_url_placeholder">http://&lt;IP-Mac&gt;:3000/api/v1/</string>
+    <string name="auth_server_url_helper">Example: http://192.168.1.10:3000/api/v1/ or https://pam.sequein.my.id/api/v1/</string>
+    <string name="auth_server_saved">Saved: %1$s</string>
+    <string name="auth_server_save">Save</string>
+    <string name="auth_server_reset">Reset to default</string>
+
+    <!-- Account -->
+    <string name="account_title">Account &amp; session</string>
+    <string name="account_not_found">Account not found.</string>
+    <string name="account_headline_student">Your learning account</string>
+    <string name="account_headline_lecturer">Your teaching account</string>
+    <string name="account_headline_admin">Admin account</string>
+    <string name="account_subtitle_student">Database Implementation · Odd Semester 2026/2027</string>
+    <string name="account_subtitle_lecturer">IBD lecturer · Odd Semester 2026/2027</string>
+    <string name="account_subtitle_admin">EduVARK administration space</string>
+    <string name="account_active_status">%1$s • Active account</string>
+    <string name="account_session_eyebrow_vark">ACTIVE SESSION FORMAT</string>
+    <string name="account_session_eyebrow_access">ACCESS RIGHTS</string>
+    <string name="account_session_title_student">%1$s • Locked</string>
+    <string name="account_session_title_lecturer">Lecturer • No VARK</string>
+    <string name="account_session_title_admin">Admin • Account management</string>
+    <string name="account_session_body_student">To change your format, sign out and sign in again. Feedback from other categories is kept.</string>
+    <string name="account_session_body_lecturer">Staff do not choose a learning format. VARK only applies to student sessions.</string>
+    <string name="account_session_body_admin">Admins only create, view, update, and deactivate accounts.</string>
+    <string name="account_notice_student">Learning space: one IBD class for one semester.</string>
+    <string name="account_notice_lecturer">Classes taught: one IBD class in one semester.</string>
+    <string name="account_notice_admin">Materials, feedback, and grading are not available for the admin role.</string>
+    <string name="account_change_password">Change password</string>
+    <string name="account_logout">Sign out</string>
+    <string name="account_logout_note">Signing out ends the session and the active VARK choice.</string>
+
+    <!-- VARK selection -->
+    <string name="vark_screen_title">Your learning format</string>
+    <string name="vark_step_eyebrow">Step 1 of 1</string>
+    <string name="vark_headline">Learn your way\ntoday.</string>
+    <string name="vark_intro">Choose one format for this session. VARK is an access preference, not a learning-style diagnosis.</string>
+    <string name="vark_locked_notice">Your choice is locked until you sign out. Sign in again to choose another format.</string>
+    <string name="vark_continue_with">Continue with %1$s</string>
+    <string name="vark_select_first">Choose a format first</string>
+    <string name="vark_label_aural">Aural (Audio)</string>
+    <string name="vark_desc_visual">Video and diagrams to see the concept.</string>
+    <string name="vark_desc_aural">Listen to explanations and recordings.</string>
+    <string name="vark_desc_read_write">Read modules and summarize your understanding.</string>
+    <string name="vark_desc_kinesthetic">Apply concepts through case studies.</string>
+</resources>

@@ -4,6 +4,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import com.eduvark.app.R
 import com.eduvark.app.domain.usecase.LoginUseCase
 import com.eduvark.app.testutil.FakeAuthRepository
 import com.eduvark.app.ui.theme.EduVarkTheme
@@ -30,7 +32,10 @@ class LoginScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("NIM / NIP").assertIsDisplayed()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        composeRule.onNodeWithText(
+            context.getString(R.string.auth_login_id_placeholder),
+        ).assertIsDisplayed()
         composeRule.onNodeWithText("Password").assertIsDisplayed()
         composeRule.onNodeWithText("Masuk").assertIsDisplayed()
     }

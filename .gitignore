@@ -45,3 +45,6 @@ local.properties
 ~$*
 *.jks
 *.keystore
+
+# oh-my-codex / OMC tooling state
+.omc/
