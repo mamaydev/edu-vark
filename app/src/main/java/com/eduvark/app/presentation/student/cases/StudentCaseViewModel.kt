@@ -22,6 +22,7 @@ data class StudentCaseUiState(
     val isLoading: Boolean = true,
     val caseStudy: CaseStudy? = null,
     val topicTitle: String? = null,
+    val topicOrder: Int? = null,
     val materials: List<Material> = emptyList(),
     val isSubmitting: Boolean = false,
     val error: String? = null,
@@ -55,7 +56,8 @@ class StudentCaseViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true, error = null, submitError = null) }
             try {
                 val caseStudy = getStudentCaseUseCase(topicId)
-                val topicTitle = runCatching { getTopicUseCase(topicId).title }.getOrNull()
+                val topic = runCatching { getTopicUseCase(topicId) }.getOrNull()
+                val topicTitle = topic?.title
                 // Supporting Kinesthetic materials are optional. A missing or
                 // expired material must not hide the case study itself.
                 val materials = runCatching { getMaterialsUseCase(topicId) }.getOrDefault(emptyList())
@@ -63,6 +65,7 @@ class StudentCaseViewModel @Inject constructor(
                     isLoading = false,
                     caseStudy = caseStudy,
                     topicTitle = topicTitle,
+                    topicOrder = topic?.sortOrder,
                     materials = materials,
                 )
             } catch (error: AppFailure) {

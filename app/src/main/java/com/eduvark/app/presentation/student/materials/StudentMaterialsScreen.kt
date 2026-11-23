@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eduvark.app.domain.model.Material
@@ -61,9 +62,11 @@ import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.format.formatBytes
 import com.eduvark.app.ui.format.formatDateTime
 import com.eduvark.app.ui.format.formatShortDate
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
 import kotlin.math.roundToInt
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
+import com.eduvark.app.ui.theme.dimenSp
 
 @Composable
 fun StudentMaterialsScreen(
@@ -93,9 +96,9 @@ fun StudentMaterialsScreen(
     val materials = state.materials
     val primary = materials.firstOrNull { it.kind == MaterialKind.FILE } ?: materials.firstOrNull()
     val title = when {
-        materials.isEmpty() -> "Materi belum tersedia"
-        vark == null -> "Materi"
-        else -> "Materi " + varkTitle(vark)
+        materials.isEmpty() -> stringResource(R.string.st_material_title_missing)
+        vark == null -> stringResource(R.string.st_material_title_default)
+        else -> stringResource(R.string.st_material_title_with_vark, varkTitle(vark))
     }
 
     val open: (Material) -> Unit = { material ->
@@ -117,7 +120,7 @@ fun StudentMaterialsScreen(
             state.error != null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 ErrorBlock(message = state.error.orEmpty(), onRetry = viewModel::load)
             }
@@ -140,15 +143,18 @@ fun StudentMaterialsScreen(
                 modifier = Modifier.padding(padding),
             )
 
-            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
+            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
                 TintBar(
-                    text = "Topik ${(state.topic?.sortOrder ?: 0).toString().padStart(2, '0')} • " +
-                        (vark?.label ?: "VARK"),
+                    text = stringResource(
+                        R.string.st_material_topic_bar,
+                        (state.topic?.sortOrder ?: 0).toString().padStart(2, '0'),
+                        vark?.label ?: stringResource(R.string.st_material_vark_default),
+                    ),
                     uppercase = true,
                 )
-                Spacer(Modifier.height(18.dp))
-                Text(text = state.topic?.title.orEmpty(), style = EduText.Display)
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_18)))
+                Text(text = state.topic?.title.orEmpty(), style = EduTheme.type.display)
+                Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
                 if (primary != null) {
                     when (vark) {
@@ -158,26 +164,26 @@ fun StudentMaterialsScreen(
                     }
                 }
 
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_22)))
                 SectionHeader(title = sectionTitle(vark))
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_8)))
                 Text(
                     text = state.topic?.description?.takeIf { it.isNotBlank() }
-                        ?: "Materi untuk topik ini tersedia pada format sesimu.",
-                    style = EduText.Body,
+                        ?: stringResource(R.string.st_material_description_default),
+                    style = EduTheme.type.body,
                 )
 
                 val others = materials.filter { it.id != primary?.id }
                 if (others.isNotEmpty()) {
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_18)))
                     others.forEach { material ->
                         AttachmentCard(material = material, onOpen = { open(material) })
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_10)))
                     }
                 }
 
                 if (vark != null && vark != VarkType.KINESTHETIC) {
-                    Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_14)))
                     FeedbackCard(
                         value = draft ?: (state.feedback ?: 0).toFloat(),
                         storedValue = state.feedback,
@@ -195,17 +201,19 @@ fun StudentMaterialsScreen(
     }
 }
 
+@Composable
 private fun varkTitle(vark: VarkType): String = when (vark) {
-    VarkType.VISUAL -> "Visual"
-    VarkType.AURAL -> "Aural"
-    VarkType.READ_WRITE -> "Read/Write"
-    VarkType.KINESTHETIC -> "Kinesthetic"
+    VarkType.VISUAL -> stringResource(R.string.st_material_vark_visual)
+    VarkType.AURAL -> stringResource(R.string.st_material_vark_aural)
+    VarkType.READ_WRITE -> stringResource(R.string.st_material_vark_read_write)
+    VarkType.KINESTHETIC -> stringResource(R.string.st_material_vark_kinesthetic)
 }
 
+@Composable
 private fun sectionTitle(vark: VarkType?): String = when (vark) {
-    VarkType.AURAL -> "Tentang rekaman ini"
-    VarkType.READ_WRITE -> "Isi modul"
-    else -> "Tentang materi ini"
+    VarkType.AURAL -> stringResource(R.string.st_material_section_audio)
+    VarkType.READ_WRITE -> stringResource(R.string.st_material_section_read)
+    else -> stringResource(R.string.st_material_section_default)
 }
 
 @Composable
@@ -216,30 +224,30 @@ private fun VideoPanel(
 ) {
     EduCard(
         modifier = Modifier.fillMaxWidth(),
-        containerColor = EduColors.MediaNavy,
+        containerColor = EduTheme.colors.mediaNavy,
         onClick = { onOpen(material) },
     ) {
         Text(
-            text = "VIDEO PEMBELAJARAN",
-            style = EduText.Eyebrow.copy(color = Color.White.copy(alpha = 0.65f)),
+            text = stringResource(R.string.st_material_video_eyebrow),
+            style = EduTheme.type.eyebrow.copy(color = Color.White.copy(alpha = 0.65f)),
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
             text = material.title,
-            style = EduText.HeroTitle.copy(fontSize = 24.sp, lineHeight = 30.sp),
+            style = EduTheme.type.heroTitle.copy(fontSize = dimenSp(R.dimen.text_size_24), lineHeight = dimenSp(R.dimen.text_size_30), color = Color.White),
         )
         if (!description.isNullOrBlank()) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
                 text = description,
-                style = EduText.BodySmall.copy(color = Color.White.copy(alpha = 0.85f)),
+                style = EduTheme.type.bodySmall.copy(color = Color.White.copy(alpha = 0.85f)),
             )
         }
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(26.dp)
+                    .size(dimen(R.dimen.size_26))
                     .clip(CircleShape)
                     .background(Color.White.copy(alpha = 0.18f)),
                 contentAlignment = Alignment.Center,
@@ -248,25 +256,25 @@ private fun VideoPanel(
                     imageVector = EduIcons.Play,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(12.dp),
+                    modifier = Modifier.size(dimen(R.dimen.size_12)),
                 )
             }
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(dimen(R.dimen.space_8)))
             Text(
-                text = "Putar video",
-                style = EduText.BodySmall.copy(color = Color.White, fontWeight = FontWeight.SemiBold),
+                text = stringResource(R.string.st_material_video_play),
+                style = EduTheme.type.bodySmall.copy(color = Color.White, fontWeight = FontWeight.SemiBold),
             )
             Spacer(Modifier.weight(1f))
             Text(
-                text = formatBytes(material.sizeBytes) ?: "Video",
-                style = EduText.Meta.copy(color = Color.White.copy(alpha = 0.7f)),
+                text = formatBytes(material.sizeBytes) ?: stringResource(R.string.st_material_video_meta_default),
+                style = EduTheme.type.meta.copy(color = Color.White.copy(alpha = 0.7f)),
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(dimen(R.dimen.space_8)))
             Icon(
                 imageVector = EduIcons.Expand,
                 contentDescription = null,
                 tint = Color.White.copy(alpha = 0.7f),
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(dimen(R.dimen.size_16)),
             )
         }
     }
@@ -281,60 +289,68 @@ private fun AudioPanel(
         10, 18, 26, 14, 30, 22, 12, 26, 34, 18, 10, 24, 30, 16, 10, 22, 28, 14, 8, 20, 26, 12, 8,
         16, 22, 10, 18, 24, 12, 8,
     )
+    val metaFallback = stringResource(R.string.st_material_audio_meta_default)
     EduCard(
         modifier = Modifier.fillMaxWidth(),
-        containerColor = EduColors.Primary,
+        containerColor = EduTheme.colors.lavender,
         onClick = { onOpen(material) },
     ) {
         Text(
             text = material.vark.label.uppercase(),
-            style = EduText.Eyebrow.copy(color = Color.White.copy(alpha = 0.65f)),
+            style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.65f)),
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
             text = material.title,
-            style = EduText.HeroTitle.copy(fontSize = 23.sp, lineHeight = 29.sp),
+            style = EduTheme.type.heroTitle.copy(fontSize = dimenSp(R.dimen.text_size_23), lineHeight = dimenSp(R.dimen.text_size_29)),
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(40.dp),
+                .height(dimen(R.dimen.space_40)),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(3.dp),
+            horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_3)),
         ) {
             bars.forEachIndexed { index, height ->
                 Box(
                     modifier = Modifier
-                        .width(3.dp)
+                        .width(dimen(R.dimen.size_3))
                         .height(height.dp)
-                        .clip(RoundedCornerShape(2.dp))
+                        .clip(RoundedCornerShape(dimen(R.dimen.radius_2)))
                         .background(
-                            if (index % 3 == 0) Color.White.copy(alpha = 0.55f) else Color.White,
+                            if (index % 3 == 0) {
+                                EduTheme.colors.onBrand.copy(alpha = 0.55f)
+                            } else {
+                                EduTheme.colors.onBrand
+                            },
                         ),
                 )
             }
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_14)))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = EduIcons.Play,
                 contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(16.dp),
+                tint = EduTheme.colors.onBrand,
+                modifier = Modifier.size(dimen(R.dimen.size_16)),
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(dimen(R.dimen.space_8)))
             Text(
-                text = "Putar audio",
-                style = EduText.BodySmall.copy(color = Color.White, fontWeight = FontWeight.SemiBold),
+                text = stringResource(R.string.st_material_audio_play),
+                style = EduTheme.type.bodySmall.copy(
+                    color = EduTheme.colors.onBrand,
+                    fontWeight = FontWeight.SemiBold,
+                ),
             )
             Spacer(Modifier.weight(1f))
             Text(
                 text = listOfNotNull(
                     material.mime,
                     formatBytes(material.sizeBytes),
-                ).joinToString(" • ").ifBlank { "Audio" },
-                style = EduText.Meta.copy(color = Color.White.copy(alpha = 0.75f)),
+                ).joinToString(" • ").ifBlank { metaFallback },
+                style = EduTheme.type.meta.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.75f)),
             )
         }
     }
@@ -347,16 +363,16 @@ private fun ReadPanel(
     onOpen: (Material) -> Unit,
 ) {
     EduCard(modifier = Modifier.fillMaxWidth()) {
-        CardEyebrow("Modul • ${material.kind.label}")
-        Spacer(Modifier.height(10.dp))
-        Text(text = material.title, style = EduText.Headline)
+        CardEyebrow(stringResource(R.string.st_material_read_eyebrow, material.kind.label))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = material.title, style = EduTheme.type.headline)
         if (!description.isNullOrBlank()) {
-            Spacer(Modifier.height(8.dp))
-            Text(text = description, style = EduText.Body)
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
+            Text(text = description, style = EduTheme.type.body)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         TextLink(
-            text = "Lanjut membaca modul",
+            text = stringResource(R.string.st_material_read_link),
             onClick = { onOpen(material) },
         )
         val meta = listOfNotNull(
@@ -365,8 +381,8 @@ private fun ReadPanel(
             formatShortDate(material.uploadedAt),
         ).joinToString(" • ")
         if (meta.isNotBlank()) {
-            Spacer(Modifier.height(10.dp))
-            Text(text = meta, style = EduText.Meta)
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
+            Text(text = meta, style = EduTheme.type.meta)
         }
     }
 }
@@ -374,15 +390,15 @@ private fun ReadPanel(
 @Composable
 private fun AttachmentCard(material: Material, onOpen: () -> Unit) {
     EduCard(modifier = Modifier.fillMaxWidth(), onClick = onOpen) {
-        ArrowTitle(text = material.title, color = EduColors.Primary)
+        ArrowTitle(text = material.title)
         val meta = listOfNotNull(
             material.kind.label,
             formatBytes(material.sizeBytes),
             formatShortDate(material.uploadedAt),
         ).joinToString(" • ")
         if (meta.isNotBlank()) {
-            Spacer(Modifier.height(6.dp))
-            Text(text = meta, style = EduText.Meta)
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(text = meta, style = EduTheme.type.meta)
         }
     }
 }
@@ -397,19 +413,19 @@ private fun FeedbackCard(
     onSave: () -> Unit,
 ) {
     EduCard(modifier = Modifier.fillMaxWidth()) {
-        Text(text = "Seberapa paham kamu?", style = EduText.CardTitle)
-        Spacer(Modifier.height(6.dp))
-        Text(text = "Feedback pribadi, bukan nilai akademik.", style = EduText.BodySmall)
-        Spacer(Modifier.height(14.dp))
+        Text(text = stringResource(R.string.st_material_feedback_title), style = EduTheme.type.cardTitle)
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
+        Text(text = stringResource(R.string.st_material_feedback_subtitle), style = EduTheme.type.bodySmall)
+        Spacer(Modifier.height(dimen(R.dimen.space_14)))
         Text(
-            text = "${value.roundToInt()}%",
-            style = EduText.Numeral.copy(
-                color = EduColors.Primary,
-                fontSize = 44.sp,
-                lineHeight = 48.sp,
+            text = stringResource(R.string.st_material_percent, value.roundToInt()),
+            style = EduTheme.type.numeral.copy(
+                color = EduTheme.colors.lavender,
+                fontSize = dimenSp(R.dimen.text_size_44),
+                lineHeight = dimenSp(R.dimen.text_size_48),
             ),
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_8)))
         Slider(
             value = value,
             onValueChange = onValueChange,
@@ -417,31 +433,31 @@ private fun FeedbackCard(
             steps = 99,
             enabled = !isSaving,
             colors = SliderDefaults.colors(
-                thumbColor = EduColors.Primary,
-                activeTrackColor = EduColors.Primary,
-                inactiveTrackColor = EduColors.Border,
+                thumbColor = EduTheme.colors.lime,
+                activeTrackColor = EduTheme.colors.lavender,
+                inactiveTrackColor = EduTheme.colors.border,
                 activeTickColor = Color.Transparent,
                 inactiveTickColor = Color.Transparent,
             ),
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(text = "0%", style = EduText.Meta)
-            Text(text = "100%", style = EduText.Meta)
+            Text(text = stringResource(R.string.st_material_feedback_min), style = EduTheme.type.meta)
+            Text(text = stringResource(R.string.st_material_feedback_max), style = EduTheme.type.meta)
         }
         if (storedValue != null) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "Tersimpan: $storedValue%",
-                style = EduText.BodySmall.copy(color = EduColors.Teal),
+                text = stringResource(R.string.st_material_feedback_stored, storedValue),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.success),
             )
         }
         if (error != null) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             NoticeCard(text = error, tone = TintTone.Danger)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         PrimaryButton(
-            text = "Simpan feedback",
+            text = stringResource(R.string.st_material_feedback_save),
             onClick = onSave,
             loading = isSaving,
             enabled = !isSaving,
@@ -459,51 +475,52 @@ private fun FeedbackSaved(
     onOpenTopics: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
+    val topicFallback = stringResource(R.string.st_material_topic_default)
+    val varkFallback = stringResource(R.string.st_material_vark_default)
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
         SuccessPanel()
-        Spacer(Modifier.height(22.dp))
-        Eyebrow("Feedback tersimpan")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Pemahamannmu\nsudah dicatat.", style = EduText.Display)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_22)))
+        Eyebrow(stringResource(R.string.st_material_saved_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.st_material_saved_title), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         Text(
-            text = "Kamu bisa memperbarui feedback untuk topik dan format yang sama.",
-            style = EduText.Body,
+            text = stringResource(R.string.st_material_saved_body),
+            style = EduTheme.type.body,
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         HeroCard(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = topicTitle.ifBlank { "Topik" }.uppercase(),
-                style = EduText.Eyebrow.copy(color = Color.White.copy(alpha = 0.7f)),
+                text = topicTitle.ifBlank { topicFallback }.uppercase(),
+                style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.7f)),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "$value%",
-                style = EduText.NumeralLarge.copy(fontSize = 52.sp, lineHeight = 58.sp),
+                text = stringResource(R.string.st_material_percent, value),
+                style = EduTheme.type.numeralLarge.copy(fontSize = dimenSp(R.dimen.text_size_52), lineHeight = dimenSp(R.dimen.text_size_58)),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "${vark?.label ?: "VARK"} • Feedback terbaru",
-                style = EduText.BodySmall.copy(color = Color.White.copy(alpha = 0.92f)),
+                text = stringResource(R.string.st_material_saved_meta, vark?.label ?: varkFallback),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.92f)),
             )
             val stamp = formatDateTime(updatedAt)
             if (stamp != null) {
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_4)))
                 Text(
                     text = stamp,
-                    style = EduText.Meta.copy(color = Color.White.copy(alpha = 0.7f)),
+                    style = EduTheme.type.meta.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.7f)),
                 )
             }
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Nilai terbaru menggantikan feedback sebelumnya pada topik dan kategori ini. " +
-                "Feedback kategori lain tetap tersimpan.",
+            text = stringResource(R.string.st_material_saved_notice),
         )
-        Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = "Kembali ke materi", onClick = onBackToMaterial)
-        Spacer(Modifier.height(12.dp))
-        SecondaryButton(text = "Lihat topik lain", onClick = onOpenTopics)
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
+        PrimaryButton(text = stringResource(R.string.st_material_saved_back), onClick = onBackToMaterial)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        SecondaryButton(text = stringResource(R.string.st_material_saved_topics), onClick = onOpenTopics)
     }
 }
 
@@ -515,47 +532,62 @@ private fun MissingMaterial(
     onOpenTopics: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
+    val topicFallback = stringResource(R.string.st_material_topic_default)
+    val varkFallback = stringResource(R.string.st_material_vark_default)
+    val categoryFallback = stringResource(R.string.st_material_category_default)
+    val formatFallback = stringResource(R.string.st_material_format_default)
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
         TintBar(
-            text = "Topik ${order.toString().padStart(2, '0')} • ${vark?.label ?: "VARK"}",
+            text = stringResource(
+                R.string.st_material_topic_bar,
+                order.toString().padStart(2, '0'),
+                vark?.label ?: varkFallback,
+            ),
             uppercase = true,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         EduCard(
             modifier = Modifier.fillMaxWidth(),
-            containerColor = EduColors.PrimaryTint,
+            containerColor = EduTheme.colors.purpleTint,
         ) {
             Text(
                 text = order.toString().padStart(2, '0'),
-                style = EduText.Numeral.copy(
-                    color = EduColors.Primary,
-                    fontSize = 56.sp,
-                    lineHeight = 60.sp,
+                style = EduTheme.type.numeral.copy(
+                    color = EduTheme.colors.lavender,
+                    fontSize = dimenSp(R.dimen.text_size_56),
+                    lineHeight = dimenSp(R.dimen.text_size_60),
                 ),
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = topicTitle.ifBlank { "Topik" },
-                style = EduText.DisplaySmall.copy(color = EduColors.Ink),
+                text = topicTitle.ifBlank { topicFallback },
+                style = EduTheme.type.displaySmall.copy(color = EduTheme.colors.ink),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             Text(
-                text = "materi belum tersedia, harap hubungi dosen terlebih dahulu",
-                style = EduText.Body.copy(color = EduColors.Primary, fontWeight = FontWeight.SemiBold),
+                text = stringResource(R.string.st_material_missing_message),
+                style = EduTheme.type.body.copy(
+                    color = EduTheme.colors.lavender,
+                    fontWeight = FontWeight.SemiBold,
+                ),
             )
         }
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
         Text(
-            text = "Topik sudah diterbitkan, tetapi materi untuk kategori " +
-                "${vark?.label ?: "ini"} belum diunggah.",
-            style = EduText.Body,
+            text = stringResource(
+                R.string.st_material_missing_body,
+                vark?.label ?: categoryFallback,
+            ),
+            style = EduTheme.type.body,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Sesi kamu tetap ${vark?.label ?: "format ini"}. Format lain tidak dapat " +
-                "diakses dalam sesi ini.",
+            text = stringResource(
+                R.string.st_material_missing_notice,
+                vark?.label ?: formatFallback,
+            ),
         )
-        Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = "Kembali ke daftar topik", onClick = onOpenTopics)
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
+        PrimaryButton(text = stringResource(R.string.st_material_missing_back), onClick = onOpenTopics)
     }
 }

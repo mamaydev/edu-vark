@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,8 +37,11 @@ import com.eduvark.app.ui.components.StudentTab
 import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
-import com.eduvark.app.ui.theme.EduText
 import com.eduvark.app.ui.theme.EduVarkTheme
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
+import com.eduvark.app.ui.theme.dimenSp
 
 @Composable
 fun AccountScreen(
@@ -65,7 +68,7 @@ fun AccountScreen(
     }
 
     EduScreen(
-        title = "Akun & sesi",
+        title = stringResource(R.string.account_title),
         onBack = onBack,
         modifier = modifier,
         bottomBar = {
@@ -104,68 +107,79 @@ fun AccountScreen(
         when {
             state.isLoading && user == null -> LoadingBlock(Modifier.padding(padding))
 
-            user == null -> Column(Modifier.padding(padding).padding(24.dp)) {
+            user == null -> Column(Modifier.padding(padding).padding(dimen(R.dimen.space_24))) {
                 ErrorBlock(
-                    message = state.error ?: "Akun tidak ditemukan.",
+                    message = state.error ?: stringResource(R.string.account_not_found),
                     onRetry = viewModel::load,
                 )
             }
 
-            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
+            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
                 Eyebrow(user.role.label)
-                Spacer(Modifier.height(10.dp))
-                Text(text = accountHeadline(user.role), style = EduText.Display)
-                Spacer(Modifier.height(10.dp))
-                Text(text = accountSubtitle(user.role), style = EduText.Body)
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(text = accountHeadline(user.role), style = EduTheme.type.display)
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(text = accountSubtitle(user.role), style = EduTheme.type.body)
+                Spacer(Modifier.height(dimen(R.dimen.space_22)))
 
                 EduCard(modifier = Modifier.fillMaxWidth()) {
-                    Text(text = user.fullName, style = EduText.Headline)
-                    Spacer(Modifier.height(6.dp))
-                    Text(text = user.loginId, style = EduText.BodySmall)
-                    Spacer(Modifier.height(12.dp))
+                    Text(text = user.fullName, style = EduTheme.type.headline)
+                    Spacer(Modifier.height(dimen(R.dimen.space_6)))
+                    Text(text = user.loginId, style = EduTheme.type.bodySmall)
+                    Spacer(Modifier.height(dimen(R.dimen.space_12)))
                     TintBar(
-                        text = "${user.role.label} • Aktif",
-                        tone = TintTone.Teal,
-                        uppercase = true,
+                        text = stringResource(R.string.account_active_status, user.role.label),
+                        tone = TintTone.Primary,
+                        background = EduTheme.colors.purpleTint,
+                        contentColor = EduTheme.colors.lime,
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 HeroCard(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = if (user.role == UserRole.STUDENT) "FORMAT SESI AKTIF" else "HAK AKSES",
-                        style = EduText.Eyebrow.copy(color = Color.White.copy(alpha = 0.72f)),
+                        text = if (user.role == UserRole.STUDENT) {
+                            stringResource(R.string.account_session_eyebrow_vark)
+                        } else {
+                            stringResource(R.string.account_session_eyebrow_access)
+                        },
+                        style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.72f)),
                     )
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_10)))
                     Text(
                         text = sessionTitle(user),
-                        style = EduText.Headline.copy(color = Color.White, fontSize = 24.sp),
+                        style = EduTheme.type.headline.copy(color = EduTheme.colors.onBrand, fontSize = dimenSp(R.dimen.text_size_24)),
                     )
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_10)))
                     Text(
                         text = sessionBody(user),
-                        style = EduText.BodySmall.copy(color = Color.White.copy(alpha = 0.9f)),
+                        style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.9f)),
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 NoticeCard(text = accountNotice(user.role))
 
-                Spacer(Modifier.height(20.dp))
-                SecondaryButton(text = "Ubah password", onClick = onOpenChangePassword)
-                Spacer(Modifier.height(10.dp))
-                SecondaryButton(text = "Keluar dari akun", onClick = viewModel::logout)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_20)))
+                SecondaryButton(
+                    text = stringResource(R.string.account_change_password),
+                    onClick = onOpenChangePassword,
+                )
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                SecondaryButton(
+                    text = stringResource(R.string.account_logout),
+                    onClick = viewModel::logout,
+                )
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
                 Text(
-                    text = "Keluar akan mengakhiri sesi dan pilihan VARK aktif.",
-                    style = EduText.BodySmall,
+                    text = stringResource(R.string.account_logout_note),
+                    style = EduTheme.type.bodySmall,
                 )
 
                 if (BuildConfig.DEBUG) {
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
                     TextLink(
-                        text = "Pengaturan server (debug)",
+                        text = stringResource(R.string.common_server_settings_debug),
                         onClick = onOpenServerSettings,
                         icon = false,
                     )
@@ -175,39 +189,42 @@ fun AccountScreen(
     }
 }
 
+@Composable
 private fun accountHeadline(role: UserRole): String = when (role) {
-    UserRole.STUDENT -> "Akun belajarmu"
-    UserRole.LECTURER -> "Akun mengajarmu"
-    UserRole.ADMIN -> "Akun admin"
+    UserRole.STUDENT -> stringResource(R.string.account_headline_student)
+    UserRole.LECTURER -> stringResource(R.string.account_headline_lecturer)
+    UserRole.ADMIN -> stringResource(R.string.account_headline_admin)
 }
 
+@Composable
 private fun accountSubtitle(role: UserRole): String = when (role) {
-    UserRole.STUDENT -> "Implementasi Basis Data · Semester Ganjil 2026/2027"
-    UserRole.LECTURER -> "Dosen pengampu IBD · Semester Ganjil 2026/2027"
-    UserRole.ADMIN -> "Ruang administrasi EduVARK"
+    UserRole.STUDENT -> stringResource(R.string.account_subtitle_student)
+    UserRole.LECTURER -> stringResource(R.string.account_subtitle_lecturer)
+    UserRole.ADMIN -> stringResource(R.string.account_subtitle_admin)
 }
 
+@Composable
 private fun sessionTitle(user: UserProfile): String = when (user.role) {
-    UserRole.STUDENT -> "${user.activeVark?.label ?: "VARK"} • Terkunci"
-    UserRole.LECTURER -> "Dosen • Tanpa VARK"
-    UserRole.ADMIN -> "Admin • Manajemen akun"
+    UserRole.STUDENT -> stringResource(
+        R.string.account_session_title_student,
+        user.activeVark?.label ?: stringResource(R.string.common_vark),
+    )
+    UserRole.LECTURER -> stringResource(R.string.account_session_title_lecturer)
+    UserRole.ADMIN -> stringResource(R.string.account_session_title_admin)
 }
 
+@Composable
 private fun sessionBody(user: UserProfile): String = when (user.role) {
-    UserRole.STUDENT ->
-        "Untuk mengganti format, keluar lalu masuk kembali. Feedback kategori lain tetap tersimpan."
-
-    UserRole.LECTURER ->
-        "Staf tidak memilih format belajar. VARK hanya berlaku untuk sesi mahasiswa."
-
-    UserRole.ADMIN ->
-        "Admin hanya membuat, melihat, memperbarui, dan menonaktifkan akun."
+    UserRole.STUDENT -> stringResource(R.string.account_session_body_student)
+    UserRole.LECTURER -> stringResource(R.string.account_session_body_lecturer)
+    UserRole.ADMIN -> stringResource(R.string.account_session_body_admin)
 }
 
+@Composable
 private fun accountNotice(role: UserRole): String = when (role) {
-    UserRole.STUDENT -> "Ruang belajar: satu kelas IBD untuk satu semester."
-    UserRole.LECTURER -> "Kelas yang diampu: satu kelas IBD dalam satu semester."
-    UserRole.ADMIN -> "Materi, feedback, dan penilaian tidak tersedia untuk role admin."
+    UserRole.STUDENT -> stringResource(R.string.account_notice_student)
+    UserRole.LECTURER -> stringResource(R.string.account_notice_lecturer)
+    UserRole.ADMIN -> stringResource(R.string.account_notice_admin)
 }
 
 @Preview(showBackground = true)

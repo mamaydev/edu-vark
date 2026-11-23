@@ -1,5 +1,6 @@
 package com.eduvark.app.ui.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
@@ -40,29 +43,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.eduvark.app.ui.theme.EduColors
 import com.eduvark.app.ui.theme.EduFontFamily
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
+import com.eduvark.app.ui.theme.dimenSp
 
-private val TopBarTitle = TextStyle(
+@Composable
+private fun topBarTitle() = TextStyle(
     fontFamily = EduFontFamily,
     fontWeight = FontWeight.Bold,
-    fontSize = 18.sp,
-    lineHeight = 24.sp,
+    fontSize = dimenSp(R.dimen.text_size_18),
+    lineHeight = dimenSp(R.dimen.text_size_24),
     letterSpacing = (-0.2).sp,
-    color = EduColors.Ink,
+    color = EduTheme.colors.ink,
 )
 
-private val BrandTitle = TextStyle(
+@Composable
+private fun brandTitle() = TextStyle(
     fontFamily = EduFontFamily,
     fontWeight = FontWeight.ExtraBold,
-    fontSize = 20.sp,
-    lineHeight = 26.sp,
+    fontSize = dimenSp(R.dimen.text_size_20),
+    lineHeight = dimenSp(R.dimen.text_size_26),
     letterSpacing = (-0.3).sp,
-    color = EduColors.Ink,
+    color = EduTheme.colors.ink,
 )
 
-/** White top bar with an optional back chevron, matching the designs. */
+/** Transparent (page-coloured) top bar with a centred title, matching the designs. */
 @Composable
 fun EduTopBar(
     title: String,
@@ -74,48 +81,48 @@ fun EduTopBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(EduColors.Surface)
+            .background(EduTheme.colors.page)
             .statusBarsPadding(),
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .height(dimen(R.dimen.size_56))
+                .padding(horizontal = dimen(R.dimen.space_12)),
         ) {
             if (onBack != null) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .align(Alignment.CenterStart)
+                        .size(dimen(R.dimen.size_40))
                         .clip(CircleShape)
                         .clickable(onClick = onBack),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = EduIcons.ChevronLeft,
-                        contentDescription = "Kembali",
-                        tint = EduColors.Ink,
-                        modifier = Modifier.size(22.dp),
+                        contentDescription = stringResource(R.string.common_back),
+                        tint = EduTheme.colors.ink,
+                        modifier = Modifier.size(dimen(R.dimen.size_22)),
                     )
                 }
-                Spacer(Modifier.width(6.dp))
-            } else {
-                Spacer(Modifier.width(8.dp))
             }
             Text(
                 text = title,
-                style = if (brand) BrandTitle else TopBarTitle,
-                modifier = Modifier.weight(1f),
+                style = if (brand) brandTitle() else topBarTitle(),
+                modifier = Modifier.align(Alignment.Center),
             )
-            action?.invoke()
+            if (action != null) {
+                Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                    action()
+                }
+            }
         }
-        Hairline()
     }
 }
 
 /**
- * Standard screen scaffold: light page background, white chrome, edge-to-edge safe.
+ * Standard screen scaffold: dark page background, transparent top bar, floating bottom bar.
  */
 @Composable
 fun EduScreen(
@@ -125,7 +132,7 @@ fun EduScreen(
     brand: Boolean = false,
     topBarAction: (@Composable () -> Unit)? = null,
     bottomBar: (@Composable () -> Unit)? = null,
-    background: Color = EduColors.Page,
+    background: Color = EduTheme.colors.page,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
@@ -135,7 +142,7 @@ fun EduScreen(
         topBar = {
             if (title != null || brand) {
                 EduTopBar(
-                    title = title ?: "EduVARK",
+                    title = title ?: stringResource(R.string.app_name),
                     onBack = onBack,
                     brand = brand,
                     action = topBarAction,
@@ -151,8 +158,8 @@ fun EduScreen(
 @Composable
 fun ScrollColumn(
     modifier: Modifier = Modifier,
-    horizontalPadding: Dp = 24.dp,
-    spacing: Dp = 16.dp,
+    horizontalPadding: Dp = dimen(R.dimen.dimen_24),
+    spacing: Dp = dimen(R.dimen.dimen_16),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
@@ -161,7 +168,7 @@ fun ScrollColumn(
             .verticalScroll(rememberScrollState())
             .imePadding()
             .padding(horizontal = horizontalPadding)
-            .padding(top = 20.dp, bottom = 28.dp),
+            .padding(top = dimen(R.dimen.space_20), bottom = dimen(R.dimen.space_28)),
         verticalArrangement = Arrangement.spacedBy(spacing),
         content = content,
     )
@@ -188,21 +195,29 @@ fun EduPullToRefresh(
 }
 
 /** Navigation tab of the student shell. */
-enum class StudentTab(val label: String) { BERANDA("Beranda"), TOPIK("Topik"), AKUN("Akun") }
+enum class StudentTab(@StringRes val labelRes: Int) {
+    BERANDA(R.string.nav_beranda),
+    TOPIK(R.string.nav_topik),
+    AKUN(R.string.nav_akun),
+}
 
 /** Navigation tab of the lecturer shell. */
-enum class LecturerTab(val label: String) {
-    BERANDA("Beranda"),
-    TOPIK("Topik"),
-    PENILAIAN("Penilaian"),
-    ANALITIK("Analitik"),
-    AKUN("Akun"),
+enum class LecturerTab(@StringRes val labelRes: Int) {
+    BERANDA(R.string.nav_beranda),
+    TOPIK(R.string.nav_topik),
+    PENILAIAN(R.string.nav_penilaian),
+    ANALITIK(R.string.nav_analitik),
+    AKUN(R.string.nav_akun),
 }
 
 /** Navigation tab of the admin shell. */
-enum class AdminTab(val label: String) { BERANDA("Beranda"), AKUN("Akun"), PROFIL("Profil") }
+enum class AdminTab(@StringRes val labelRes: Int) {
+    BERANDA(R.string.nav_beranda),
+    AKUN(R.string.nav_akun),
+    PROFIL(R.string.nav_profil),
+}
 
-private data class BottomItem(val label: String, val icon: ImageVector)
+private data class BottomItem(@StringRes val labelRes: Int, val icon: ImageVector)
 
 @Composable
 private fun EduBottomBar(
@@ -210,39 +225,43 @@ private fun EduBottomBar(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
 ) {
-    Column(
+    val shape = RoundedCornerShape(dimen(R.dimen.radius_24))
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(EduColors.Surface)
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .padding(horizontal = dimen(R.dimen.space_24), vertical = dimen(R.dimen.space_16)),
     ) {
-        Hairline()
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(66.dp)
-                .padding(horizontal = 6.dp),
+                .height(dimen(R.dimen.size_72))
+                .shadow(dimen(R.dimen.size_14), shape, clip = false)
+                .clip(shape)
+                .background(EduTheme.colors.surface, shape)
+                .padding(horizontal = dimen(R.dimen.space_8)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             items.forEachIndexed { index, item ->
+                val label = stringResource(item.labelRes)
                 val selected = index == selectedIndex
-                val tint = if (selected) EduColors.Primary else EduColors.MutedSoft
+                val tint = if (selected) EduTheme.colors.lime else EduTheme.colors.mutedSoft
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(dimen(R.dimen.radius_18)))
                         .clickable { onSelect(index) }
-                        .padding(vertical = 6.dp),
+                        .padding(vertical = dimen(R.dimen.radius_8)),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Icon(
                         imageVector = item.icon,
-                        contentDescription = item.label,
+                        contentDescription = label,
                         tint = tint,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(dimen(R.dimen.size_22)),
                     )
-                    Spacer(Modifier.height(4.dp))
-                    Text(text = item.label, style = EduText.NavLabel.copy(color = tint))
+                    Spacer(Modifier.height(dimen(R.dimen.space_4)))
+                    Text(text = label, style = EduTheme.type.navLabel.copy(color = tint))
                 }
             }
         }
@@ -256,9 +275,9 @@ fun StudentBottomBar(
 ) {
     EduBottomBar(
         items = listOf(
-            BottomItem("Beranda", EduIcons.Home),
-            BottomItem("Topik", EduIcons.Book),
-            BottomItem("Akun", EduIcons.Person),
+            BottomItem(R.string.nav_beranda, EduIcons.Home),
+            BottomItem(R.string.nav_topik, EduIcons.Book),
+            BottomItem(R.string.nav_akun, EduIcons.Person),
         ),
         selectedIndex = selected.ordinal,
         onSelect = { onSelect(StudentTab.entries[it]) },
@@ -272,11 +291,11 @@ fun LecturerBottomBar(
 ) {
     EduBottomBar(
         items = listOf(
-            BottomItem("Beranda", EduIcons.Home),
-            BottomItem("Topik", EduIcons.Book),
-            BottomItem("Penilaian", EduIcons.Checklist),
-            BottomItem("Analitik", EduIcons.Chart),
-            BottomItem("Akun", EduIcons.Person),
+            BottomItem(R.string.nav_beranda, EduIcons.Home),
+            BottomItem(R.string.nav_topik, EduIcons.Book),
+            BottomItem(R.string.nav_penilaian, EduIcons.Checklist),
+            BottomItem(R.string.nav_analitik, EduIcons.Chart),
+            BottomItem(R.string.nav_akun, EduIcons.Person),
         ),
         selectedIndex = selected.ordinal,
         onSelect = { onSelect(LecturerTab.entries[it]) },
@@ -290,9 +309,9 @@ fun AdminBottomBar(
 ) {
     EduBottomBar(
         items = listOf(
-            BottomItem("Beranda", EduIcons.Home),
-            BottomItem("Akun", EduIcons.People),
-            BottomItem("Profil", EduIcons.Person),
+            BottomItem(R.string.nav_beranda, EduIcons.Home),
+            BottomItem(R.string.nav_akun, EduIcons.People),
+            BottomItem(R.string.nav_profil, EduIcons.Person),
         ),
         selectedIndex = selected.ordinal,
         onSelect = { onSelect(AdminTab.entries[it]) },

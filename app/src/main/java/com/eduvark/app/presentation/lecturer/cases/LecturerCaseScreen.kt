@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,12 +34,14 @@ import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.format.formatDeadline
-import com.eduvark.app.ui.theme.EduText
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 private val JAKARTA: TimeZone = TimeZone.getTimeZone("Asia/Jakarta")
 private val INDONESIAN: Locale = Locale.forLanguageTag("id-ID")
@@ -88,11 +91,14 @@ fun LecturerCaseScreen(
         }
     }
 
-    val dateLabel = dateOptions.firstOrNull { it.key == dateKey }?.label ?: "Pilih tanggal"
-    val timeLabel = timeOptions.firstOrNull { it.key == timeKey }?.label ?: "Pilih waktu"
+    val defaultDateLabel = stringResource(R.string.lec_case_default_date)
+    val defaultTimeLabel = stringResource(R.string.lec_case_default_time)
+    val deadlineRequiredError = stringResource(R.string.lec_case_deadline_error)
+    val dateLabel = dateOptions.firstOrNull { it.key == dateKey }?.label ?: defaultDateLabel
+    val timeLabel = timeOptions.firstOrNull { it.key == timeKey }?.label ?: defaultTimeLabel
 
     EduScreen(
-        title = "Studi kasus",
+        title = stringResource(R.string.lec_case_screen_title),
         onBack = onBack,
         modifier = modifier,
         bottomBar = bottomBar,
@@ -104,36 +110,42 @@ fun LecturerCaseScreen(
             error != null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 ErrorBlock(message = error, onRetry = viewModel::load)
             }
 
-            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
-                TintBar(text = "KINESTHETIC • STUDI KASUS", tone = TintTone.Primary, uppercase = true)
-                Spacer(Modifier.height(16.dp))
-                Text(text = "Rancang studi kasus", style = EduText.Display)
-                Spacer(Modifier.height(8.dp))
+            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
+                TintBar(
+                    text = stringResource(R.string.lec_case_chip),
+                    tone = TintTone.Primary,
+                    uppercase = true,
+                )
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                Text(text = stringResource(R.string.lec_case_headline), style = EduTheme.type.display)
+                Spacer(Modifier.height(dimen(R.dimen.space_8)))
                 state.topicTitle?.let { title ->
-                    Text(text = "Topik: $title", style = EduText.BodyStrong)
-                    Spacer(Modifier.height(6.dp))
+                    Text(text = stringResource(R.string.lec_case_topic, title), style = EduTheme.type.bodyStrong)
+                    Spacer(Modifier.height(dimen(R.dimen.space_6)))
                 }
                 Text(
                     text = if (caseStudy == null) {
-                        "Topik ini belum punya studi kasus. Simpan rancangan pertama."
+                        stringResource(R.string.lec_case_empty_body)
                     } else {
-                        "Atur penjelasan teori, instruksi, dan tenggat pengumpulan."
+                        stringResource(R.string.lec_case_body)
                     },
-                    style = EduText.Body,
+                    style = EduTheme.type.body,
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
                 NoticeCard(
                     text = if (kinestheticMaterials.isEmpty()) {
-                        "Belum ada materi Kinesthetic. Unggah PDF pendukung agar mahasiswa " +
-                            "bisa membacanya sebelum menjawab."
+                        stringResource(R.string.lec_case_no_material_notice)
                     } else {
-                        "${kinestheticMaterials.size} materi Kinesthetic siap dibaca mahasiswa."
+                        stringResource(
+                            R.string.lec_case_material_ready_notice,
+                            kinestheticMaterials.size,
+                        )
                     },
                     tone = if (kinestheticMaterials.isEmpty()) {
                         TintTone.Neutral
@@ -141,52 +153,55 @@ fun LecturerCaseScreen(
                         TintTone.Teal
                     },
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_8)))
                 TextLink(
-                    text = "Kelola materi Kinesthetic",
+                    text = stringResource(R.string.lec_case_link_materials),
                     onClick = { onOpenMaterials(state.topicId) },
                 )
 
                 caseStudy?.let { study ->
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_12)))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         TextLink(
-                            text = "Lihat pengumpulan",
+                            text = stringResource(R.string.lec_case_link_submissions),
                             onClick = { onOpenSubmissions(study.id) },
                         )
                         study.submissionCount?.let { count ->
                             Text(
-                                text = "  •  $count kiriman",
-                                style = EduText.BodySmall,
+                                text = stringResource(
+                                    R.string.lec_case_submission_count,
+                                    count,
+                                ),
+                                style = EduTheme.type.bodySmall,
                             )
                         }
                     }
                 }
 
-                Spacer(Modifier.height(18.dp))
-                FieldLabel("Penjelasan teori")
+                Spacer(Modifier.height(dimen(R.dimen.space_18)))
+                FieldLabel(stringResource(R.string.lec_case_theory_label))
                 EduField(
                     value = theory,
                     onValueChange = { theory = it },
-                    placeholder = "Ringkas teori yang mendasari studi kasus",
+                    placeholder = stringResource(R.string.lec_case_theory_placeholder),
                     singleLine = false,
-                    minHeight = 96.dp,
+                    minHeight = dimen(R.dimen.dimen_96),
                     enabled = !state.isSaving,
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-                FieldLabel("Instruksi studi kasus")
+                FieldLabel(stringResource(R.string.lec_case_instructions_label))
                 EduField(
                     value = instructions,
                     onValueChange = { instructions = it },
-                    placeholder = "Uraikan langkah pengerjaan yang diminta",
+                    placeholder = stringResource(R.string.lec_case_instructions_placeholder),
                     singleLine = false,
-                    minHeight = 120.dp,
+                    minHeight = dimen(R.dimen.dimen_120),
                     enabled = !state.isSaving,
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-                FieldLabel("Tanggal deadline")
+                FieldLabel(stringResource(R.string.lec_case_date_label))
                 EduDropdown(
                     value = dateLabel,
                     options = dateOptions.map { it.label },
@@ -198,9 +213,9 @@ fun LecturerCaseScreen(
                     },
                     enabled = !locked && !state.isSaving,
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-                FieldLabel("Waktu deadline")
+                FieldLabel(stringResource(R.string.lec_case_time_label))
                 EduDropdown(
                     value = timeLabel,
                     options = timeOptions.map { it.label },
@@ -212,63 +227,63 @@ fun LecturerCaseScreen(
                     },
                     enabled = !locked && !state.isSaving,
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-                FieldLabel("Zona waktu tampilan")
+                FieldLabel(stringResource(R.string.lec_case_timezone_label))
                 EduField(
-                    value = "UTC+07:00",
+                    value = stringResource(R.string.lec_case_timezone_value),
                     onValueChange = {},
                     enabled = false,
                 )
-                FieldHelper(text = "Contoh rancangan; zona waktu final diperiksa.")
+                FieldHelper(text = stringResource(R.string.lec_case_timezone_helper))
 
                 if (deadlineIso != null) {
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_8)))
                     Text(
-                        text = "Tenggat tersimpan: " +
-                            (formatDeadline(deadlineIso) ?: deadlineIso),
-                        style = EduText.BodySmall,
+                        text = stringResource(
+                            R.string.lec_case_saved_deadline,
+                            formatDeadline(deadlineIso) ?: deadlineIso,
+                        ),
+                        style = EduTheme.type.bodySmall,
                     )
                 }
 
                 if (locked) {
-                    Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_14)))
                     NoticeCard(
-                        text = "Tenggat terkunci karena sudah ada pengumpulan. Instruksi " +
-                            "masih dapat diubah.",
+                        text = stringResource(R.string.lec_case_locked_notice),
                         tone = TintTone.Amber,
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 NoticeCard(
-                    text = "Jawaban teks 1–10.000 karakter, satu kali kirim, tanpa draft. " +
-                        "Validasi tenggat memakai waktu server.",
+                    text = stringResource(R.string.lec_case_rules_notice),
                     tone = TintTone.Primary,
                 )
 
                 val message = localError ?: state.saveError
                 if (message != null) {
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_12)))
                     NoticeCard(text = message, tone = TintTone.Danger)
                 }
 
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_20)))
                 PrimaryButton(
-                    text = "Simpan studi kasus",
+                    text = stringResource(R.string.lec_case_save),
                     enabled = !state.isSaving,
                     loading = state.isSaving,
                     onClick = {
                         val iso = combineDeadline(dateKey, timeKey)
                         if (iso == null) {
-                            localError = "Tanggal dan waktu deadline wajib dipilih."
+                            localError = deadlineRequiredError
                         } else {
                             localError = null
                             viewModel.save(theory, instructions, iso)
                         }
                     },
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_8)))
             }
         }
     }

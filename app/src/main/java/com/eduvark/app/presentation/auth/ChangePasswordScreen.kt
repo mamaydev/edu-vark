@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,8 +28,10 @@ import com.eduvark.app.ui.components.NoticeCard
 import com.eduvark.app.ui.components.PrimaryButton
 import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.TintTone
-import com.eduvark.app.ui.theme.EduText
 import com.eduvark.app.ui.theme.EduVarkTheme
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 @Composable
 fun ChangePasswordScreen(
@@ -50,79 +53,83 @@ fun ChangePasswordScreen(
         }
     }
 
-    EduScreen(title = "Ganti password", onBack = onBack, modifier = modifier) { padding ->
-        ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
-            Eyebrow("Keamanan akun")
-            Spacer(Modifier.height(10.dp))
-            Text(
-                text = if (forced) "Ganti password\nsebelum lanjut." else "Ganti password\nakunmu.",
-                style = EduText.Display,
-            )
-            Spacer(Modifier.height(12.dp))
+    EduScreen(title = stringResource(R.string.auth_change_password_title), onBack = onBack, modifier = modifier) { padding ->
+        ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
+            Eyebrow(stringResource(R.string.auth_security_eyebrow))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
                 text = if (forced) {
-                    "Password sementara wajib diganti sebelum kamu memulai sesi belajar."
+                    stringResource(R.string.auth_forced_headline)
                 } else {
-                    "Masukkan password saat ini. Semua sesi lain akan keluar setelah password diganti."
+                    stringResource(R.string.auth_self_headline)
                 },
-                style = EduText.Body,
+                style = EduTheme.type.display,
+            )
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
+            Text(
+                text = if (forced) {
+                    stringResource(R.string.auth_forced_body)
+                } else {
+                    stringResource(R.string.auth_self_body)
+                },
+                style = EduTheme.type.body,
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_24)))
             Column {
-                FieldLabel("Password saat ini")
+                FieldLabel(stringResource(R.string.auth_current_password_label))
                 PasswordField(
                     value = currentPassword,
                     onValueChange = { currentPassword = it },
-                    placeholder = "Password saat ini",
+                    placeholder = stringResource(R.string.auth_current_password_placeholder),
                     enabled = !state.isLoading,
-                    leadingLabel = "password saat ini",
+                    leadingLabel = stringResource(R.string.auth_current_password_leading),
                 )
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
             Column {
-                FieldLabel("Password baru")
+                FieldLabel(stringResource(R.string.auth_new_password_label))
                 PasswordField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    placeholder = "Password baru",
+                    placeholder = stringResource(R.string.auth_new_password_placeholder),
                     enabled = !state.isLoading,
-                    leadingLabel = "password baru",
+                    leadingLabel = stringResource(R.string.auth_new_password_leading),
                 )
-                FieldHelper("Minimal 6 karakter.")
+                FieldHelper(stringResource(R.string.auth_new_password_helper))
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
             Column {
-                FieldLabel("Konfirmasi password baru")
+                FieldLabel(stringResource(R.string.auth_confirm_password_label))
                 PasswordField(
                     value = confirmation,
                     onValueChange = { confirmation = it },
-                    placeholder = "Ulangi password baru",
+                    placeholder = stringResource(R.string.auth_confirm_password_placeholder),
                     enabled = !state.isLoading,
-                    leadingLabel = "konfirmasi password",
+                    leadingLabel = stringResource(R.string.auth_confirm_password_leading),
                 )
             }
 
             val error = state.error
             if (error != null) {
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 NoticeCard(text = error, tone = TintTone.Danger)
             }
 
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_22)))
             PrimaryButton(
-                text = "Simpan password",
+                text = stringResource(R.string.auth_save_password),
                 onClick = { viewModel.submit(currentPassword, newPassword, confirmation) },
                 loading = state.isLoading,
                 enabled = !state.isLoading,
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
             Text(
-                text = "Gunakan kombinasi yang mudah kamu ingat namun sulit ditebak orang lain.",
-                style = EduText.BodySmall,
+                text = stringResource(R.string.auth_password_tip),
+                style = EduTheme.type.bodySmall,
             )
         }
     }

@@ -21,6 +21,7 @@ data class LoginSuccess(
 data class LoginUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
+    val blocked: Boolean = false,
     val success: LoginSuccess? = null,
 )
 
@@ -55,11 +56,22 @@ class LoginViewModel @Inject constructor(
                     ),
                 )
             } catch (error: AppFailure) {
-                _state.value = LoginUiState(error = error.message)
+                val api = error as? AppFailure.Api
+                val blocked = api != null &&
+                    (api.code == "ACCOUNT_INACTIVE" || api.statusCode == 403)
+                _state.value = if (blocked) {
+                    LoginUiState(blocked = true, error = error.message)
+                } else {
+                    LoginUiState(error = error.message)
+                }
             } catch (error: Exception) {
                 _state.value = LoginUiState(error = "Terjadi kesalahan. Coba lagi.")
             }
         }
+    }
+
+    fun clearBlocked() {
+        _state.update { it.copy(blocked = false, error = null) }
     }
 
     fun consumeSuccess() {

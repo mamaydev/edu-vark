@@ -19,7 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,14 +42,17 @@ import com.eduvark.app.ui.components.PrimaryButton
 import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.SecondaryButton
 import com.eduvark.app.ui.components.SuccessPanel
+import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TonePanel
 import com.eduvark.app.ui.format.formatDateTime
 import com.eduvark.app.ui.format.formatBytes
 import com.eduvark.app.ui.format.formatDeadline
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
+import com.eduvark.app.ui.theme.dimenSp
 
 @Composable
 fun StudentCaseScreen(
@@ -79,10 +82,14 @@ fun StudentCaseScreen(
     val status = caseStudy?.status
     val screenTitle = when (status) {
         SubmissionStatus.MENUNGGU_PENILAIAN, SubmissionStatus.TIDAK_MENGUMPULKAN ->
-            "Status pengumpulan"
+            stringResource(R.string.st_case_title_status)
 
-        SubmissionStatus.SUDAH_DINILAI -> "Hasil penilaian"
-        else -> if (confirming) "Kirim jawaban" else "Studi kasus"
+        SubmissionStatus.SUDAH_DINILAI -> stringResource(R.string.st_case_title_result)
+        else -> if (confirming) {
+            stringResource(R.string.st_case_title_confirm)
+        } else {
+            stringResource(R.string.st_case_title_default)
+        }
     }
 
     EduScreen(
@@ -94,13 +101,13 @@ fun StudentCaseScreen(
         when {
             state.isLoading -> LoadingBlock(Modifier.padding(padding))
 
-            state.error != null -> Column(Modifier.padding(padding).padding(24.dp)) {
+            state.error != null -> Column(Modifier.padding(padding).padding(dimen(R.dimen.space_24))) {
                 ErrorBlock(message = state.error.orEmpty(), onRetry = viewModel::load)
             }
 
-            caseStudy == null -> Column(Modifier.padding(padding).padding(24.dp)) {
+            caseStudy == null -> Column(Modifier.padding(padding).padding(dimen(R.dimen.space_24))) {
                 NoticeCard(
-                    text = "Studi kasus untuk topik ini belum tersedia.",
+                    text = stringResource(R.string.st_case_not_available),
                     tone = TintTone.Amber,
                 )
             }
@@ -108,6 +115,7 @@ fun StudentCaseScreen(
             status == SubmissionStatus.SUDAH_DINILAI -> GradedCase(
                 caseStudy = caseStudy,
                 topicTitle = state.topicTitle.orEmpty(),
+                topicOrder = state.topicOrder,
                 onOpenHome = onOpenHome,
                 modifier = Modifier.padding(padding),
             )
@@ -115,6 +123,7 @@ fun StudentCaseScreen(
             status == SubmissionStatus.MENUNGGU_PENILAIAN -> WaitingCase(
                 caseStudy = caseStudy,
                 topicTitle = state.topicTitle.orEmpty(),
+                topicOrder = state.topicOrder,
                 onOpenHome = onOpenHome,
                 modifier = Modifier.padding(padding),
             )
@@ -122,6 +131,7 @@ fun StudentCaseScreen(
             status == SubmissionStatus.TIDAK_MENGUMPULKAN -> ClosedCase(
                 caseStudy = caseStudy,
                 topicTitle = state.topicTitle.orEmpty(),
+                topicOrder = state.topicOrder,
                 onOpenTopics = onOpenTopics,
                 modifier = Modifier.padding(padding),
             )
@@ -129,6 +139,7 @@ fun StudentCaseScreen(
             confirming -> ConfirmSubmission(
                 caseStudy = caseStudy,
                 topicTitle = state.topicTitle.orEmpty(),
+                topicOrder = state.topicOrder,
                 answer = answer,
                 isSubmitting = state.isSubmitting,
                 error = state.submitError,
@@ -140,6 +151,7 @@ fun StudentCaseScreen(
             else -> AnswerEditor(
                 caseStudy = caseStudy,
                 topicTitle = state.topicTitle.orEmpty(),
+                topicOrder = state.topicOrder,
                 materials = state.materials,
                 onOpenMaterial = openMaterial,
                 answer = answer,
@@ -153,9 +165,16 @@ fun StudentCaseScreen(
 }
 
 @Composable
+private fun topicLabel(order: Int?): String = stringResource(
+    R.string.st_case_topic_label,
+    order?.let { it.toString().padStart(2, '0') } ?: "—",
+)
+
+@Composable
 private fun AnswerEditor(
     caseStudy: CaseStudy,
     topicTitle: String,
+    topicOrder: Int?,
     materials: List<Material>,
     onOpenMaterial: (Material) -> Unit,
     answer: String,
@@ -164,69 +183,70 @@ private fun AnswerEditor(
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        TintBar(text = "Topik • Kinesthetic", uppercase = true)
-        Spacer(Modifier.height(18.dp))
-        Text(text = topicTitle.ifBlank { "Studi kasus" }, style = EduText.Display)
-        Spacer(Modifier.height(16.dp))
+    val topicFallback = stringResource(R.string.st_case_topic_default)
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        TintBar(text = topicLabel(topicOrder), uppercase = true)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
+        Text(text = topicTitle.ifBlank { topicFallback }, style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         DeadlinePanel(caseStudy)
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         if (materials.isNotEmpty()) {
             SupportingMaterials(materials = materials, onOpen = onOpenMaterial)
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
         }
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
             if (!caseStudy.theory.isNullOrBlank()) {
-                Text(text = "Teori singkat", style = EduText.CardTitle)
-                Spacer(Modifier.height(6.dp))
-                Text(text = caseStudy.theory, style = EduText.Body)
-                Spacer(Modifier.height(16.dp))
+                Text(text = stringResource(R.string.st_case_theory), style = EduTheme.type.cardTitle)
+                Spacer(Modifier.height(dimen(R.dimen.space_6)))
+                Text(text = caseStudy.theory, style = EduTheme.type.body)
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
             }
-            Text(text = "Instruksi studi kasus", style = EduText.CardTitle)
-            Spacer(Modifier.height(6.dp))
-            Text(text = caseStudy.instructions, style = EduText.Body)
+            Text(text = stringResource(R.string.st_case_instructions), style = EduTheme.type.cardTitle)
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(text = caseStudy.instructions, style = EduTheme.type.body)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Jawabanku", style = EduText.CardTitle)
-            Spacer(Modifier.height(6.dp))
-            Text(text = "Teks biasa • Tanpa unggah file", style = EduText.Meta)
-            Spacer(Modifier.height(12.dp))
+            Text(text = stringResource(R.string.st_case_answer_title), style = EduTheme.type.cardTitle)
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(text = stringResource(R.string.st_case_answer_meta), style = EduTheme.type.meta)
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             EduField(
                 value = answer,
                 onValueChange = onAnswerChange,
-                placeholder = "Tulis jawabanmu di sini…",
+                placeholder = stringResource(R.string.st_case_answer_placeholder),
                 singleLine = false,
-                minHeight = 150.dp,
+                minHeight = dimen(R.dimen.dimen_150),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "${answer.length} / 10.000 karakter",
-                style = EduText.Meta,
+                text = stringResource(R.string.st_case_answer_counter, answer.length),
+                style = EduTheme.type.meta,
             )
         }
 
         if (submitError != null) {
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_14)))
             NoticeCard(text = submitError, tone = TintTone.Danger)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Tidak ada draft atau simpan otomatis. Jawaban yang belum dikirim dapat hilang " +
-                "jika halaman ditutup.",
+            text = stringResource(R.string.st_case_no_draft_notice),
+            tone = TintTone.Primary,
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         PrimaryButton(
-            text = "Kirim jawaban final",
+            text = stringResource(R.string.st_case_submit),
             onClick = onNext,
             enabled = answer.trim().isNotEmpty(),
         )
-        Spacer(Modifier.height(12.dp))
-        Text(text = "1–10.000 karakter • Hanya satu kali kirim", style = EduText.BodySmall)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        Text(text = stringResource(R.string.st_case_answer_hint), style = EduTheme.type.bodySmall)
     }
 }
 
@@ -236,30 +256,30 @@ private fun SupportingMaterials(
     onOpen: (Material) -> Unit,
 ) {
     EduCard(modifier = Modifier.fillMaxWidth()) {
-        Text(text = "Materi pendukung Kinesthetic", style = EduText.CardTitle)
-        Spacer(Modifier.height(4.dp))
+        Text(text = stringResource(R.string.st_case_supporting_title), style = EduTheme.type.cardTitle)
+        Spacer(Modifier.height(dimen(R.dimen.space_4)))
         Text(
-            text = "Baca materi dari dosen sebelum menjawab studi kasus.",
-            style = EduText.Meta,
+            text = stringResource(R.string.st_case_supporting_body),
+            style = EduTheme.type.meta,
         )
         materials.forEach { material ->
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(EduColors.PrimaryTint, RoundedCornerShape(12.dp))
+                    .background(EduTheme.colors.purpleTint, RoundedCornerShape(dimen(R.dimen.radius_12)))
                     .clickable { onOpen(material) }
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .padding(horizontal = dimen(R.dimen.radius_14), vertical = dimen(R.dimen.radius_12)),
             ) {
-                ArrowTitle(text = material.title, color = EduColors.Primary)
-                Spacer(Modifier.height(4.dp))
+                ArrowTitle(text = material.title, color = EduTheme.colors.lavender)
+                Spacer(Modifier.height(dimen(R.dimen.space_4)))
                 Text(
                     text = listOfNotNull(
                         material.kind.label,
                         material.mime,
                         formatBytes(material.sizeBytes),
                     ).joinToString(" • "),
-                    style = EduText.Meta,
+                    style = EduTheme.type.meta,
                 )
             }
         }
@@ -271,20 +291,23 @@ private fun DeadlinePanel(caseStudy: CaseStudy) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(EduColors.AmberTint, RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .background(EduTheme.colors.amberTint, RoundedCornerShape(dimen(R.dimen.radius_16)))
+            .padding(horizontal = dimen(R.dimen.radius_16), vertical = dimen(R.dimen.radius_14)),
     ) {
         Text(
-            text = "Tenggat: " + (formatDeadline(caseStudy.deadlineAt) ?: caseStudy.deadlineWib),
-            style = EduText.BodySmall.copy(
-                color = EduColors.Amber,
+            text = stringResource(
+                R.string.st_case_deadline,
+                formatDeadline(caseStudy.deadlineAt) ?: caseStudy.deadlineWib,
+            ),
+            style = EduTheme.type.bodySmall.copy(
+                color = EduTheme.colors.amber,
                 fontWeight = FontWeight.SemiBold,
             ),
         )
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_4)))
         Text(
-            text = "Acuan penerimaan: waktu server.",
-            style = EduText.BodySmall.copy(color = EduColors.Amber),
+            text = stringResource(R.string.st_case_deadline_note),
+            style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.amber),
         )
     }
 }
@@ -293,6 +316,7 @@ private fun DeadlinePanel(caseStudy: CaseStudy) {
 private fun ConfirmSubmission(
     caseStudy: CaseStudy,
     topicTitle: String,
+    topicOrder: Int?,
     answer: String,
     isSubmitting: Boolean,
     error: String?,
@@ -300,62 +324,65 @@ private fun ConfirmSubmission(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Konfirmasi pengiriman")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Sudah yakin dengan\njawabanmu?", style = EduText.Display)
-        Spacer(Modifier.height(12.dp))
-        Text(text = "Baca kembali sebelum mengirim.", style = EduText.Body)
-        Spacer(Modifier.height(20.dp))
+    val topicFallback = stringResource(R.string.st_case_topic_default)
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.st_case_confirm_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.st_case_confirm_title), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        Text(text = stringResource(R.string.st_case_confirm_body), style = EduTheme.type.body)
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            CardEyebrow("Topik • Kinesthetic")
-            Spacer(Modifier.height(8.dp))
-            Text(text = topicTitle.ifBlank { "Studi kasus" }, style = EduText.Headline)
-            Spacer(Modifier.height(10.dp))
+            CardEyebrow(topicLabel(topicOrder))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
+            Text(text = topicTitle.ifBlank { topicFallback }, style = EduTheme.type.headline)
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "Siap dikirim • ${answer.trim().length} karakter",
-                style = EduText.BodySmall.copy(color = EduColors.Teal, fontWeight = FontWeight.Bold),
+                text = stringResource(R.string.st_case_confirm_ready, answer.trim().length),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.lime, fontWeight = FontWeight.Bold),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "Tenggat: " + (formatDeadline(caseStudy.deadlineAt) ?: caseStudy.deadlineWib),
-                style = EduText.Meta,
+                text = stringResource(
+                    R.string.st_case_deadline,
+                    formatDeadline(caseStudy.deadlineAt) ?: caseStudy.deadlineWib,
+                ),
+                style = EduTheme.type.meta,
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         TonePanel(
-            title = "Pengiriman bersifat final",
+            title = stringResource(R.string.st_case_confirm_final_title),
             body = "",
             tone = TintTone.Amber,
             bullets = listOf(
-                "Hanya satu jawaban per studi kasus.",
-                "Jawaban tidak dapat diubah atau dikirim ulang.",
-                "Tidak ada penyimpanan draft.",
-                "Server memeriksa tenggat saat Kirim diproses.",
+                stringResource(R.string.st_case_confirm_bullet_1),
+                stringResource(R.string.st_case_confirm_bullet_2),
+                stringResource(R.string.st_case_confirm_bullet_3),
+                stringResource(R.string.st_case_confirm_bullet_4),
             ),
         )
 
         if (error != null) {
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_14)))
             NoticeCard(text = error, tone = TintTone.Danger)
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         PrimaryButton(
-            text = "Ya, kirim jawaban final",
+            text = stringResource(R.string.st_case_confirm_submit),
             onClick = onConfirm,
             loading = isSubmitting,
             enabled = !isSubmitting,
         )
-        Spacer(Modifier.height(12.dp))
-        SecondaryButton(text = "Kembali periksa jawaban", onClick = onCancel)
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        SecondaryButton(text = stringResource(R.string.st_case_confirm_cancel), onClick = onCancel)
+        Spacer(Modifier.height(dimen(R.dimen.space_14)))
         Text(
-            text = "Kiriman diterima jika waktu server ≤ tenggat. Setelah tenggat, jawaban tidak " +
-                "tersimpan.",
-            style = EduText.BodySmall,
+            text = stringResource(R.string.st_case_confirm_footnote),
+            style = EduTheme.type.bodySmall,
         )
     }
 }
@@ -364,57 +391,74 @@ private fun ConfirmSubmission(
 private fun WaitingCase(
     caseStudy: CaseStudy,
     topicTitle: String,
+    topicOrder: Int?,
     onOpenHome: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
+    var showAnswer by rememberSaveable { mutableStateOf(false) }
+    val topicFallback = stringResource(R.string.st_case_topic_default)
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
         SuccessPanel()
-        Spacer(Modifier.height(22.dp))
-        Eyebrow("Berhasil dikirim")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Jawabanmu\nsudah diterima.", style = EduText.Display)
-        Spacer(Modifier.height(12.dp))
-        Text(text = "Dosen akan menilai jawaban finalmu.", style = EduText.Body)
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_22)))
+        Eyebrow(stringResource(R.string.st_case_waiting_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.st_case_waiting_title), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        Text(text = stringResource(R.string.st_case_waiting_body), style = EduTheme.type.body)
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            CardEyebrow("Topik • Kinesthetic")
-            Spacer(Modifier.height(8.dp))
-            Text(text = topicTitle.ifBlank { "Studi kasus" }, style = EduText.Headline)
-            Spacer(Modifier.height(10.dp))
+            CardEyebrow(topicLabel(topicOrder))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
+            Text(text = topicTitle.ifBlank { topicFallback }, style = EduTheme.type.headline)
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "Menunggu penilaian",
-                style = EduText.BodySmall.copy(color = EduColors.Teal, fontWeight = FontWeight.Bold),
+                text = stringResource(R.string.st_case_waiting_status),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.lime, fontWeight = FontWeight.Bold),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "Tenggat: " + (formatDeadline(caseStudy.deadlineAt) ?: caseStudy.deadlineWib),
-                style = EduText.Meta,
+                text = stringResource(
+                    R.string.st_case_deadline,
+                    formatDeadline(caseStudy.deadlineAt) ?: caseStudy.deadlineWib,
+                ),
+                style = EduTheme.type.meta,
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Dikirim pada", style = EduText.Meta)
-            Spacer(Modifier.height(6.dp))
+            Text(text = stringResource(R.string.st_case_waiting_submitted), style = EduTheme.type.meta)
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
             Text(
                 text = formatDateTime(caseStudy.submittedAt) ?: caseStudy.submittedAt.orEmpty(),
-                style = EduText.BodyStrong,
+                style = EduTheme.type.bodyStrong,
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "Jawaban final • ${caseStudy.submissionCount ?: 1} kiriman",
-                style = EduText.BodySmall.copy(color = EduColors.Teal),
+                text = stringResource(R.string.st_case_waiting_answer_meta, caseStudy.answer?.length ?: 0),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.lime),
             )
+            if (!caseStudy.answer.isNullOrBlank()) {
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                TextLink(
+                    text = stringResource(R.string.st_case_waiting_view),
+                    onClick = { showAnswer = !showAnswer },
+                    color = EduTheme.colors.lime,
+                )
+                if (showAnswer) {
+                    Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                    Text(text = caseStudy.answer.orEmpty(), style = EduTheme.type.body)
+                }
+            }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Jawaban terkunci. Tidak ada opsi revisi atau pengiriman ulang sebelum " +
-                "maupun sesudah dinilai.",
+            text = stringResource(R.string.st_case_waiting_notice),
         )
-        Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = "Kembali ke beranda", onClick = onOpenHome)
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
+        PrimaryButton(text = stringResource(R.string.st_case_back_home), onClick = onOpenHome)
     }
 }
 
@@ -422,50 +466,87 @@ private fun WaitingCase(
 private fun GradedCase(
     caseStudy: CaseStudy,
     topicTitle: String,
+    topicOrder: Int?,
     onOpenHome: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        TintBar(text = "Sudah dinilai • Final", tone = TintTone.Teal, uppercase = true)
-        Spacer(Modifier.height(18.dp))
-        Text(text = "Hasil kerja kerasmu.", style = EduText.Display)
-        Spacer(Modifier.height(18.dp))
+    var showAnswer by rememberSaveable { mutableStateOf(false) }
+    val topicFallback = stringResource(R.string.st_case_topic_default)
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        TintBar(
+            text = stringResource(R.string.st_case_graded_tintbar),
+            tone = TintTone.Teal,
+            uppercase = true,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
+        Text(text = stringResource(R.string.st_case_graded_title), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
         HeroCard(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "NILAI STUDI KASUS",
-                style = EduText.Eyebrow.copy(color = Color.White.copy(alpha = 0.7f)),
+                text = stringResource(R.string.st_case_graded_eyebrow),
+                style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.7f)),
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "${caseStudy.score ?: 0} / 100",
-                style = EduText.NumeralLarge.copy(fontSize = 46.sp, lineHeight = 52.sp),
+                text = stringResource(R.string.st_case_graded_score, caseStudy.score ?: 0),
+                style = EduTheme.type.numeralLarge.copy(fontSize = dimenSp(R.dimen.text_size_46), lineHeight = dimenSp(R.dimen.text_size_52)),
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "${topicTitle.ifBlank { "Studi kasus" }} • Kinesthetic",
-                style = EduText.BodySmall.copy(color = Color.White.copy(alpha = 0.92f)),
+                text = stringResource(
+                    R.string.st_case_graded_meta,
+                    topicTitle.ifBlank { topicFallback },
+                ),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.92f)),
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Komentar dosen", style = EduText.CardTitle)
-            Spacer(Modifier.height(8.dp))
+            Text(
+                text = caseStudy.gradedBy?.takeIf { it.isNotBlank() }
+                    ?: stringResource(R.string.st_case_graded_by_default),
+                style = EduTheme.type.cardTitle,
+            )
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
                 text = caseStudy.comment?.takeIf { it.isNotBlank() }
-                    ?: "Dosen tidak menambahkan komentar.",
-                style = EduText.Body,
+                    ?: stringResource(R.string.st_case_graded_comment_default),
+                style = EduTheme.type.body,
             )
+            val gradedAt = formatDeadline(caseStudy.gradedAt)
+            if (gradedAt != null) {
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(
+                    text = stringResource(R.string.st_case_graded_at, gradedAt),
+                    style = EduTheme.type.meta,
+                )
+            }
         }
 
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_14)))
         Text(
-            text = "Penilaian langsung terlihat setelah disimpan dosen dan tidak dapat diubah.",
-            style = EduText.BodySmall,
+            text = stringResource(R.string.st_case_graded_note),
+            style = EduTheme.type.bodySmall,
         )
-        Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = "Kembali ke beranda", onClick = onOpenHome)
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
+        if (!caseStudy.answer.isNullOrBlank()) {
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            TextLink(
+                text = stringResource(R.string.st_case_graded_view),
+                onClick = { showAnswer = !showAnswer },
+                color = EduTheme.colors.lime,
+            )
+            if (showAnswer) {
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                EduCard(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = caseStudy.answer.orEmpty(), style = EduTheme.type.body)
+                }
+            }
+        }
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
+        PrimaryButton(text = stringResource(R.string.st_case_back_home), onClick = onOpenHome)
     }
 }
 
@@ -473,71 +554,80 @@ private fun GradedCase(
 private fun ClosedCase(
     caseStudy: CaseStudy,
     topicTitle: String,
+    topicOrder: Int?,
     onOpenTopics: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        TintBar(text = "Tenggat berakhir", tone = TintTone.Danger, uppercase = true)
-        Spacer(Modifier.height(16.dp))
-        Eyebrow("Status pengumpulan")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Tidak\nMengumpulkan", style = EduText.Display)
-        Spacer(Modifier.height(12.dp))
-        Text(
-            text = "Kamu belum mengirim jawaban hingga tenggat berakhir.",
-            style = EduText.Body,
+    val topicFallback = stringResource(R.string.st_case_topic_default)
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        TintBar(
+            text = stringResource(R.string.st_case_closed_tintbar),
+            tone = TintTone.Danger,
+            uppercase = true,
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        Eyebrow(stringResource(R.string.st_case_closed_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.st_case_closed_title), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        Text(
+            text = stringResource(R.string.st_case_closed_body),
+            style = EduTheme.type.body,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            CardEyebrow("Topik • Kinesthetic")
-            Spacer(Modifier.height(8.dp))
-            Text(text = topicTitle.ifBlank { "Studi kasus" }, style = EduText.Headline)
-            Spacer(Modifier.height(10.dp))
+            CardEyebrow(topicLabel(topicOrder))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
+            Text(text = topicTitle.ifBlank { topicFallback }, style = EduTheme.type.headline)
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = "Tidak ada pengiriman",
-                style = EduText.BodySmall.copy(color = EduColors.Teal, fontWeight = FontWeight.Bold),
+                text = stringResource(R.string.st_case_closed_status),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.lime, fontWeight = FontWeight.Bold),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "Tenggat: " + (formatDeadline(caseStudy.deadlineAt) ?: caseStudy.deadlineWib),
-                style = EduText.Meta,
+                text = stringResource(
+                    R.string.st_case_deadline,
+                    formatDeadline(caseStudy.deadlineAt) ?: caseStudy.deadlineWib,
+                ),
+                style = EduTheme.type.meta,
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(EduColors.AmberTint, RoundedCornerShape(18.dp))
-                .padding(18.dp),
+                .background(EduTheme.colors.amberTint, RoundedCornerShape(dimen(R.dimen.radius_18)))
+                .padding(dimen(R.dimen.radius_18)),
         ) {
             Text(
-                text = "— / 100",
-                style = EduText.Numeral.copy(
-                    color = EduColors.Amber,
-                    fontSize = 38.sp,
-                    lineHeight = 44.sp,
+                text = stringResource(R.string.st_case_closed_score),
+                style = EduTheme.type.numeral.copy(
+                    color = EduTheme.colors.amber,
+                    fontSize = dimenSp(R.dimen.text_size_38),
+                    lineHeight = dimenSp(R.dimen.text_size_44),
                 ),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "Bukan nilai 0",
-                style = EduText.BodyStrong.copy(color = EduColors.Amber, fontWeight = FontWeight.Bold),
+                text = stringResource(R.string.st_case_closed_score_note),
+                style = EduTheme.type.bodyStrong.copy(color = EduTheme.colors.amber, fontWeight = FontWeight.Bold),
             )
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
             Text(
-                text = "Tidak ada jawaban atau nilai yang dibuat otomatis untuk status ini.",
-                style = EduText.BodySmall.copy(color = EduColors.Amber),
+                text = stringResource(R.string.st_case_closed_score_body),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.amber),
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Pengumpulan ditutup. Jawaban yang diterima server setelah tenggat akan ditolak.",
+            text = stringResource(R.string.st_case_closed_notice),
             tone = TintTone.Danger,
         )
-        Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = "Kembali ke daftar topik", onClick = onOpenTopics)
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
+        PrimaryButton(text = stringResource(R.string.st_case_closed_back), onClick = onOpenTopics)
     }
 }

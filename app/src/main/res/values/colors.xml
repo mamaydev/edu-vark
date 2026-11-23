@@ -1,13 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dark palette of the EduVARK redesign (docs/Desain/redesain).
+    Every colour used by the Compose UI lives here; Kotlin only references these
+    resources through `EduTheme.colors` (see ui/theme/Color.kt).
+-->
 <resources>
-    <color name="eduvark_primary">#2557DE</color>
-    <color name="eduvark_primary_dark">#1B43B2</color>
-    <color name="eduvark_secondary">#087F79</color>
-    <color name="eduvark_tertiary">#995F0B</color>
-    <color name="eduvark_surface">#FFFFFF</color>
-    <color name="eduvark_page">#F7F8FC</color>
-    <color name="ic_launcher_background">#2557DE</color>
-    <color name="eduvark_ink">#162947</color>
-    <color name="black">#FF000000</color>
+    <!-- Surfaces -->
+    <color name="eduvark_page">#FF181818</color>
+    <color name="eduvark_surface">#FF2D2D2D</color>
+
+    <!-- Brand -->
+    <color name="eduvark_lavender">#FFDCC3FA</color>
+    <color name="eduvark_lavender_dim">#FFBCA4D6</color>
+    <color name="eduvark_lime">#FFF6F576</color>
+    <color name="eduvark_on_brand">#FF181818</color>
+
+    <!-- Text -->
+    <color name="eduvark_ink">#FFF6F7F2</color>
+    <color name="eduvark_muted">#FFA3A3A1</color>
+    <color name="eduvark_muted_soft">#FF878785</color>
+
+    <!-- Tints -->
+    <color name="eduvark_purple_tint">#FF2D2636</color>
+    <color name="eduvark_success_tint">#FF2E3023</color>
+    <color name="eduvark_amber_tint">#FF372F24</color>
+    <color name="eduvark_danger_tint">#FF3A2522</color>
+
+    <!-- Semantic hues -->
+    <color name="eduvark_success">#FFF6F576</color>
+    <color name="eduvark_amber">#FFEECC8B</color>
+    <color name="eduvark_danger">#FFF07049</color>
+    <color name="eduvark_danger_muted">#FFFFA58B</color>
+    <color name="eduvark_purple">#FF9F8CB7</color>
+
+    <!-- Lines -->
+    <color name="eduvark_border">#FF474745</color>
+    <color name="eduvark_field_border">#FF656660</color>
+
+    <!-- Panels -->
+    <color name="eduvark_media_navy">#FF312B39</color>
+
+    <!-- Framework colours -->
+    <color name="ic_launcher_background">#FF181818</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
 </resources>

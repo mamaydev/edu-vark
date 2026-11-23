@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,9 +34,11 @@ import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TopicCard
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
 import com.eduvark.app.ui.theme.EduVarkTheme
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
+import com.eduvark.app.ui.theme.dimenSp
 
 @Composable
 fun StudentTopicsScreen(
@@ -50,10 +53,11 @@ fun StudentTopicsScreen(
 
     val activeVark = state.activeVark
     val kinesthetic = activeVark == VarkType.KINESTHETIC
+    val varkLabel = activeVark?.label ?: stringResource(R.string.home_vark_acronym)
     val filtered = state.topics.filter { it.title.contains(query, ignoreCase = true) }
 
     EduScreen(
-        title = "Topik pembelajaran",
+        title = stringResource(R.string.st_topic_screen_title),
         onBack = onBack,
         modifier = modifier,
         bottomBar = bottomBar,
@@ -65,7 +69,7 @@ fun StudentTopicsScreen(
             error != null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 com.eduvark.app.ui.components.ErrorBlock(
                     message = error,
@@ -84,73 +88,77 @@ fun StudentTopicsScreen(
                 onRefresh = viewModel::refresh,
                 modifier = Modifier.padding(padding),
             ) {
-                ScrollColumn(spacing = 0.dp) {
+                ScrollColumn(spacing = dimen(R.dimen.space_0)) {
                 if (state.refreshError != null) {
                     com.eduvark.app.ui.components.NoticeCard(
                         text = state.refreshError.orEmpty(),
                         tone = com.eduvark.app.ui.components.TintTone.Danger,
                     )
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 }
-                Eyebrow("Implementasi Basis Data")
-                Spacer(Modifier.height(10.dp))
-                Text(text = "Ruang belajarmu", style = EduText.Display)
-                Spacer(Modifier.height(10.dp))
+                Eyebrow(stringResource(R.string.st_topic_class_name))
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(text = stringResource(R.string.st_topic_display), style = EduTheme.type.display)
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
                 Text(
-                    text = "${state.topics.size} topik terbit · urutan ditentukan dosen",
-                    style = EduText.Body,
+                    text = stringResource(R.string.st_topic_summary, state.topics.size),
+                    style = EduTheme.type.body,
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 TintBar(
                     text = if (activeVark != null) {
-                        "${activeVark.label} aktif • Tidak dapat diganti"
+                        stringResource(R.string.st_topic_vark_locked, varkLabel)
                     } else {
-                        "Format belajar belum dipilih"
+                        stringResource(R.string.st_topic_vark_unset)
                     },
                     tone = TintTone.Primary,
                 )
 
-                Spacer(Modifier.height(20.dp))
-                FieldLabel("Cari topik")
+                Spacer(Modifier.height(dimen(R.dimen.space_20)))
+                FieldLabel(stringResource(R.string.st_topic_search_label))
                 EduField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = "Cari judul topik…",
+                    placeholder = stringResource(R.string.st_topic_search_placeholder),
                     trailing = {
                         Icon(
                             imageVector = EduIcons.Search,
                             contentDescription = null,
-                            tint = EduColors.Muted,
-                            modifier = Modifier.size(18.dp),
+                            tint = EduTheme.colors.muted,
+                            modifier = Modifier.size(dimen(R.dimen.size_18)),
                         )
                     },
                 )
 
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_18)))
                 if (filtered.isEmpty()) {
                     NoticeCard(
-                        text = "Tidak ada topik yang cocok dengan \"$query\".",
+                        text = stringResource(R.string.st_topic_no_match, query),
                         tone = TintTone.Neutral,
                     )
                 } else {
                     filtered.forEach { topic ->
                         TopicCard(
-                            orderLabel = "Topik ${topic.sortOrder.toString().padStart(2, '0')}  /  " +
-                                "Implementasi Basis Data",
+                            orderLabel = stringResource(
+                                R.string.st_topic_order_label,
+                                topic.sortOrder.toString().padStart(2, '0'),
+                            ),
                             title = topic.title,
                             meta = topic.description?.takeIf { it.isNotBlank() }
                                 ?: if (kinesthetic) {
-                                    "Jawaban teks • Satu kiriman final"
+                                    stringResource(R.string.st_topic_meta_kinesthetic)
                                 } else {
-                                    "Format ${activeVark?.label ?: "VARK"}"
+                                    stringResource(R.string.st_topic_meta_format, varkLabel)
                                 },
                             status = when {
-                                kinesthetic && topic.materialAvailable -> "Buka studi kasus"
-                                kinesthetic -> "Studi kasus belum tersedia"
-                                topic.materialAvailable ->
-                                    "Tersedia • ${activeVark?.label ?: "VARK"}"
+                                kinesthetic && topic.materialAvailable ->
+                                    stringResource(R.string.st_topic_status_open_case)
 
-                                else -> "Belum tersedia"
+                                kinesthetic -> stringResource(R.string.st_topic_status_case_unavailable)
+                                topic.materialAvailable ->
+                                    stringResource(R.string.st_topic_status_available, varkLabel)
+
+                                else -> stringResource(R.string.st_topic_status_unavailable)
                             },
                             statusTone = if (topic.materialAvailable) {
                                 TintTone.Teal
@@ -159,7 +167,7 @@ fun StudentTopicsScreen(
                             },
                             onClick = { onOpenTopic(topic.id, kinesthetic) },
                         )
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(dimen(R.dimen.space_12)))
                     }
                 }
                 }
@@ -174,50 +182,50 @@ private fun EmptyTopics(
     onReload: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Implementasi Basis Data")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Ruang belajar\nsegera dimulai.", style = EduText.Display)
-        Spacer(Modifier.height(12.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.st_topic_class_name))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.st_topic_empty_display), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         Text(
-            text = "Belum ada topik yang diterbitkan dosen untuk kelas ini.",
-            style = EduText.Body,
+            text = stringResource(R.string.st_topic_empty_message),
+            style = EduTheme.type.body,
         )
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_22)))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(vertical = dimen(R.dimen.space_8)),
         ) {
             com.eduvark.app.ui.components.EduCard(
                 modifier = Modifier.fillMaxWidth(),
-                containerColor = EduColors.PrimaryTint,
+                containerColor = EduTheme.colors.purpleTint,
             ) {
                 Text(
-                    text = "01 → 02 → 03",
-                    style = EduText.Numeral.copy(color = EduColors.Primary, fontSize = 30.sp),
+                    text = stringResource(R.string.st_topic_empty_steps),
+                    style = EduTheme.type.numeral.copy(color = EduTheme.colors.lavender, fontSize = dimenSp(R.dimen.text_size_30)),
                 )
-                Spacer(Modifier.height(10.dp))
-                Text(text = "Topik akan muncul di sini", style = EduText.CardTitle)
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(text = stringResource(R.string.st_topic_empty_panel_title), style = EduTheme.type.cardTitle)
+                Spacer(Modifier.height(dimen(R.dimen.space_6)))
                 Text(
-                    text = "Materi ditampilkan sesuai format aktif dan urutan yang diatur dosen.",
-                    style = EduText.BodySmall,
+                    text = stringResource(R.string.st_topic_empty_panel_body),
+                    style = EduTheme.type.bodySmall,
                 )
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         TintBar(
             text = if (activeVark != null) {
-                "${activeVark.label} aktif • Sesi terkunci"
+                stringResource(R.string.st_topic_empty_vark_locked, activeVark.label)
             } else {
-                "Format belajar belum dipilih"
+                stringResource(R.string.st_topic_vark_unset)
             },
         )
-        Spacer(Modifier.height(18.dp))
-        PrimaryButton(text = "Muat ulang", onClick = onReload)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
+        PrimaryButton(text = stringResource(R.string.st_topic_reload), onClick = onReload)
     }
 }
 

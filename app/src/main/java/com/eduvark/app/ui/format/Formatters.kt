@@ -5,29 +5,27 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-private val indonesian = Locale("id", "ID")
-
 /**
  * Formats an ISO-8601 timestamp (as returned by the API) into the short
- * Indonesian label used across the designs, e.g. "20 Nov 2026".
+ * locale-aware label used across the designs, e.g. "20 Nov 2026" (id) / "Nov 20, 2026" style patterns kept generic.
  */
 fun formatShortDate(iso: String?): String? {
     val parsed = parseIso(iso) ?: return null
-    val formatter = SimpleDateFormat("d MMM yyyy", indonesian)
+    val formatter = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
     return formatter.format(parsed)
 }
 
 /** Formats an ISO-8601 timestamp as "20 Nov 2026, 10.24". */
 fun formatDateTime(iso: String?): String? {
     val parsed = parseIso(iso) ?: return null
-    val formatter = SimpleDateFormat("d MMM yyyy, HH.mm", indonesian)
+    val formatter = SimpleDateFormat("d MMM yyyy, HH.mm", Locale.getDefault())
     return formatter.format(parsed)
 }
 
 /** Formats an ISO-8601 timestamp as "27 Nov 2026, 23.59 UTC+07:00". */
 fun formatDeadline(iso: String?): String? {
     val parsed = parseIso(iso) ?: return null
-    val formatter = SimpleDateFormat("d MMM yyyy, HH.mm 'UTC'XXX", indonesian)
+    val formatter = SimpleDateFormat("d MMM yyyy, HH.mm 'UTC'XXX", Locale.getDefault())
     formatter.timeZone = TimeZone.getTimeZone("Asia/Jakarta")
     return formatter.format(parsed)
 }
@@ -58,9 +56,9 @@ fun formatBytes(bytes: Long?): String? {
     val kb = bytes / 1024.0
     val mb = kb / 1024.0
     val value = if (mb >= 1) {
-        String.format(indonesian, "%.1f", mb) + " MB"
+        String.format(Locale.getDefault(), "%.1f", mb) + " MB"
     } else {
-        String.format(indonesian, "%.0f", kb) + " KB"
+        String.format(Locale.getDefault(), "%.0f", kb) + " KB"
     }
     return value
 }

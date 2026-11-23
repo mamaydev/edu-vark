@@ -29,11 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -63,8 +60,9 @@ import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.format.formatBytes
 import com.eduvark.app.ui.format.formatShortDate
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 private data class PickedFile(
     val fileName: String,
@@ -104,6 +102,11 @@ fun LecturerMaterialsScreen(
     var baselineIds by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     val formVark = VarkType.fromWire(formVarkKey) ?: VarkType.VISUAL
+    val fileReadError = stringResource(R.string.lec_material_file_read_error)
+    val defaultFileName = stringResource(R.string.lec_material_default_file_name)
+    val titleRequiredError = stringResource(R.string.lec_material_error_title)
+    val linkRequiredError = stringResource(R.string.lec_material_error_link)
+    val fileRequiredError = stringResource(R.string.lec_material_error_file)
 
     val closeForm: () -> Unit = {
         formOpen = false
@@ -130,14 +133,14 @@ fun LecturerMaterialsScreen(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? ->
         if (uri != null) {
-            val fileName = queryFileName(context, uri)
+            val fileName = queryFileName(context, uri, defaultFileName)
             val mime = context.contentResolver.getType(uri) ?: "application/octet-stream"
             val bytes = runCatching {
                 context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
             }.getOrNull()
 
             if (bytes == null) {
-                formError = "Gagal membaca file."
+                formError = fileReadError
             } else {
                 pickedFile = PickedFile(fileName = fileName, mime = mime, bytes = bytes)
                 formMode = SOURCE_FILE
@@ -180,7 +183,11 @@ fun LecturerMaterialsScreen(
     }
 
     EduScreen(
-        title = if (formOpen) "Tambah materi" else "Kelola materi",
+        title = if (formOpen) {
+            stringResource(R.string.lec_material_screen_add)
+        } else {
+            stringResource(R.string.lec_material_screen_manage)
+        },
         onBack = { if (formOpen) closeForm() else onBack() },
         modifier = modifier,
         bottomBar = bottomBar,
@@ -193,7 +200,7 @@ fun LecturerMaterialsScreen(
             error != null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 ErrorBlock(message = error, onRetry = viewModel::load)
             }
@@ -201,12 +208,12 @@ fun LecturerMaterialsScreen(
             topic == null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 EmptyBlock(
-                    title = "Topik tidak ditemukan",
-                    message = "Materi tidak dapat dimuat karena topik tidak tersedia.",
-                    actionLabel = "Muat ulang",
+                    title = stringResource(R.string.lec_material_topic_missing_title),
+                    message = stringResource(R.string.lec_material_topic_missing_body),
+                    actionLabel = stringResource(R.string.lec_material_retry),
                     onAction = viewModel::load,
                 )
             }
@@ -244,13 +251,13 @@ fun LecturerMaterialsScreen(
                     val file = pickedFile
                     when {
                         formTitle.trim().isEmpty() ->
-                            formError = "Judul materi wajib diisi."
+                            formError = titleRequiredError
 
                         formMode == SOURCE_LINK && formLink.trim().isEmpty() ->
-                            formError = "Tautan materi wajib diisi."
+                            formError = linkRequiredError
 
                         formMode == SOURCE_FILE && file == null ->
-                            formError = "Pilih file materi terlebih dahulu."
+                            formError = fileRequiredError
 
                         formMode == SOURCE_LINK -> {
                             baselineIds = state.materials.map { it.id }.toSet()
@@ -262,7 +269,7 @@ fun LecturerMaterialsScreen(
                         else -> {
                             val selected = file
                             if (selected == null) {
-                                formError = "Pilih file materi terlebih dahulu."
+                                formError = fileRequiredError
                             } else {
                                 baselineIds = state.materials.map { it.id }.toSet()
                                 sawSaving = false
@@ -305,9 +312,14 @@ fun LecturerMaterialsScreen(
     deleteTarget?.let { material ->
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
-            title = { Text(text = "Hapus materi?") },
+            title = { Text(text = stringResource(R.string.lec_material_delete_title)) },
             text = {
-                Text(text = "Materi \"" + material.title + "\" akan dihapus dari topik ini.")
+                Text(
+                    text = stringResource(
+                        R.string.lec_material_delete_body,
+                        material.title,
+                    ),
+                )
             },
             confirmButton = {
                 TextButton(
@@ -316,12 +328,12 @@ fun LecturerMaterialsScreen(
                         viewModel.delete(material.id)
                     },
                 ) {
-                    Text(text = "Hapus")
+                    Text(text = stringResource(R.string.lec_material_delete_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deleteTarget = null }) {
-                    Text(text = "Batal")
+                    Text(text = stringResource(R.string.lec_material_delete_cancel))
                 }
             },
         )
@@ -342,22 +354,25 @@ private fun MaterialsContent(
     onDelete: (Material) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
         if (actionError != null) {
             NoticeCard(text = actionError, tone = TintTone.Danger)
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
         }
 
         TintBar(
-            text = "TOPIK ${topic.sortOrder.toString().padStart(2, '0')} • " +
+            text = stringResource(
+                R.string.lec_material_chip,
+                topic.sortOrder.toString().padStart(2, '0'),
                 topic.status.label.uppercase(),
+            ),
             tone = if (topic.status == TopicStatus.PUBLISHED) TintTone.Teal else TintTone.Amber,
         )
-        Spacer(Modifier.height(16.dp))
-        Text(text = topic.title, style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Kelola setiap format secara independen.", style = EduText.Body)
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        Text(text = topic.title, style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.lec_material_header_body), style = EduTheme.type.body)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
         VarkType.entries.forEach { vark ->
             CategoryCard(
@@ -368,12 +383,12 @@ private fun MaterialsContent(
                 onAdd = { onAdd(vark) },
                 onDelete = onDelete,
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
         }
 
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_4)))
         NoticeCard(
-            text = "Mahasiswa hanya melihat kategori yang dipilih pada sesi aktif.",
+            text = stringResource(R.string.lec_material_notice),
             tone = TintTone.Primary,
         )
     }
@@ -388,61 +403,80 @@ private fun CategoryCard(
     onAdd: () -> Unit,
     onDelete: (Material) -> Unit,
 ) {
+    val metaSeparator = stringResource(R.string.lec_material_meta_separator)
     val meta = when {
-        materials.isEmpty() && vark == VarkType.KINESTHETIC -> "Belum ada studi kasus"
-        materials.isEmpty() -> "Belum ada materi"
-        else -> "${materials.size} materi • " + materials
-            .map { sourceLabel(it) }
-            .distinct()
-            .joinToString(", ")
+        materials.isEmpty() && vark == VarkType.KINESTHETIC ->
+            stringResource(R.string.lec_material_none_case)
+
+        materials.isEmpty() -> stringResource(R.string.lec_material_none)
+
+        else -> {
+            val labels = mutableListOf<String>()
+            for (material in materials) labels += sourceLabel(material)
+            stringResource(
+                R.string.lec_material_meta_count,
+                materials.size,
+                labels.distinct().joinToString(metaSeparator),
+            )
+        }
     }
 
-    EduCard(modifier = Modifier.fillMaxWidth(), radius = 18.dp, padding = 18.dp) {
+    EduCard(modifier = Modifier.fillMaxWidth(), radius = dimen(R.dimen.dimen_20), padding = dimen(R.dimen.dimen_18)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = categoryLetter(vark),
-                style = EduText.Headline.copy(
-                    color = EduColors.Primary,
+                style = EduTheme.type.headline.copy(
+                    color = EduTheme.colors.lavender,
                     fontWeight = FontWeight.ExtraBold,
                 ),
             )
-            Spacer(Modifier.size(14.dp))
-            ArrowTitle(text = categoryLabel(vark), color = EduColors.Primary)
+            Spacer(Modifier.size(dimen(R.dimen.space_14)))
+            ArrowTitle(text = categoryLabel(vark), color = EduTheme.colors.lavender)
         }
-        Spacer(Modifier.height(8.dp))
-        Text(text = meta, style = EduText.BodySmall)
+        Spacer(Modifier.height(dimen(R.dimen.space_8)))
+        Text(text = meta, style = EduTheme.type.bodySmall)
 
         if (expanded && materials.isNotEmpty()) {
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_4)))
             materials.forEach { material ->
                 MaterialRow(material = material, onDelete = { onDelete(material) })
             }
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (materials.isNotEmpty()) {
                 TextLink(
-                    text = if (expanded) "Tutup materi" else "Lihat materi",
+                    text = if (expanded) {
+                        stringResource(R.string.lec_material_link_close)
+                    } else {
+                        stringResource(R.string.lec_material_link_open)
+                    },
                     onClick = onToggle,
+                    color = EduTheme.colors.lime,
                     icon = false,
                 )
                 Text(
-                    text = "  /  ",
-                    style = EduText.BodySmall.copy(color = EduColors.MutedSoft),
+                    text = stringResource(R.string.lec_material_link_separator),
+                    style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.mutedSoft),
                 )
             }
-            TextLink(text = "+ Tambah", onClick = onAdd, icon = false)
+            TextLink(
+                text = stringResource(R.string.lec_material_link_add),
+                onClick = onAdd,
+                color = EduTheme.colors.lime,
+                icon = false,
+            )
         }
 
         if (vark == VarkType.KINESTHETIC) {
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
             Text(
-                text = "Studi kasus & deadline diatur dari daftar topik.",
-                style = EduText.BodySmall,
+                text = stringResource(R.string.lec_material_kinesthetic_note),
+                style = EduTheme.type.bodySmall,
             )
         }
     }
@@ -453,18 +487,18 @@ private fun MaterialRow(material: Material, onDelete: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 10.dp),
+            .padding(top = dimen(R.dimen.space_10)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = material.title, style = EduText.BodyStrong)
-            Text(text = materialMeta(material), style = EduText.BodySmall)
+            Text(text = material.title, style = EduTheme.type.bodyStrong)
+            Text(text = materialMeta(material), style = EduTheme.type.bodySmall)
         }
-        Spacer(Modifier.size(8.dp))
+        Spacer(Modifier.size(dimen(R.dimen.space_8)))
         TextLink(
-            text = "Hapus",
+            text = stringResource(R.string.lec_material_action_delete),
             onClick = onDelete,
-            color = EduColors.Danger,
+            color = EduTheme.colors.danger,
             icon = false,
         )
     }
@@ -488,111 +522,127 @@ private fun UploadForm(
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val unknownFileLabel = stringResource(R.string.lec_material_source_file_unknown)
+    val uploadFileLabel = stringResource(R.string.lec_material_source_upload)
+    val linkSourceLabel = stringResource(R.string.lec_material_source_link)
+    val pickedMimeLabel = pickedFile?.let { mimeLabel(it.mime) }
     val sourceValue = if (mode == SOURCE_LINK) {
-        "Tautan"
+        linkSourceLabel
     } else {
-        pickedFile?.let { "File " + (mimeLabel(it.mime) ?: "berkas").lowercase() }
-            ?: "Unggah berkas"
+        pickedFile?.let {
+            stringResource(
+                R.string.lec_material_source_file_mime,
+                (pickedMimeLabel ?: unknownFileLabel).lowercase(),
+            )
+        } ?: uploadFileLabel
     }
 
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
         TintBar(
-            text = "TOPIK ${topic.sortOrder.toString().padStart(2, '0')} • " +
+            text = stringResource(
+                R.string.lec_material_chip,
+                topic.sortOrder.toString().padStart(2, '0'),
                 categoryLabel(vark).uppercase(),
+            ),
             tone = TintTone.Primary,
         )
-        Spacer(Modifier.height(16.dp))
-        Eyebrow("Materi baru")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Bagikan sumber\npembelajaran", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        Eyebrow(stringResource(R.string.lec_material_form_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.lec_material_form_headline), style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "Satu topik dapat memuat beberapa materi per kategori.",
-            style = EduText.Body,
+            text = stringResource(R.string.lec_material_form_body),
+            style = EduTheme.type.body,
         )
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
-        FieldLabel("Judul materi")
+        FieldLabel(stringResource(R.string.lec_material_form_title_label))
         EduField(
             value = title,
             onValueChange = onTitleChange,
-            placeholder = "Contoh: Memahami bentuk normal",
+            placeholder = stringResource(R.string.lec_material_form_title_placeholder),
             enabled = !isSaving,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-        FieldLabel("Jenis sumber")
+        FieldLabel(stringResource(R.string.lec_material_form_source_label))
         EduDropdown(
             value = sourceValue,
-            options = listOf("Unggah berkas", "Tautan"),
+            options = listOf(uploadFileLabel, linkSourceLabel),
             onSelect = { selected ->
-                onModeChange(if (selected == "Tautan") SOURCE_LINK else SOURCE_FILE)
+                onModeChange(if (selected == linkSourceLabel) SOURCE_LINK else SOURCE_FILE)
             },
             enabled = !isSaving,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
         FileDropzone(
             file = pickedFile,
             enabled = !isSaving,
             onPick = onPickFile,
         )
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_4)))
         FieldHelper(
             text = if (mode == SOURCE_LINK) {
-                "Unggah berkas tidak dipakai saat jenis sumber berupa tautan."
+                stringResource(R.string.lec_material_form_file_helper_link)
             } else {
-                "Format yang didukung: PDF, gambar, audio, dan video."
+                stringResource(R.string.lec_material_form_file_helper)
             },
         )
 
-        Spacer(Modifier.height(16.dp))
-        FieldLabel("Alternatif tautan")
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        FieldLabel(stringResource(R.string.lec_material_form_link_label))
         EduField(
             value = link,
             onValueChange = onLinkChange,
-            placeholder = "https://…",
+            placeholder = stringResource(R.string.lec_material_form_link_placeholder),
             enabled = !isSaving,
         )
         FieldHelper(
             text = if (mode == SOURCE_LINK) {
-                "Tautan wajib memakai HTTPS agar dapat dibuka mahasiswa."
+                stringResource(R.string.lec_material_form_link_helper_required)
             } else {
-                "Gunakan tipe Tautan untuk menyimpan materi berupa URL."
+                stringResource(R.string.lec_material_form_link_helper)
             },
         )
 
         if (error != null) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             NoticeCard(text = error, tone = TintTone.Danger)
         }
         if (actionError != null) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             NoticeCard(text = actionError, tone = TintTone.Danger)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Jenis file dan ukuran divalidasi saat unggah. Batas ukuran media masih " +
-                "menunggu keputusan teknis.",
+            text = stringResource(R.string.lec_material_form_notice),
             tone = TintTone.Primary,
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         PrimaryButton(
             text = if (mode == SOURCE_LINK) {
-                "Simpan tautan materi"
+                stringResource(R.string.lec_material_form_save_link)
             } else {
-                "Unggah & simpan materi"
+                stringResource(R.string.lec_material_form_save_file)
             },
             enabled = !isSaving,
             loading = isSaving,
             onClick = onSubmit,
         )
-        Spacer(Modifier.height(14.dp))
-        EduCard(modifier = Modifier.fillMaxWidth(), radius = 18.dp, padding = 18.dp) {
-            Text(text = "Kategori: ${categoryLabel(vark)}", style = EduText.BodySmall)
-            Text(text = "Tanggal unggah dicatat otomatis.", style = EduText.BodySmall)
+        Spacer(Modifier.height(dimen(R.dimen.space_14)))
+        EduCard(modifier = Modifier.fillMaxWidth(), radius = dimen(R.dimen.space_20), padding = dimen(R.dimen.space_18)) {
+            Text(
+                text = stringResource(R.string.lec_material_form_meta_category, categoryLabel(vark)),
+                style = EduTheme.type.bodySmall,
+            )
+            Text(
+                text = stringResource(R.string.lec_material_form_meta_uploaded),
+                style = EduTheme.type.bodySmall,
+            )
         }
     }
 }
@@ -603,104 +653,110 @@ private fun FileDropzone(
     enabled: Boolean,
     onPick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(dimen(R.dimen.radius_16))
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(EduColors.PrimaryTint, shape)
-            .drawBehind {
-                drawRoundRect(
-                    color = EduColors.Primary.copy(alpha = 0.45f),
-                    cornerRadius = CornerRadius(16.dp.toPx(), 16.dp.toPx()),
-                    style = Stroke(
-                        width = 1.5.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(
-                            intervals = floatArrayOf(9.dp.toPx(), 6.dp.toPx()),
-                        ),
-                    ),
-                )
-            }
+            .background(EduTheme.colors.purpleTint, shape)
             .clickable(enabled = enabled, onClick = onPick)
-            .padding(18.dp),
+            .padding(dimen(R.dimen.space_18)),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = EduIcons.ArrowUp,
                 contentDescription = null,
-                tint = EduColors.Primary,
-                modifier = Modifier.size(18.dp),
+                tint = EduTheme.colors.lavender,
+                modifier = Modifier.size(dimen(R.dimen.size_18)),
             )
-            Spacer(Modifier.size(8.dp))
+            Spacer(Modifier.size(dimen(R.dimen.space_8)))
             Text(
-                text = file?.fileName ?: "Pilih file materi",
-                style = EduText.BodyStrong.copy(color = EduColors.Primary),
+                text = file?.fileName ?: stringResource(R.string.lec_material_file_pick),
+                style = EduTheme.type.bodyStrong.copy(color = EduTheme.colors.lavender),
             )
         }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
         Text(
-            text = file?.let { fileMeta(it) } ?: "Ketuk untuk memilih berkas dari perangkat.",
-            style = EduText.BodySmall,
+            text = file?.let { fileMeta(it) }
+                ?: stringResource(R.string.lec_material_file_hint),
+            style = EduTheme.type.bodySmall,
         )
         if (file != null) {
-            Spacer(Modifier.height(10.dp))
-            TextLink(text = "Ganti file", onClick = onPick, color = EduColors.Primary)
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
+            TextLink(
+                text = stringResource(R.string.lec_material_file_change),
+                onClick = onPick,
+                color = EduTheme.colors.lavender,
+            )
         }
     }
 }
 
+@Composable
 private fun categoryLetter(vark: VarkType): String = when (vark) {
-    VarkType.VISUAL -> "V"
-    VarkType.AURAL -> "A"
-    VarkType.READ_WRITE -> "R"
-    VarkType.KINESTHETIC -> "K"
+    VarkType.VISUAL -> stringResource(R.string.lec_material_letter_visual)
+    VarkType.AURAL -> stringResource(R.string.lec_material_letter_aural)
+    VarkType.READ_WRITE -> stringResource(R.string.lec_material_letter_read_write)
+    VarkType.KINESTHETIC -> stringResource(R.string.lec_material_letter_kinesthetic)
 }
 
+@Composable
 private fun categoryLabel(vark: VarkType): String = when (vark) {
-    VarkType.VISUAL -> "Visual"
-    VarkType.AURAL -> "Aural"
-    VarkType.READ_WRITE -> "Read/Write"
-    VarkType.KINESTHETIC -> "Kinesthetic"
+    VarkType.VISUAL -> stringResource(R.string.lec_material_vark_visual)
+    VarkType.AURAL -> stringResource(R.string.lec_material_vark_aural)
+    VarkType.READ_WRITE -> stringResource(R.string.lec_material_vark_read_write)
+    VarkType.KINESTHETIC -> stringResource(R.string.lec_material_vark_kinesthetic)
 }
 
+@Composable
 private fun mimeLabel(mime: String?): String? = when {
     mime == null -> null
-    mime.startsWith("video/") -> "Video"
-    mime.startsWith("audio/") -> "Audio"
-    mime.startsWith("image/") -> "Gambar"
-    mime == "application/pdf" -> "PDF"
-    mime.contains("word") || mime.contains("document") -> "Dokumen"
-    mime.startsWith("text/") -> "Teks"
+    mime.startsWith("video/") -> stringResource(R.string.lec_material_mime_video)
+    mime.startsWith("audio/") -> stringResource(R.string.lec_material_mime_audio)
+    mime.startsWith("image/") -> stringResource(R.string.lec_material_mime_image)
+    mime == "application/pdf" -> stringResource(R.string.lec_material_mime_pdf)
+    mime.contains("word") || mime.contains("document") ->
+        stringResource(R.string.lec_material_mime_document)
+
+    mime.startsWith("text/") -> stringResource(R.string.lec_material_mime_text)
     else -> null
 }
 
-private fun sourceLabel(material: Material): String =
-    material.mime?.let { mimeLabel(it) } ?: material.kind.label
+@Composable
+private fun sourceLabel(material: Material): String {
+    val mime = material.mime ?: return material.kind.label
+    return mimeLabel(mime) ?: material.kind.label
+}
 
+@Composable
 private fun materialMeta(material: Material): String {
+    val join = stringResource(R.string.lec_material_meta_join)
     val parts = mutableListOf<String>()
     parts += material.kind.label
     material.mime?.let { mimeLabel(it) }?.let { parts += it }
     formatBytes(material.sizeBytes)?.let { parts += it }
     formatShortDate(material.uploadedAt)?.let { parts += it }
-    return parts.distinct().joinToString(" • ")
+    return parts.distinct().joinToString(join)
 }
 
+@Composable
 private fun fileMeta(file: PickedFile): String {
+    val join = stringResource(R.string.lec_material_meta_join)
     val parts = mutableListOf<String>()
     val kind = mimeLabel(file.mime)
     val extension = file.fileName.substringAfterLast('.', "").uppercase()
     when {
-        kind != null && extension.isNotBlank() -> parts += "$kind $extension"
+        kind != null && extension.isNotBlank() ->
+            parts += stringResource(R.string.lec_material_file_meta_kind_ext, kind, extension)
         kind != null -> parts += kind
         extension.isNotBlank() -> parts += extension
     }
     formatBytes(file.bytes.size.toLong())?.let { parts += it }
-    return parts.joinToString(" • ")
+    return parts.joinToString(join)
 }
 
-private fun queryFileName(context: Context, uri: Uri): String {
-    var name = "materi"
+private fun queryFileName(context: Context, uri: Uri, defaultName: String): String {
+    var name = defaultName
     context.contentResolver.query(
         uri,
         arrayOf(OpenableColumns.DISPLAY_NAME),

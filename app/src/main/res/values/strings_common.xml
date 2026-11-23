@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared chrome / component copy -->
+    <string name="common_back">Kembali</string>
+    <string name="common_retry">Coba lagi</string>
+    <string name="common_loading">Memuat…</string>
+    <string name="common_load_error_title">Tidak dapat dimuat</string>
+    <string name="common_password">password</string>
+    <string name="common_show_password">Tampilkan %1$s</string>
+    <string name="common_hide_password">Sembunyikan %1$s</string>
+    <string name="common_bullet">•</string>
+    <string name="common_stepper_decrease">−</string>
+    <string name="common_stepper_increase">+</string>
+    <string name="common_vark">VARK</string>
+    <string name="common_server_settings_debug">Pengaturan server (debug)</string>
+
+    <!-- Bottom navigation labels -->
+    <string name="nav_beranda">Beranda</string>
+    <string name="nav_topik">Topik</string>
+    <string name="nav_penilaian">Penilaian</string>
+    <string name="nav_analitik">Analitik</string>
+    <string name="nav_akun">Akun</string>
+    <string name="nav_profil">Profil</string>
+
+    <!-- Login -->
+    <string name="auth_hero_eyebrow">EDUVARK</string>
+    <string name="auth_hero_title">Satu kelas.\nBanyak cara\nmemahami.</string>
+    <string name="auth_hero_subtitle">Implementasi Basis Data\nSemester Ganjil 2026/2027</string>
+    <string name="auth_welcome_eyebrow">Selamat datang</string>
+    <string name="auth_title">Masuk untuk belajar</string>
+    <string name="auth_subtitle">Gunakan akun yang diberikan oleh admin.</string>
+    <string name="auth_login_id_label">NIM/NIDN</string>
+    <string name="auth_login_id_placeholder">NIM / NIDN</string>
+    <string name="auth_password_label">Kata sandi</string>
+    <string name="auth_password_placeholder">Password</string>
+    <string name="auth_password_leading">kata sandi</string>
+    <string name="auth_submit">Masuk</string>
+    <string name="auth_submit_loading">Memproses…</string>
+    <string name="auth_login_hint">Mahasiswa dan dosen masuk dengan NIM/NIDN. Admin masuk dengan username admin.</string>
+
+    <!-- Inactive account -->
+    <string name="auth_inactive_status_title">Status akun</string>
+    <string name="auth_inactive_tintbar">Login ditolak</string>
+    <string name="auth_inactive_eyebrow">Akun nonaktif</string>
+    <string name="auth_inactive_headline">Akses akunmu\nsedang dinonaktifkan.</string>
+    <string name="auth_inactive_body">Sesi belajar belum dapat dimulai.</string>
+    <string name="auth_inactive_notice_title">Akun nonaktif</string>
+    <string name="auth_inactive_notice_text">Hubungi administrator kelas untuk memeriksa status akun dan mendapatkan bantuan.</string>
+    <string name="auth_inactive_notice_second">Hanya akun aktif yang dapat masuk ke EduVARK.</string>
+    <string name="auth_inactive_back">Kembali ke halaman masuk</string>
+
+    <!-- Change password -->
+    <string name="auth_change_password_title">Ganti password</string>
+    <string name="auth_security_eyebrow">Keamanan akun</string>
+    <string name="auth_forced_headline">Ganti password\nsebelum lanjut.</string>
+    <string name="auth_self_headline">Ganti password\nakunmu.</string>
+    <string name="auth_forced_body">Password sementara wajib diganti sebelum kamu memulai sesi belajar.</string>
+    <string name="auth_self_body">Masukkan password saat ini. Semua sesi lain akan keluar setelah password diganti.</string>
+    <string name="auth_current_password_label">Password saat ini</string>
+    <string name="auth_current_password_placeholder">Password saat ini</string>
+    <string name="auth_current_password_leading">password saat ini</string>
+    <string name="auth_new_password_label">Password baru</string>
+    <string name="auth_new_password_placeholder">Password baru</string>
+    <string name="auth_new_password_leading">password baru</string>
+    <string name="auth_new_password_helper">Minimal 6 karakter.</string>
+    <string name="auth_confirm_password_label">Konfirmasi password baru</string>
+    <string name="auth_confirm_password_placeholder">Ulangi password baru</string>
+    <string name="auth_confirm_password_leading">konfirmasi password</string>
+    <string name="auth_save_password">Simpan password</string>
+    <string name="auth_password_tip">Gunakan kombinasi yang mudah kamu ingat namun sulit ditebak orang lain.</string>
+
+    <!-- Debug server settings -->
+    <string name="auth_server_settings_title">Pengaturan server</string>
+    <string name="auth_server_debug_eyebrow">Build debug</string>
+    <string name="auth_server_headline">Arahkan app ke\nbackend lokal.</string>
+    <string name="auth_server_body">Untuk HP fisik, isi IP LAN komputer yang menjalankan backend.</string>
+    <string name="auth_server_url_label">Base URL backend</string>
+    <string name="auth_server_url_placeholder">http://&lt;IP-Mac&gt;:3000/api/v1/</string>
+    <string name="auth_server_url_helper">Contoh: http://192.168.1.10:3000/api/v1/ atau https://pam.sequein.my.id/api/v1/</string>
+    <string name="auth_server_saved">Tersimpan: %1$s</string>
+    <string name="auth_server_save">Simpan</string>
+    <string name="auth_server_reset">Reset ke default</string>
+
+    <!-- Account -->
+    <string name="account_title">Akun &amp; sesi</string>
+    <string name="account_not_found">Akun tidak ditemukan.</string>
+    <string name="account_headline_student">Akun belajarmu</string>
+    <string name="account_headline_lecturer">Akun mengajarmu</string>
+    <string name="account_headline_admin">Akun admin</string>
+    <string name="account_subtitle_student">Implementasi Basis Data · Semester Ganjil 2026/2027</string>
+    <string name="account_subtitle_lecturer">Dosen pengampu IBD · Semester Ganjil 2026/2027</string>
+    <string name="account_subtitle_admin">Ruang administrasi EduVARK</string>
+    <string name="account_active_status">%1$s • Akun aktif</string>
+    <string name="account_session_eyebrow_vark">FORMAT SESI AKTIF</string>
+    <string name="account_session_eyebrow_access">HAK AKSES</string>
+    <string name="account_session_title_student">%1$s • Terkunci</string>
+    <string name="account_session_title_lecturer">Dosen • Tanpa VARK</string>
+    <string name="account_session_title_admin">Admin • Manajemen akun</string>
+    <string name="account_session_body_student">Untuk mengganti format, keluar lalu masuk kembali. Feedback kategori lain tetap tersimpan.</string>
+    <string name="account_session_body_lecturer">Staf tidak memilih format belajar. VARK hanya berlaku untuk sesi mahasiswa.</string>
+    <string name="account_session_body_admin">Admin hanya membuat, melihat, memperbarui, dan menonaktifkan akun.</string>
+    <string name="account_notice_student">Ruang belajar: satu kelas IBD untuk satu semester.</string>
+    <string name="account_notice_lecturer">Kelas yang diampu: satu kelas IBD dalam satu semester.</string>
+    <string name="account_notice_admin">Materi, feedback, dan penilaian tidak tersedia untuk role admin.</string>
+    <string name="account_change_password">Ubah password</string>
+    <string name="account_logout">Keluar dari akun</string>
+    <string name="account_logout_note">Keluar akan mengakhiri sesi dan pilihan VARK aktif.</string>
+
+    <!-- VARK selection -->
+    <string name="vark_screen_title">Format belajarmu</string>
+    <string name="vark_step_eyebrow">Langkah 1 dari 1</string>
+    <string name="vark_headline">Belajar dengan\ncaramu hari ini.</string>
+    <string name="vark_intro">Pilih satu format untuk sesi ini. VARK adalah preferensi akses, bukan diagnosis gaya belajar.</string>
+    <string name="vark_locked_notice">Pilihan terkunci sampai kamu keluar. Login kembali untuk memilih format lain.</string>
+    <string name="vark_continue_with">Lanjut dengan %1$s</string>
+    <string name="vark_select_first">Pilih satu format dulu</string>
+    <string name="vark_label_aural">Aural (Audio)</string>
+    <string name="vark_desc_visual">Video dan diagram untuk melihat konsep.</string>
+    <string name="vark_desc_aural">Dengarkan penjelasan dan rekaman.</string>
+    <string name="vark_desc_read_write">Baca modul dan rangkum pemahaman.</string>
+    <string name="vark_desc_kinesthetic">Terapkan konsep melalui studi kasus.</string>
+</resources>

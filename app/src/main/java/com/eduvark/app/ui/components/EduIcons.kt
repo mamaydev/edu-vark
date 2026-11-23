@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.EduResources
 
 /**
  * Thin outline icon set that mirrors the iconography of the UI designs.
@@ -19,8 +21,8 @@ object EduIcons {
     private fun icon(name: String, block: ImageVector.Builder.() -> Unit): ImageVector =
         ImageVector.Builder(
             name = name,
-            defaultWidth = 24.dp,
-            defaultHeight = 24.dp,
+            defaultWidth = EduResources.dp(R.dimen.dimen_24),
+            defaultHeight = EduResources.dp(R.dimen.dimen_24),
             viewportWidth = 24f,
             viewportHeight = 24f,
         ).apply(block).build()

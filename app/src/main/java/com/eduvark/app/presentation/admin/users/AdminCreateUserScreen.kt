@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -34,7 +35,9 @@ import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.SecondaryButton
 import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 @Composable
 fun AdminCreateUserScreen(
@@ -67,9 +70,10 @@ fun AdminCreateUserScreen(
 
     val roleLabels = UserRole.entries.map { it.label }
     val passwordsMismatch = confirmPassword.isNotEmpty() && password != confirmPassword
+    val passwordMismatchMessage = stringResource(R.string.admin_error_password_mismatch)
     val submit: () -> Unit = {
         if (password != confirmPassword) {
-            localError = "Konfirmasi kata sandi tidak sama."
+            localError = passwordMismatchMessage
         } else {
             localError = null
             viewModel.create(loginId, fullName, role, password)
@@ -77,52 +81,61 @@ fun AdminCreateUserScreen(
     }
 
     EduScreen(
-        title = "Buat akun",
+        title = stringResource(R.string.admin_create_title),
         onBack = onBack,
         modifier = modifier,
         bottomBar = bottomBar,
     ) { padding ->
         if (duplicateIdentity) {
-            ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
-                TintBar(text = "VALIDASI AKUN", tone = TintTone.Danger)
-                Spacer(Modifier.height(18.dp))
-                Eyebrow("Identitas sudah dipakai")
-                Spacer(Modifier.height(10.dp))
-                Text(text = "Gunakan identitas yang berbeda.", style = EduText.Display)
-                Spacer(Modifier.height(10.dp))
-                Text(text = "Akun baru belum disimpan.", style = EduText.Body)
+            ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
+                TintBar(
+                    text = stringResource(R.string.admin_create_validation_bar),
+                    tone = TintTone.Danger,
+                )
+                Spacer(Modifier.height(dimen(R.dimen.space_18)))
+                Eyebrow(stringResource(R.string.admin_create_duplicate_eyebrow))
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(
+                    text = stringResource(R.string.admin_create_duplicate_headline),
+                    style = EduTheme.type.display,
+                )
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(
+                    text = stringResource(R.string.admin_create_duplicate_body),
+                    style = EduTheme.type.body,
+                )
 
-                Spacer(Modifier.height(22.dp))
-                FieldLabel("Nama lengkap")
+                Spacer(Modifier.height(dimen(R.dimen.space_22)))
+                FieldLabel(stringResource(R.string.admin_full_name))
                 EduField(
                     value = fullName,
                     onValueChange = {
                         fullName = it
                         localError = null
                     },
-                    placeholder = "Nama lengkap",
+                    placeholder = stringResource(R.string.admin_full_name),
                     enabled = !state.isSaving,
                 )
 
-                Spacer(Modifier.height(16.dp))
-                FieldLabel("Identitas login unik")
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                FieldLabel(stringResource(R.string.admin_login_id_label))
                 EduField(
                     value = loginId,
                     onValueChange = {
                         loginId = it
                         localError = null
                     },
-                    placeholder = "NIM / NIP / NIDN",
+                    placeholder = stringResource(R.string.admin_login_id_placeholder),
                     error = true,
                     enabled = !state.isSaving,
                 )
                 FieldHelper(
-                    text = "Identitas login ini sudah digunakan oleh akun lain.",
+                    text = stringResource(R.string.admin_duplicate_helper),
                     isError = true,
                 )
 
-                Spacer(Modifier.height(16.dp))
-                FieldLabel("Role")
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                FieldLabel(stringResource(R.string.admin_field_role))
                 EduDropdown(
                     value = role.label,
                     options = roleLabels,
@@ -132,109 +145,111 @@ fun AdminCreateUserScreen(
                     enabled = !state.isSaving,
                 )
 
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_20)))
                 NoticeCard(
-                    text = "Periksa daftar akun jika pengguna sudah pernah didaftarkan. " +
-                        "Hindari membuat akun ganda.",
+                    text = stringResource(R.string.admin_duplicate_notice),
                     tone = TintTone.Danger,
                 )
 
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_22)))
                 PrimaryButton(
-                    text = "Perbaiki & simpan",
+                    text = stringResource(R.string.admin_fix_and_save),
                     onClick = submit,
                     enabled = !state.isSaving,
                     loading = state.isSaving,
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
                 SecondaryButton(
-                    text = "Kembali ke daftar akun",
+                    text = stringResource(R.string.admin_back_to_users),
                     onClick = onBack,
                     enabled = !state.isSaving,
                 )
             }
         } else {
-            ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
-                Eyebrow("Akun baru")
-                Spacer(Modifier.height(10.dp))
-                Text(text = "Siapkan akses pengguna.", style = EduText.Display)
-                Spacer(Modifier.height(10.dp))
+            ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
+                Eyebrow(stringResource(R.string.admin_create_eyebrow))
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
                 Text(
-                    text = "Pastikan identitas login belum digunakan.",
-                    style = EduText.Body,
+                    text = stringResource(R.string.admin_create_headline),
+                    style = EduTheme.type.display,
+                )
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                Text(
+                    text = stringResource(R.string.admin_create_subtitle),
+                    style = EduTheme.type.body,
                 )
 
-                Spacer(Modifier.height(22.dp))
-                FieldLabel("Nama lengkap")
+                Spacer(Modifier.height(dimen(R.dimen.space_22)))
+                FieldLabel(stringResource(R.string.admin_full_name))
                 EduField(
                     value = fullName,
                     onValueChange = {
                         fullName = it
                         localError = null
                     },
-                    placeholder = "Nama lengkap",
+                    placeholder = stringResource(R.string.admin_full_name),
                     enabled = !state.isSaving,
                 )
 
-                Spacer(Modifier.height(16.dp))
-                FieldLabel("Identitas login unik")
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                FieldLabel(stringResource(R.string.admin_login_id_label))
                 EduField(
                     value = loginId,
                     onValueChange = {
                         loginId = it
                         localError = null
                     },
-                    placeholder = "NIM / NIP / NIDN",
+                    placeholder = stringResource(R.string.admin_login_id_placeholder),
                     enabled = !state.isSaving,
                 )
                 FieldHelper(
                     text = if (role == UserRole.ADMIN) {
-                        "Akun admin boleh memakai username."
+                        stringResource(R.string.admin_login_helper_admin)
                     } else {
-                        "NIM/NIP/NIDN wajib 10–11 digit angka."
+                        stringResource(R.string.admin_login_helper_default)
                     },
                 )
 
-                Spacer(Modifier.height(16.dp))
-                FieldLabel("Kata sandi awal")
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                FieldLabel(stringResource(R.string.admin_initial_password_label))
                 PasswordField(
                     value = password,
                     onValueChange = {
                         password = it
                         localError = null
                     },
-                    placeholder = "Minimal 6 karakter",
+                    placeholder = stringResource(R.string.admin_password_min_placeholder),
                     enabled = !state.isSaving,
-                    leadingLabel = "kata sandi awal",
+                    leadingLabel = stringResource(R.string.admin_initial_password_semantics),
                 )
 
-                Spacer(Modifier.height(16.dp))
-                FieldLabel("Ulangi kata sandi awal")
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                FieldLabel(stringResource(R.string.admin_initial_password_confirm_label))
                 PasswordField(
                     value = confirmPassword,
                     onValueChange = {
                         confirmPassword = it
                         localError = null
                     },
-                    placeholder = "Ulangi kata sandi",
+                    placeholder = stringResource(R.string.admin_password_repeat_placeholder),
                     enabled = !state.isSaving,
-                    leadingLabel = "konfirmasi kata sandi awal",
+                    leadingLabel = stringResource(R.string.admin_initial_password_confirm_semantics),
                 )
                 if (passwordsMismatch) {
                     FieldHelper(
-                        text = "Konfirmasi kata sandi tidak sama.",
+                        text = passwordMismatchMessage,
                         isError = true,
                     )
                 }
 
-                Spacer(Modifier.height(18.dp))
-                FieldLabel("Role akun")
+                Spacer(Modifier.height(dimen(R.dimen.space_18)))
+                FieldLabel(stringResource(R.string.admin_role_group_label))
                 EduCard(
                     modifier = Modifier.fillMaxWidth(),
-                    padding = 16.dp,
+                    padding = dimen(R.dimen.dimen_16),
                 ) {
                     UserRole.entries.forEachIndexed { index, option ->
-                        if (index > 0) Spacer(Modifier.height(2.dp))
+                        if (index > 0) Spacer(Modifier.height(dimen(R.dimen.space_2)))
                         EduRadioRow(
                             label = option.label,
                             selected = role == option,
@@ -244,11 +259,11 @@ fun AdminCreateUserScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_8)))
                 FieldHelper(text = roleHint(role))
 
-                Spacer(Modifier.height(16.dp))
-                FieldLabel("Status akun")
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                FieldLabel(stringResource(R.string.admin_status_label))
                 EduDropdown(
                     value = AdminAccountStatus.ACTIVE.label,
                     options = listOf(AdminAccountStatus.ACTIVE.label),
@@ -258,21 +273,21 @@ fun AdminCreateUserScreen(
 
                 val errorText = localError ?: state.error
                 if (errorText != null) {
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_18)))
                     NoticeCard(text = errorText, tone = TintTone.Danger)
                 }
 
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_22)))
                 PrimaryButton(
-                    text = "Simpan akun baru",
+                    text = stringResource(R.string.admin_save_new_user),
                     onClick = submit,
                     enabled = !state.isSaving,
                     loading = state.isSaving,
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
                 Text(
-                    text = "Hanya tiga role yang dapat dipilih: Mahasiswa, Dosen, dan Admin.",
-                    style = EduText.BodySmall,
+                    text = stringResource(R.string.admin_create_footer),
+                    style = EduTheme.type.bodySmall,
                 )
             }
         }
@@ -280,10 +295,11 @@ fun AdminCreateUserScreen(
 }
 
 /** Consequence of the selected role, mirrored from the backend role assignment. */
+@Composable
 private fun roleHint(role: UserRole): String = when (role) {
-    UserRole.STUDENT -> "Mahasiswa otomatis di-enroll ke kelas aktif."
-    UserRole.LECTURER -> "Dosen otomatis mendapat teaching assignment kelas aktif."
-    UserRole.ADMIN -> "Akun admin tidak mendapat enrollment atau teaching assignment."
+    UserRole.STUDENT -> stringResource(R.string.admin_role_hint_student)
+    UserRole.LECTURER -> stringResource(R.string.admin_role_hint_lecturer)
+    UserRole.ADMIN -> stringResource(R.string.admin_role_hint_admin)
 }
 
 /**

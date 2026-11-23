@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -26,7 +27,9 @@ import com.eduvark.app.ui.components.PrimaryButton
 import com.eduvark.app.ui.components.ScrollColumn
 import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintTone
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 @Composable
 fun ServerSettingsScreen(
@@ -44,42 +47,45 @@ fun ServerSettingsScreen(
         }
     }
 
-    EduScreen(title = "Pengaturan server", onBack = onBack, modifier = modifier) { padding ->
-        ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
-            Eyebrow("Build debug")
-            Spacer(Modifier.height(10.dp))
-            Text(text = "Arahkan app ke\nbackend lokal.", style = EduText.Display)
-            Spacer(Modifier.height(12.dp))
+    EduScreen(title = stringResource(R.string.auth_server_settings_title), onBack = onBack, modifier = modifier) { padding ->
+        ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
+            Eyebrow(stringResource(R.string.auth_server_debug_eyebrow))
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
+            Text(text = stringResource(R.string.auth_server_headline), style = EduTheme.type.display)
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             Text(
-                text = "Untuk HP fisik, isi IP LAN komputer yang menjalankan backend.",
-                style = EduText.Body,
+                text = stringResource(R.string.auth_server_body),
+                style = EduTheme.type.body,
             )
 
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_22)))
             Column {
-                FieldLabel("Base URL backend")
+                FieldLabel(stringResource(R.string.auth_server_url_label))
                 EduField(
                     value = url,
                     onValueChange = { url = it },
-                    placeholder = "http://<IP-Mac>:3000/api/v1/",
+                    placeholder = stringResource(R.string.auth_server_url_placeholder),
                     keyboardType = KeyboardType.Uri,
                 )
-                FieldHelper("Contoh: http://192.168.1.10:3000/api/v1/ atau https://pam.sequein.my.id/api/v1/")
+                FieldHelper(stringResource(R.string.auth_server_url_helper))
             }
 
-            Spacer(Modifier.height(12.dp))
-            Text(text = "Tersimpan: ${state.currentUrl}", style = EduText.BodySmall)
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
+            Text(
+                text = stringResource(R.string.auth_server_saved, state.currentUrl),
+                style = EduTheme.type.bodySmall,
+            )
 
             val error = state.error
             if (error != null) {
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_14)))
                 NoticeCard(text = error, tone = TintTone.Danger)
             }
 
-            Spacer(Modifier.height(20.dp))
-            PrimaryButton(text = "Simpan", onClick = { viewModel.save(url) })
-            Spacer(Modifier.height(12.dp))
-            TextLink(text = "Reset ke default", onClick = viewModel::reset, icon = false)
+            Spacer(Modifier.height(dimen(R.dimen.space_20)))
+            PrimaryButton(text = stringResource(R.string.auth_server_save), onClick = { viewModel.save(url) })
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
+            TextLink(text = stringResource(R.string.auth_server_reset), onClick = viewModel::reset, icon = false)
         }
     }
 }

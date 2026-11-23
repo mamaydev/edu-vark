@@ -4,13 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.AdminAccountStatus
+import com.eduvark.app.domain.model.CaseStudy
 import com.eduvark.app.domain.model.AdminUser
 import com.eduvark.app.domain.model.StudentDashboard
 import com.eduvark.app.domain.model.Topic
 import com.eduvark.app.domain.model.TopicStatus
+import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.domain.model.UserProfile
 import com.eduvark.app.domain.model.UserRole
 import com.eduvark.app.domain.usecase.GetMeUseCase
+import com.eduvark.app.domain.usecase.GetStudentCaseUseCase
 import com.eduvark.app.domain.usecase.GetStudentDashboardUseCase
 import com.eduvark.app.domain.usecase.GetTopicsUseCase
 import com.eduvark.app.domain.usecase.ListAdminUsersUseCase
@@ -56,6 +59,7 @@ data class HomeUiState(
     val user: UserProfile? = null,
     val topics: List<Topic> = emptyList(),
     val studentDashboard: StudentDashboard? = null,
+    val casePreviews: Map<String, CaseStudy> = emptyMap(),
     val adminUsers: List<AdminUser> = emptyList(),
     val adminSummary: AdminSummary? = null,
     val error: String? = null,
@@ -79,6 +83,7 @@ class HomeViewModel @Inject constructor(
     private val getTopicsUseCase: GetTopicsUseCase,
     private val getStudentDashboardUseCase: GetStudentDashboardUseCase,
     private val listAdminUsersUseCase: ListAdminUsersUseCase,
+    private val getStudentCaseUseCase: GetStudentCaseUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
@@ -186,6 +191,7 @@ class HomeViewModel @Inject constructor(
             async {
                 runCatching { getTopicsUseCase() }.onSuccess { topics ->
                     _state.update { it.copy(topics = topics) }
+                    loadCasePreviews(user, topics)
                 }
             }
             if (user.role == UserRole.STUDENT) {
@@ -197,6 +203,23 @@ class HomeViewModel @Inject constructor(
             }
         }
         Unit
+    }
+
+    /**
+     * Kinetic students see the case state on the home cards. Only the two cards
+     * that are actually rendered need the extra calls.
+     */
+    private suspend fun loadCasePreviews(user: UserProfile, topics: List<Topic>) = coroutineScope {
+        if (user.activeVark != VarkType.KINESTHETIC) return@coroutineScope
+        val published = topics.filter { it.status == TopicStatus.PUBLISHED }
+            .sortedBy { it.sortOrder }
+            .take(2)
+        published.map { topic ->
+            async {
+                val preview = runCatching { getStudentCaseUseCase(topic.id) }.getOrNull()
+                preview?.let { _state.update { state -> state.copy(casePreviews = state.casePreviews + (topic.id to it)) } }
+            }
+        }
     }
 
     fun logout() {

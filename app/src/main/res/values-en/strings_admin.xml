@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Admin — account list (mockup 33) -->
+    <string name="admin_users_title">Account management</string>
+    <string name="admin_users_registered_count">%1$d accounts registered</string>
+    <string name="admin_users_headline">Manage user access.</string>
+    <string name="admin_users_subtitle">Students, lecturers, and admins</string>
+    <string name="admin_users_search_label">Search accounts</string>
+    <string name="admin_users_search_placeholder">Name or login identity…</string>
+    <string name="admin_users_filter_label">Filter</string>
+    <string name="admin_filter_all_roles">All roles</string>
+    <string name="admin_filter_all_status">All statuses</string>
+    <string name="admin_filter_label">%1$s • %2$s</string>
+    <string name="admin_users_create_button">+ Create account</string>
+    <string name="admin_users_empty_filtered">No accounts match this search or filter.</string>
+    <string name="admin_users_empty">No accounts registered yet.</string>
+    <string name="admin_user_meta">%1$s • %2$s</string>
+    <string name="admin_users_prev_page">Previous</string>
+    <string name="admin_users_next_page">Next</string>
+    <string name="admin_users_page_of">Page %1$d of %2$d</string>
+
+    <!-- Admin — create account (mockups 34/37) -->
+    <string name="admin_create_title">Create account</string>
+    <string name="admin_create_eyebrow">New account</string>
+    <string name="admin_create_headline">Set up user access.</string>
+    <string name="admin_create_subtitle">Make sure the login identity has not been used.</string>
+    <string name="admin_create_validation_bar">ACCOUNT VALIDATION</string>
+    <string name="admin_create_duplicate_eyebrow">Identity already in use</string>
+    <string name="admin_create_duplicate_headline">Use a different identity.</string>
+    <string name="admin_create_duplicate_body">The new account has not been saved.</string>
+    <string name="admin_full_name">Full name</string>
+    <string name="admin_login_id_label">Unique login identity</string>
+    <string name="admin_login_id_placeholder">NIM / NIP / NIDN</string>
+    <string name="admin_login_helper_admin">Admin accounts may use a username.</string>
+    <string name="admin_login_helper_default">NIM/NIP/NIDN must be 10–11 digits.</string>
+    <string name="admin_duplicate_helper">This login identity is already used by another account.</string>
+    <string name="admin_field_role">Role</string>
+    <string name="admin_role_group_label">Account role</string>
+    <string name="admin_status_label">Account status</string>
+    <string name="admin_duplicate_notice">Check the account list if the user has been registered before. Avoid creating duplicate accounts.</string>
+    <string name="admin_fix_and_save">Fix &amp; save</string>
+    <string name="admin_back_to_users">Back to account list</string>
+    <string name="admin_initial_password_label">Initial password</string>
+    <string name="admin_initial_password_confirm_label">Repeat initial password</string>
+    <string name="admin_initial_password_semantics">initial password</string>
+    <string name="admin_initial_password_confirm_semantics">confirm initial password</string>
+    <string name="admin_password_min_placeholder">At least 6 characters</string>
+    <string name="admin_password_repeat_placeholder">Repeat password</string>
+    <string name="admin_error_password_min">Password must be at least 6 characters.</string>
+    <string name="admin_error_password_mismatch">Password confirmation does not match.</string>
+    <string name="admin_save_new_user">Save new account</string>
+    <string name="admin_create_footer">Only three roles can be selected: Student, Lecturer, and Admin.</string>
+    <string name="admin_role_hint_student">Students are automatically enrolled in the active class.</string>
+    <string name="admin_role_hint_lecturer">Lecturers automatically receive a teaching assignment for the active class.</string>
+    <string name="admin_role_hint_admin">Admin accounts receive no enrollment or teaching assignment.</string>
+
+    <!-- Admin — account detail & edit (mockups 35/36/38) -->
+    <string name="admin_detail_title">Account details</string>
+    <string name="admin_status_page_title">Account status</string>
+    <string name="admin_deactivate_action">Deactivate account</string>
+    <string name="admin_user_not_found">Account not found.</string>
+    <string name="admin_detail_subtitle">Identity and account access</string>
+    <string name="admin_field_status">Status</string>
+    <string name="admin_update_notice">Account changes do not alter materials, feedback, answers, or academic grades.</string>
+    <string name="admin_save_changes">Save changes</string>
+    <string name="admin_reset_password_link">Reset temporary password</string>
+    <string name="admin_action_cancel">Cancel</string>
+
+    <!-- Admin — enrollment panel -->
+    <string name="admin_enrollment_remove_title">Remove from class?</string>
+    <string name="admin_enrollment_activate_title">Enable class access?</string>
+    <string name="admin_enrollment_remove_body">Class access is revoked; work history and grades are kept.</string>
+    <string name="admin_enrollment_activate_body">The student regains access to the class and its materials.</string>
+    <string name="admin_enrollment_remove_action">Remove from class</string>
+    <string name="admin_enrollment_activate_action">Enable class access</string>
+    <string name="admin_enrollment_reactivate_link">Restore class access</string>
+
+    <!-- Admin — deactivate confirmation (mockup 36) -->
+    <string name="admin_confirm_eyebrow">Admin confirmation</string>
+    <string name="admin_confirm_headline">Deactivate this account?</string>
+    <string name="admin_confirm_body">An inactive account cannot start a new login.</string>
+    <string name="admin_user_role_status">%1$s • %2$s</string>
+    <string name="admin_confirm_role_status">%1$s • Currently %2$s</string>
+    <string name="admin_confirm_notice">This is not a permanent account deletion. The retention policy and the fate of active sessions still need confirmation.</string>
+    <string name="admin_deactivating">Deactivating…</string>
+    <string name="admin_confirm_deactivate">Yes, deactivate account</string>
+
+    <!-- Admin — inactive account state (mockup 38) -->
+    <string name="admin_login_rejected">LOGIN DENIED</string>
+    <string name="admin_inactive_title">Inactive account</string>
+    <string name="admin_inactive_headline">Your account access is currently deactivated.</string>
+    <string name="admin_inactive_body">A learning session cannot be started yet.</string>
+    <string name="admin_inactive_help">Contact the class administrator to check the account status and get help.</string>
+    <string name="admin_inactive_notice">Only active accounts can sign in to EduVARK.</string>
+    <string name="admin_back_to_login">Back to sign-in page</string>
+
+    <!-- Admin — reset password panel (mockup 35) -->
+    <string name="admin_reset_password_title">Reset password</string>
+    <string name="admin_reset_password_body">The user must change this temporary password at their next sign-in.</string>
+    <string name="admin_temp_password_label">Temporary password</string>
+    <string name="admin_temp_password_confirm_label">Repeat temporary password</string>
+    <string name="admin_temp_password_semantics">temporary password</string>
+    <string name="admin_temp_password_confirm_semantics">confirm temporary password</string>
+    <string name="admin_save_temp_password">Save temporary password</string>
+</resources>

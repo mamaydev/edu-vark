@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Student materials (mockups 07-11) and case study (mockups 13-17) copy.
+    Default locale: Indonesian.
+-->
+<resources>
+    <!-- Materials screen title -->
+    <string name="st_material_title_missing">Materi belum tersedia</string>
+    <string name="st_material_title_default">Materi</string>
+    <string name="st_material_title_with_vark">Materi %1$s</string>
+
+    <!-- VARK category names (brand terms) -->
+    <string name="st_material_vark_visual">Visual</string>
+    <string name="st_material_vark_aural">Aural</string>
+    <string name="st_material_vark_read_write">Read/Write</string>
+    <string name="st_material_vark_kinesthetic">Kinesthetic</string>
+    <string name="st_material_vark_default">VARK</string>
+
+    <!-- Topic + category bars -->
+    <string name="st_material_topic_bar">Topik %1$s • %2$s</string>
+    <string name="st_material_topic_default">Topik</string>
+
+    <!-- Video player -->
+    <string name="st_material_video_eyebrow">VIDEO PEMBELAJARAN</string>
+    <string name="st_material_video_play">Putar video</string>
+    <string name="st_material_video_meta_default">Video</string>
+
+    <!-- Audio player -->
+    <string name="st_material_audio_play">Putar audio</string>
+    <string name="st_material_audio_meta_default">Audio</string>
+
+    <!-- Read/write module -->
+    <string name="st_material_read_eyebrow">Modul • %1$s</string>
+    <string name="st_material_read_link">Lanjut membaca modul</string>
+
+    <!-- Feedback slider -->
+    <string name="st_material_feedback_title">Seberapa paham kamu?</string>
+    <string name="st_material_feedback_subtitle">Feedback pribadi, bukan nilai akademik.</string>
+    <string name="st_material_percent">%1$d%%</string>
+    <string name="st_material_feedback_min">0%</string>
+    <string name="st_material_feedback_max">100%</string>
+    <string name="st_material_feedback_stored">Tersimpan: %1$d%%</string>
+    <string name="st_material_feedback_save">Simpan feedback</string>
+
+    <!-- Saved feedback state -->
+    <string name="st_material_saved_eyebrow">Feedback tersimpan</string>
+    <string name="st_material_saved_title">Pemahamannmu\nsudah dicatat.</string>
+    <string name="st_material_saved_body">Kamu bisa memperbarui feedback untuk topik dan format yang sama.</string>
+    <string name="st_material_saved_meta">%1$s • Feedback terbaru</string>
+    <string name="st_material_saved_notice">Nilai terbaru menggantikan feedback sebelumnya pada topik dan kategori ini. Feedback kategori lain tetap tersimpan.</string>
+    <string name="st_material_saved_back">Kembali ke materi</string>
+    <string name="st_material_saved_topics">Lihat topik lain</string>
+
+    <!-- Missing material state -->
+    <string name="st_material_missing_message">materi belum tersedia, harap hubungi dosen terlebih dahulu</string>
+    <string name="st_material_missing_body">Topik sudah diterbitkan, tetapi materi untuk kategori %1$s belum diunggah.</string>
+    <string name="st_material_category_default">ini</string>
+    <string name="st_material_missing_notice">Sesi kamu tetap %1$s. Format lain tidak dapat diakses dalam sesi ini.</string>
+    <string name="st_material_format_default">format ini</string>
+    <string name="st_material_missing_back">Kembali ke daftar topik</string>
+
+    <!-- Shared fallbacks / section headers -->
+    <string name="st_material_description_default">Materi untuk topik ini tersedia pada format sesimu.</string>
+    <string name="st_material_section_audio">Tentang rekaman ini</string>
+    <string name="st_material_section_read">Isi modul</string>
+    <string name="st_material_section_default">Tentang materi ini</string>
+
+    <!-- Case study screen titles -->
+    <string name="st_case_title_status">Status pengumpulan</string>
+    <string name="st_case_title_result">Hasil penilaian</string>
+    <string name="st_case_title_confirm">Kirim jawaban</string>
+    <string name="st_case_title_default">Studi kasus</string>
+    <string name="st_case_topic_label">Topik %1$s • Kinesthetic</string>
+    <string name="st_case_topic_default">Studi kasus</string>
+    <string name="st_case_not_available">Studi kasus untuk topik ini belum tersedia.</string>
+
+    <!-- Answer editor -->
+    <string name="st_case_theory">Teori singkat</string>
+    <string name="st_case_instructions">Instruksi studi kasus</string>
+    <string name="st_case_answer_title">Jawabanku</string>
+    <string name="st_case_answer_meta">Teks biasa • Tanpa unggah file</string>
+    <string name="st_case_answer_placeholder">Tulis jawabanmu di sini…</string>
+    <string name="st_case_answer_counter">%1$d / 10.000 karakter</string>
+    <string name="st_case_no_draft_notice">Tidak ada draft atau simpan otomatis. Jawaban yang belum dikirim dapat hilang jika halaman ditutup.</string>
+    <string name="st_case_submit">Kirim jawaban final</string>
+    <string name="st_case_answer_hint">1–10.000 karakter • Hanya satu kali kirim</string>
+    <string name="st_case_supporting_title">Materi pendukung Kinesthetic</string>
+    <string name="st_case_supporting_body">Baca materi dari dosen sebelum menjawab studi kasus.</string>
+    <string name="st_case_deadline">Tenggat: %1$s</string>
+    <string name="st_case_deadline_note">Acuan penerimaan: waktu server.</string>
+
+    <!-- Submission confirmation -->
+    <string name="st_case_confirm_eyebrow">Konfirmasi pengiriman</string>
+    <string name="st_case_confirm_title">Sudah yakin dengan\njawabanmu?</string>
+    <string name="st_case_confirm_body">Baca kembali sebelum mengirim.</string>
+    <string name="st_case_confirm_ready">Siap dikirim • %1$d karakter</string>
+    <string name="st_case_confirm_final_title">Pengiriman bersifat final</string>
+    <string name="st_case_confirm_bullet_1">Hanya satu jawaban per studi kasus.</string>
+    <string name="st_case_confirm_bullet_2">Jawaban tidak dapat diubah atau dikirim ulang.</string>
+    <string name="st_case_confirm_bullet_3">Tidak ada penyimpanan draft.</string>
+    <string name="st_case_confirm_bullet_4">Server memeriksa tenggat saat Kirim diproses.</string>
+    <string name="st_case_confirm_submit">Ya, kirim jawaban final</string>
+    <string name="st_case_confirm_cancel">Kembali periksa jawaban</string>
+    <string name="st_case_confirm_footnote">Kiriman diterima jika waktu server ≤ tenggat. Setelah tenggat, jawaban tidak tersimpan.</string>
+
+    <!-- Waiting for grading -->
+    <string name="st_case_waiting_eyebrow">Berhasil dikirim</string>
+    <string name="st_case_waiting_title">Jawabanmu\nsudah diterima.</string>
+    <string name="st_case_waiting_body">Dosen akan menilai jawaban finalmu.</string>
+    <string name="st_case_waiting_status">Menunggu penilaian</string>
+    <string name="st_case_waiting_submitted">Dikirim pada</string>
+    <string name="st_case_waiting_answer_meta">Jawaban final • %1$d karakter</string>
+    <string name="st_case_waiting_view">Lihat jawaban terkirim</string>
+    <string name="st_case_waiting_notice">Jawaban terkunci. Tidak ada opsi revisi atau pengiriman ulang sebelum maupun sesudah dinilai.</string>
+    <string name="st_case_back_home">Kembali ke beranda</string>
+
+    <!-- Graded result -->
+    <string name="st_case_graded_tintbar">Sudah dinilai • Final</string>
+    <string name="st_case_graded_title">Hasil kerja kerasmu.</string>
+    <string name="st_case_graded_eyebrow">NILAI STUDI KASUS</string>
+    <string name="st_case_graded_score">%1$d / 100</string>
+    <string name="st_case_graded_meta">%1$s • Kinesthetic</string>
+    <string name="st_case_graded_by_default">Dosen pengampu</string>
+    <string name="st_case_graded_comment_default">Dosen tidak menambahkan komentar.</string>
+    <string name="st_case_graded_at">Dinilai %1$s</string>
+    <string name="st_case_graded_note">Penilaian langsung terlihat setelah disimpan dosen dan tidak dapat diubah.</string>
+    <string name="st_case_graded_view">Lihat jawaban final</string>
+
+    <!-- Closed / not submitted -->
+    <string name="st_case_closed_tintbar">Tenggat berakhir</string>
+    <string name="st_case_closed_eyebrow">Status pengumpulan</string>
+    <string name="st_case_closed_title">Tidak\nMengumpulkan</string>
+    <string name="st_case_closed_body">Kamu belum mengirim jawaban hingga tenggat berakhir.</string>
+    <string name="st_case_closed_status">Tidak ada pengiriman</string>
+    <string name="st_case_closed_score">— / 100</string>
+    <string name="st_case_closed_score_note">Bukan nilai 0</string>
+    <string name="st_case_closed_score_body">Tidak ada jawaban atau nilai yang dibuat otomatis untuk status ini.</string>
+    <string name="st_case_closed_notice">Pengumpulan ditutup. Jawaban yang diterima server setelah tenggat akan ditolak.</string>
+    <string name="st_case_closed_back">Kembali ke daftar topik</string>
+</resources>

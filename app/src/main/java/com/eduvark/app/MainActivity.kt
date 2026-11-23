@@ -33,6 +33,11 @@ class MainActivity : ComponentActivity() {
         applyDebugServerOverride()
         requestLocalNetworkPermissionIfNeeded()
         enableEdgeToEdge()
+        // The redesign paints a single continuous dark canvas; the platform contrast
+        // scrim behind the gesture bar would add a darker `#101010` band.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         setContent {
             EduVarkTheme {
                 EduVarkApp()

@@ -24,10 +24,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eduvark.app.domain.model.CaseStudy
+import com.eduvark.app.domain.model.SubmissionStatus
 import com.eduvark.app.domain.model.Topic
 import com.eduvark.app.domain.model.UserRole
 import com.eduvark.app.domain.model.VarkType
@@ -40,6 +42,8 @@ import com.eduvark.app.ui.components.Eyebrow
 import com.eduvark.app.ui.components.LecturerBottomBar
 import com.eduvark.app.ui.components.LecturerTab
 import com.eduvark.app.ui.components.StudentBottomBar
+import com.eduvark.app.ui.components.TextLink
+import com.eduvark.app.ui.components.CardEyebrow
 import com.eduvark.app.ui.components.StudentTab
 import com.eduvark.app.ui.components.EduCard
 import com.eduvark.app.ui.components.ErrorBlock
@@ -53,11 +57,15 @@ import com.eduvark.app.ui.components.SectionHeader
 import com.eduvark.app.ui.components.StatCard
 import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintTone
+import com.eduvark.app.ui.components.content
+import com.eduvark.app.ui.format.formatDeadline
+import androidx.compose.ui.text.font.FontWeight
 import com.eduvark.app.ui.components.TopicCard
 import com.eduvark.app.ui.components.UserCard
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
 import java.util.Calendar
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 @Composable
 fun HomeScreen(
@@ -87,22 +95,22 @@ fun HomeScreen(
     EduScreen(
         modifier = modifier,
         title = when (role) {
-            UserRole.STUDENT -> "Beranda"
-            UserRole.LECTURER -> "Beranda dosen"
-            UserRole.ADMIN -> "Beranda admin"
-            null -> "Beranda"
+            UserRole.STUDENT -> stringResource(R.string.home_title_student)
+            UserRole.LECTURER -> stringResource(R.string.home_title_lecturer)
+            UserRole.ADMIN -> stringResource(R.string.home_title_admin)
+            null -> stringResource(R.string.home_title_student)
         },
         topBarAction = {
             if (state.user != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TopBarIcon(
                         icon = EduIcons.Person,
-                        description = "Akun & sesi",
+                        description = stringResource(R.string.home_top_bar_account_desc),
                         onClick = onOpenAccount,
                     )
                     TopBarIcon(
                         icon = EduIcons.Logout,
-                        description = "Keluar dari akun",
+                        description = stringResource(R.string.home_top_bar_logout_desc),
                         onClick = { confirmLogout = true },
                     )
                 }
@@ -147,10 +155,10 @@ fun HomeScreen(
             user == null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 ErrorBlock(
-                    message = state.error ?: "Sesi tidak ditemukan.",
+                    message = state.error ?: stringResource(R.string.home_error_session_missing),
                     onRetry = viewModel::load,
                 )
             }
@@ -163,7 +171,7 @@ fun HomeScreen(
                 ScrollColumn {
                 if (state.refreshError != null) {
                     NoticeCard(text = state.refreshError.orEmpty(), tone = TintTone.Danger)
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 }
                 when (user.role) {
                     UserRole.STUDENT -> StudentHome(state, onOpenStudentTopics)
@@ -188,13 +196,12 @@ fun HomeScreen(
     if (confirmLogout) {
         AlertDialog(
             onDismissRequest = { confirmLogout = false },
-            containerColor = EduColors.Surface,
-            title = { Text(text = "Keluar dari akun?", style = EduText.Headline) },
+            containerColor = EduTheme.colors.surface,
+            title = { Text(text = stringResource(R.string.home_logout_dialog_title), style = EduTheme.type.headline) },
             text = {
                 Text(
-                    text = "Sesi belajar akan diakhiri dan pilihan VARK aktif dihapus. " +
-                        "Kamu perlu masuk kembali untuk melanjutkan.",
-                    style = EduText.Body,
+                    text = stringResource(R.string.home_logout_dialog_message),
+                    style = EduTheme.type.body,
                 )
             },
             confirmButton = {
@@ -205,14 +212,14 @@ fun HomeScreen(
                     },
                 ) {
                     Text(
-                        text = "Ya, keluar",
-                        style = EduText.Button.copy(color = EduColors.Danger),
+                        text = stringResource(R.string.home_logout_confirm),
+                        style = EduTheme.type.button.copy(color = EduTheme.colors.danger),
                     )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { confirmLogout = false }) {
-                    Text(text = "Batal", style = EduText.Button.copy(color = EduColors.Muted))
+                    Text(text = stringResource(R.string.home_cancel), style = EduTheme.type.button.copy(color = EduTheme.colors.muted))
                 }
             },
         )
@@ -222,90 +229,119 @@ fun HomeScreen(
 @Composable
 private fun StudentHome(state: HomeUiState, onOpenTopics: () -> Unit) {
     val user = state.user ?: return
-    val firstName = displayFirstName(user.fullName, "kamu")
+    val firstName = displayFirstName(user.fullName, stringResource(R.string.home_first_name_fallback_student))
     val vark = user.activeVark
     val kinesthetic = vark == VarkType.KINESTHETIC
+    val varkLabel = vark?.label ?: stringResource(R.string.home_vark_not_selected)
 
-    Eyebrow("Selamat ${greeting()}, $firstName")
+    Eyebrow(stringResource(R.string.home_greeting, greeting(), firstName))
     Text(
-        text = if (kinesthetic) "Saatnya mencoba secara langsung." else "Siap memahami hal baru?",
-        style = EduText.Display,
+        text = if (kinesthetic) {
+            stringResource(R.string.home_display_kinesthetic)
+        } else {
+            stringResource(R.string.home_display_student)
+        },
+        style = EduTheme.type.display,
     )
 
     HeroCard(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "IBD • SEMESTER GANJIL 2026/2027",
-            style = EduText.Eyebrow.copy(color = Color.White.copy(alpha = 0.72f)),
+            text = if (kinesthetic) {
+                stringResource(R.string.home_hero_eyebrow_kinesthetic)
+            } else {
+                stringResource(R.string.home_hero_eyebrow_student)
+            },
+            style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand),
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = if (kinesthetic) "Belajar melalui studi kasus." else "Implementasi Basis Data",
-            style = EduText.HeroTitle,
+            text = if (kinesthetic) {
+                stringResource(R.string.home_hero_title_kinesthetic)
+            } else {
+                stringResource(R.string.home_class_name)
+            },
+            style = EduTheme.type.heroTitle,
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "${vark?.label ?: "VARK belum dipilih"} • Terkunci selama sesi",
-            style = EduText.BodySmall.copy(color = Color.White.copy(alpha = 0.9f)),
+            text = stringResource(R.string.home_hero_vark_locked, varkLabel),
+            style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand),
         )
         if (kinesthetic) {
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
             Text(
-                text = "Jawaban teks. Satu kiriman final.",
-                style = EduText.BodySmall.copy(color = Color.White.copy(alpha = 0.75f)),
+                text = stringResource(R.string.home_hero_kinesthetic_note),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand),
             )
         }
-        Spacer(Modifier.height(18.dp))
-        LightButton(
-            text = if (kinesthetic) "Buka studi kasus" else "Lanjut belajar",
-            onClick = onOpenTopics,
-        )
+        if (!kinesthetic) {
+            Spacer(Modifier.height(dimen(R.dimen.space_18)))
+            LightButton(text = stringResource(R.string.home_continue_learning), onClick = onOpenTopics)
+        }
     }
 
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        StatCard(
-            value = state.studentDashboard?.availableMaterials
-                ?.toString()
-                ?.padStart(2, '0') ?: "—",
-            label = "Materi Tersedia",
-            modifier = Modifier.weight(1f),
-        )
-        StatCard(
-            value = state.studentDashboard?.notCompletedMaterials
-                ?.toString()
-                ?.padStart(2, '0') ?: "—",
-            label = "Materi Belum Dikerjakan",
-            modifier = Modifier.weight(1f),
-        )
+    if (!kinesthetic) {
+        Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_12))) {
+            StatCard(
+                value = state.studentDashboard?.availableMaterials
+                    ?.toString()
+                    ?.padStart(2, '0') ?: stringResource(R.string.home_stat_placeholder),
+                label = stringResource(R.string.home_stat_materials_available),
+                modifier = Modifier.weight(1f),
+            )
+            StatCard(
+                value = state.studentDashboard?.notCompletedMaterials
+                    ?.toString()
+                    ?.padStart(2, '0') ?: stringResource(R.string.home_stat_placeholder),
+                label = stringResource(R.string.home_stat_materials_pending),
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 
     SectionHeader(
-        title = if (kinesthetic) "Studi kasus untukmu" else "Lanjutkan topik",
-        actionLabel = "Semua",
+        title = if (kinesthetic) {
+            stringResource(R.string.home_section_cases)
+        } else {
+            stringResource(R.string.home_section_continue_topics)
+        },
+        actionLabel = stringResource(R.string.home_action_all),
         onAction = onOpenTopics,
     )
 
     val preview = state.publishedTopics.take(2)
     if (preview.isEmpty() && !state.isLoading) {
         EduCard {
-            Text(text = "Belum ada topik terbit.", style = EduText.CardTitle)
-            Spacer(Modifier.height(6.dp))
-            Text(text = "Topik akan muncul setelah dosen menerbitkannya.", style = EduText.BodySmall)
+            Text(text = stringResource(R.string.home_empty_topics_title), style = EduTheme.type.cardTitle)
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(
+                text = stringResource(R.string.home_empty_topics_message),
+                style = EduTheme.type.bodySmall,
+            )
         }
     } else {
         preview.forEachIndexed { index, topic ->
-            TopicPreviewCard(
-                index = index,
-                topic = topic,
-                kinesthetic = kinesthetic,
-                vark = vark,
-                onClick = onOpenTopics,
-            )
+            if (kinesthetic) {
+                KinestheticCaseCard(
+                    topic = topic,
+                    caseStudy = state.casePreviews[topic.id],
+                    onClick = onOpenTopics,
+                )
+            } else {
+                TopicPreviewCard(
+                    index = index,
+                    topic = topic,
+                    kinesthetic = kinesthetic,
+                    vark = vark,
+                    onClick = onOpenTopics,
+                )
+            }
         }
     }
 
     if (kinesthetic) {
         NoticeCard(
-            text = "Kinesthetic menggunakan penilaian dosen, bukan slider feedback pemahaman.",
+            text = stringResource(R.string.home_kinesthetic_notice),
         )
     }
 }
@@ -318,70 +354,74 @@ private fun LecturerHome(
     onCreateTopic: () -> Unit,
 ) {
     val user = state.user ?: return
-    val firstName = displayFirstName(user.fullName, "Pak/Bu")
+    val firstName = displayFirstName(user.fullName, stringResource(R.string.home_first_name_fallback_lecturer))
 
-    Eyebrow("Selamat ${greeting()}, $firstName")
-    Text(text = "Bantu setiap cara belajar bertumbuh.", style = EduText.Display)
+    Eyebrow(stringResource(R.string.home_greeting, greeting(), firstName))
+    Text(text = stringResource(R.string.home_display_lecturer), style = EduTheme.type.display)
 
     HeroCard(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "KELAS YANG DIAMPU",
-            style = EduText.Eyebrow.copy(color = Color.White.copy(alpha = 0.72f)),
+            text = stringResource(R.string.home_hero_eyebrow_lecturer),
+            style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand),
         )
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Implementasi Basis Data", style = EduText.HeroTitle)
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.home_class_name), style = EduTheme.type.heroTitle)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "Semester Ganjil 2026/2027 • ${state.publishedTopics.size} topik terbit",
-            style = EduText.BodySmall.copy(color = Color.White.copy(alpha = 0.9f)),
+            text = stringResource(R.string.home_hero_subtitle_lecturer, state.publishedTopics.size),
+            style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand),
         )
     }
 
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_12))) {
         StatCard(
             value = state.publishedTopics.size.toString().padStart(2, '0'),
-            label = "Topik terbit",
+            label = stringResource(R.string.home_stat_published_topics),
             modifier = Modifier.weight(1f),
         )
         StatCard(
             value = state.draftTopics.size.toString().padStart(2, '0'),
-            label = "Draf",
+            label = stringResource(R.string.home_stat_drafts),
             modifier = Modifier.weight(1f),
         )
     }
 
-    SectionHeader(title = "Prioritas hari ini")
+    SectionHeader(title = stringResource(R.string.home_section_priority))
 
     EduCard(modifier = Modifier.fillMaxWidth(), onClick = onOpenTopics) {
-        Text(text = "Kelola topik dan materi", style = EduText.CardTitle)
-        Spacer(Modifier.height(6.dp))
+        Text(text = stringResource(R.string.home_card_manage_topics_title), style = EduTheme.type.cardTitle)
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
         Text(
-            text = "Susun urutan topik, unggah materi per kategori, dan atur studi kasus.",
-            style = EduText.BodySmall,
+            text = stringResource(R.string.home_card_manage_topics_body),
+            style = EduTheme.type.bodySmall,
         )
-        Spacer(Modifier.height(12.dp))
-        TextLink(text = "Buka daftar topik", onClick = onOpenTopics)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        TextLink(text = stringResource(R.string.home_link_open_topics), onClick = onOpenTopics)
     }
 
     EduCard(
         modifier = Modifier.fillMaxWidth(),
-        containerColor = EduColors.TealTint,
+        containerColor = EduTheme.colors.successTint,
         onClick = onOpenAnalytics,
     ) {
         Text(
-            text = "Pantau pemahaman kelas",
-            style = EduText.CardTitle.copy(color = EduColors.Teal),
+            text = stringResource(R.string.home_card_analytics_title),
+            style = EduTheme.type.cardTitle.copy(color = EduTheme.colors.lime),
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_6)))
         Text(
-            text = "Feedback V/A/R dan nilai Kinesthetic ditampilkan terpisah.",
-            style = EduText.BodySmall.copy(color = EduColors.Teal),
+            text = stringResource(R.string.home_card_analytics_body),
+            style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.lime),
         )
-        Spacer(Modifier.height(12.dp))
-        TextLink(text = "Buka analitik", onClick = onOpenAnalytics, color = EduColors.Teal)
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        TextLink(
+            text = stringResource(R.string.home_link_open_analytics),
+            onClick = onOpenAnalytics,
+            color = EduTheme.colors.lime,
+        )
     }
 
-    PrimaryButton(text = "+ Buat topik baru", onClick = onCreateTopic)
+    PrimaryButton(text = stringResource(R.string.home_button_create_topic), onClick = onCreateTopic)
 }
 
 @Composable
@@ -392,59 +432,66 @@ private fun AdminHome(
 ) {
     val summary = state.adminSummary
 
-    Eyebrow("Ruang administrasi")
-    Text(text = "Akun tertata.\nBelajar tetap terjaga.", style = EduText.Display)
+    Eyebrow(stringResource(R.string.home_eyebrow_admin))
+    Text(text = stringResource(R.string.home_display_admin), style = EduTheme.type.display)
 
     HeroCard(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "EDUVARK • KELAS IBD",
-            style = EduText.Eyebrow.copy(color = Color.White.copy(alpha = 0.72f)),
+            text = stringResource(R.string.home_hero_eyebrow_admin),
+            style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand),
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "${summary?.total ?: 0} akun",
-            style = EduText.NumeralLarge.copy(color = Color.White),
+            text = stringResource(R.string.home_hero_accounts_total, summary?.total ?: 0),
+            style = EduTheme.type.numeralLarge.copy(color = EduTheme.colors.onBrand),
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = "${summary?.students ?: 0} mahasiswa • ${summary?.lecturers ?: 0} dosen • " +
-                "${summary?.admins ?: 0} admin",
-            style = EduText.BodySmall.copy(color = Color.White.copy(alpha = 0.9f)),
+            text = stringResource(
+                R.string.home_hero_accounts_breakdown,
+                summary?.students ?: 0,
+                summary?.lecturers ?: 0,
+                summary?.admins ?: 0,
+            ),
+            style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand),
         )
     }
 
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_12))) {
         StatCard(
             value = (summary?.active ?: 0).toString().padStart(2, '0'),
-            label = "Akun aktif",
+            label = stringResource(R.string.home_stat_active_accounts),
             modifier = Modifier.weight(1f),
         )
         StatCard(
             value = (summary?.inactive ?: 0).toString().padStart(2, '0'),
-            label = "Nonaktif",
+            label = stringResource(R.string.home_stat_inactive_accounts),
             modifier = Modifier.weight(1f),
         )
     }
 
-    PrimaryButton(text = "+ Buat akun baru", onClick = onCreateUser)
+    PrimaryButton(text = stringResource(R.string.home_button_create_account), onClick = onCreateUser)
 
     SectionHeader(
-        title = "Kelola pengguna",
-        actionLabel = "Semua",
+        title = stringResource(R.string.home_section_manage_users),
+        actionLabel = stringResource(R.string.home_action_all),
         onAction = onOpenAccounts,
     )
 
     if (state.adminUsers.isEmpty() && !state.isLoading) {
         EduCard {
-            Text(text = "Belum ada akun terdaftar.", style = EduText.CardTitle)
-            Spacer(Modifier.height(6.dp))
-            Text(text = "Tambahkan akun mahasiswa atau dosen untuk memulai.", style = EduText.BodySmall)
+            Text(text = stringResource(R.string.home_empty_accounts_title), style = EduTheme.type.cardTitle)
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(
+                text = stringResource(R.string.home_empty_accounts_message),
+                style = EduTheme.type.bodySmall,
+            )
         }
     } else {
         state.adminUsers.take(2).forEach { account ->
             UserCard(
                 name = account.fullName.ifBlank { account.loginId },
-                meta = "${account.loginId} • ${account.role.label}",
+                meta = stringResource(R.string.home_user_meta, account.loginId, account.role.label),
                 status = account.status.label,
                 statusTone = if (account.status.wireValue == "ACTIVE") TintTone.Teal else TintTone.Danger,
                 onClick = onOpenAccounts,
@@ -453,8 +500,63 @@ private fun AdminHome(
     }
 
     NoticeCard(
-        text = "Hak admin terbatas pada akun. Materi, feedback, dan penilaian tidak tersedia untuk role ini.",
+        text = stringResource(R.string.home_admin_scope_notice),
     )
+}
+
+@Composable
+private fun KinestheticCaseCard(
+    topic: Topic,
+    caseStudy: CaseStudy?,
+    onClick: () -> Unit,
+) {
+    val status = caseStudy?.status
+    val tone = when (status) {
+        SubmissionStatus.SUDAH_DINILAI -> TintTone.Teal
+        SubmissionStatus.MENUNGGU_PENILAIAN -> TintTone.Amber
+        SubmissionStatus.TIDAK_MENGUMPULKAN -> TintTone.Danger
+        else -> TintTone.Neutral
+    }
+    val statusText = when (status) {
+        SubmissionStatus.SUDAH_DINILAI -> stringResource(R.string.home_case_status_graded, caseStudy.score ?: 0)
+        SubmissionStatus.MENUNGGU_PENILAIAN -> stringResource(R.string.home_case_status_waiting)
+        SubmissionStatus.TIDAK_MENGUMPULKAN -> stringResource(R.string.home_case_status_not_submitted)
+        else -> stringResource(R.string.home_case_status_pending)
+    }
+    val action = when (status) {
+        SubmissionStatus.SUDAH_DINILAI -> stringResource(R.string.home_case_action_view_grade)
+        SubmissionStatus.MENUNGGU_PENILAIAN -> stringResource(R.string.home_case_action_view_status)
+        else -> stringResource(R.string.home_case_action_work)
+    }
+
+    EduCard(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+        CardEyebrow(
+            stringResource(
+                R.string.home_case_eyebrow,
+                topic.sortOrder.toString().padStart(2, '0'),
+            ),
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_8)))
+        Text(text = topic.title, style = EduTheme.type.headline)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = statusText,
+            style = EduTheme.type.bodySmall.copy(color = tone.content(), fontWeight = FontWeight.Bold),
+        )
+        val deadline = caseStudy?.deadlineAt
+        if (deadline != null && status != SubmissionStatus.SUDAH_DINILAI) {
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(
+                text = stringResource(
+                    R.string.home_case_deadline,
+                    formatDeadline(deadline) ?: caseStudy.deadlineWib,
+                ),
+                style = EduTheme.type.meta,
+            )
+        }
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
+        TextLink(text = action, onClick = onClick, color = EduTheme.colors.lime)
+    }
 }
 
 @Composable
@@ -466,16 +568,23 @@ private fun TopicPreviewCard(
     onClick: () -> Unit,
 ) {
     val order = (index + 1).coerceAtLeast(topic.sortOrder)
+    val varkLabel = vark?.label ?: stringResource(R.string.home_vark_acronym)
+    val meta = topic.description?.takeIf { it.isNotBlank() }
+        ?: if (kinesthetic) {
+            stringResource(R.string.home_topic_meta_kinesthetic)
+        } else {
+            stringResource(R.string.home_topic_meta_format, varkLabel)
+        }
+    val statusText = when {
+        kinesthetic -> stringResource(R.string.home_topic_status_open_case)
+        topic.materialAvailable -> stringResource(R.string.home_topic_status_available, varkLabel)
+        else -> stringResource(R.string.home_topic_status_unavailable)
+    }
     TopicCard(
-        orderLabel = "Topik ${order.toString().padStart(2, '0')}  /  Implementasi Basis Data",
+        orderLabel = stringResource(R.string.home_topic_order_label, order.toString().padStart(2, '0')),
         title = topic.title,
-        meta = topic.description?.takeIf { it.isNotBlank() }
-            ?: if (kinesthetic) "Jawaban teks • Satu kiriman final" else "Format ${vark?.label ?: "VARK"}",
-        status = when {
-            kinesthetic -> "Buka studi kasus"
-            topic.materialAvailable -> "Tersedia • ${vark?.label ?: "VARK"}"
-            else -> "Belum tersedia"
-        },
+        meta = meta,
+        status = statusText,
         statusTone = when {
             kinesthetic -> TintTone.Teal
             topic.materialAvailable -> TintTone.Teal
@@ -493,7 +602,7 @@ private fun TopBarIcon(
 ) {
     androidx.compose.foundation.layout.Box(
         modifier = Modifier
-            .size(40.dp)
+            .size(dimen(R.dimen.size_40))
             .clip(CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -501,8 +610,8 @@ private fun TopBarIcon(
         Icon(
             imageVector = icon,
             contentDescription = description,
-            tint = EduColors.Ink,
-            modifier = Modifier.size(22.dp),
+            tint = EduTheme.colors.ink,
+            modifier = Modifier.size(dimen(R.dimen.size_22)),
         )
     }
 }
@@ -516,12 +625,13 @@ private fun displayFirstName(fullName: String, fallback: String): String {
     return name?.takeIf { it.isNotBlank() } ?: fallback
 }
 
+@Composable
 private fun greeting(): String {
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     return when {
-        hour < 11 -> "pagi"
-        hour < 15 -> "siang"
-        hour < 19 -> "sore"
-        else -> "malam"
+        hour < 11 -> stringResource(R.string.home_time_morning)
+        hour < 15 -> stringResource(R.string.home_time_afternoon)
+        hour < 19 -> stringResource(R.string.home_time_evening)
+        else -> stringResource(R.string.home_time_night)
     }
 }

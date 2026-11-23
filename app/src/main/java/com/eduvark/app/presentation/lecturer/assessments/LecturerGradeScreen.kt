@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,8 +42,9 @@ import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TonePanel
 import com.eduvark.app.ui.format.formatDeadline
-import com.eduvark.app.ui.theme.EduColors
-import com.eduvark.app.ui.theme.EduText
+import com.eduvark.app.ui.theme.EduTheme
+import com.eduvark.app.R
+import com.eduvark.app.ui.theme.dimen
 
 /**
  * Beri penilaian studi kasus (mockups 26, 27 and 28).
@@ -72,10 +74,11 @@ fun LecturerGradeScreen(
         if (locked) confirming = false
     }
 
+    val scoreRangeError = stringResource(R.string.lec_assess_error_score_range)
     val screenTitle = when {
-        locked -> "Detail penilaian"
-        confirming -> "Simpan penilaian"
-        else -> "Penilaian jawaban"
+        locked -> stringResource(R.string.lec_assess_title_locked)
+        confirming -> stringResource(R.string.lec_assess_title_confirm)
+        else -> stringResource(R.string.lec_assess_title_form)
     }
 
     EduScreen(
@@ -91,7 +94,7 @@ fun LecturerGradeScreen(
             error != null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 ErrorBlock(message = error, onRetry = viewModel::load)
             }
@@ -99,12 +102,12 @@ fun LecturerGradeScreen(
             detail == null -> Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(dimen(R.dimen.space_24)),
             ) {
                 EmptyBlock(
-                    title = "Penilaian tidak tersedia",
-                    message = "Jawaban mahasiswa tidak dapat dimuat.",
-                    actionLabel = "Muat ulang",
+                    title = stringResource(R.string.lec_assess_unavailable_title),
+                    message = stringResource(R.string.lec_assess_unavailable_message),
+                    actionLabel = stringResource(R.string.lec_assess_action_reload),
                     onAction = viewModel::load,
                 )
             }
@@ -126,7 +129,7 @@ fun LecturerGradeScreen(
                 onConfirm = {
                     val score = scoreText.toIntOrNull()
                     if (score == null || score !in 0..100) {
-                        validationError = "Nilai harus 0–100."
+                        validationError = scoreRangeError
                         confirming = false
                     } else {
                         viewModel.save(score, comment)
@@ -153,7 +156,7 @@ fun LecturerGradeScreen(
                 onReview = {
                     val score = scoreText.toIntOrNull()
                     if (score == null || score !in 0..100) {
-                        validationError = "Nilai harus 0–100."
+                        validationError = scoreRangeError
                     } else {
                         validationError = null
                         confirming = true
@@ -182,41 +185,57 @@ private fun GradeForm(
 ) {
     val submitted = formatDeadline(detail.submittedAt) ?: detail.submittedAt
 
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        TintBar(text = "BELUM DINILAI", tone = TintTone.Amber, uppercase = true)
-        Spacer(Modifier.height(16.dp))
-        Text(text = detail.studentName, style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Jawaban studi kasus Kinesthetic", style = EduText.Body)
-        Spacer(Modifier.height(18.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        TintBar(
+            text = stringResource(R.string.lec_assess_form_tintbar),
+            tone = TintTone.Amber,
+            uppercase = true,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        Text(text = detail.studentName, style = EduTheme.type.display)
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = stringResource(R.string.lec_assess_form_subtitle), style = EduTheme.type.body)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Jawaban final", style = EduText.CardTitle)
-            Spacer(Modifier.height(6.dp))
-            Text(text = "Dikirim $submitted", style = EduText.BodySmall)
-            Spacer(Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.lec_assess_answer_title),
+                style = EduTheme.type.cardTitle,
+            )
+            Spacer(Modifier.height(dimen(R.dimen.space_6)))
+            Text(
+                text = stringResource(R.string.lec_assess_submitted_at, submitted),
+                style = EduTheme.type.bodySmall,
+            )
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             Text(
                 text = detail.answerText,
-                style = EduText.Body,
+                style = EduTheme.type.body,
                 maxLines = if (answerExpanded) Int.MAX_VALUE else 6,
                 overflow = TextOverflow.Ellipsis,
             )
             if (detail.answerText.length > 220 || answerExpanded) {
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_10)))
                 TextLink(
-                    text = if (answerExpanded) "Ringkas jawaban" else "Baca jawaban lengkap",
+                    text = stringResource(
+                        if (answerExpanded) {
+                            R.string.lec_assess_answer_collapse
+                        } else {
+                            R.string.lec_assess_answer_expand
+                        },
+                    ),
                     onClick = onToggleAnswer,
-                    color = EduColors.Primary,
+                    color = EduTheme.colors.lavenderDim,
                 )
             }
         }
 
-        Spacer(Modifier.height(18.dp))
-        FieldLabel("Nilai (0–100)")
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
+        FieldLabel(stringResource(R.string.lec_assess_score_label))
         EduField(
             value = scoreText,
             onValueChange = onScoreChange,
-            placeholder = "0–100",
+            placeholder = stringResource(R.string.lec_assess_score_placeholder),
             keyboardType = KeyboardType.Number,
             enabled = !isSaving,
             error = validationError != null,
@@ -225,33 +244,32 @@ private fun GradeForm(
             FieldHelper(text = validationError, isError = true)
         }
 
-        Spacer(Modifier.height(16.dp))
-        FieldLabel("Komentar penilaian")
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        FieldLabel(stringResource(R.string.lec_assess_comment_label))
         EduField(
             value = comment,
             onValueChange = onCommentChange,
-            placeholder = "Tuliskan umpan balik untuk mahasiswa…",
+            placeholder = stringResource(R.string.lec_assess_comment_placeholder),
             singleLine = false,
-            minHeight = 120.dp,
+            minHeight = dimen(R.dimen.dimen_120),
             enabled = !isSaving,
         )
-        FieldHelper(text = "${comment.length} / 1.000 karakter")
+        FieldHelper(text = stringResource(R.string.lec_assess_comment_counter, comment.length))
 
         if (saveError != null) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             NoticeCard(text = saveError, tone = TintTone.Danger)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Penilaian hanya sekali. Setelah disimpan, nilai dan komentar tidak " +
-                "dapat diubah.",
+            text = stringResource(R.string.lec_assess_once_notice),
             tone = TintTone.Amber,
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         PrimaryButton(
-            text = "Tinjau penilaian final",
+            text = stringResource(R.string.lec_assess_review_button),
             enabled = !isSaving,
             loading = isSaving,
             showArrow = true,
@@ -271,56 +289,63 @@ private fun ConfirmGrade(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        Eyebrow("Konfirmasi final")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Simpan nilai\nsecara permanen?", style = EduText.DisplaySmall)
-        Spacer(Modifier.height(10.dp))
-        Text(text = detail.studentName, style = EduText.Body)
-        Spacer(Modifier.height(18.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        Eyebrow(stringResource(R.string.lec_assess_confirm_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = stringResource(R.string.lec_assess_confirm_title),
+            style = EduTheme.type.displaySmall,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = detail.studentName, style = EduTheme.type.body)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            CardEyebrow("Nilai objektif Kinesthetic")
-            Spacer(Modifier.height(8.dp))
+            CardEyebrow(stringResource(R.string.lec_assess_objective_label))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "$score / 100",
-                style = EduText.NumeralLarge.copy(color = EduColors.Primary),
+                text = stringResource(R.string.lec_assess_confirm_score_out_of, score),
+                style = EduTheme.type.numeralLarge.copy(color = EduTheme.colors.lavender),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             Text(
-                text = comment.ifBlank { "Tanpa komentar." },
-                style = EduText.Body,
+                text = if (comment.isBlank()) {
+                    stringResource(R.string.lec_assess_no_comment)
+                } else {
+                    comment
+                },
+                style = EduTheme.type.body,
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         TonePanel(
-            title = "Pastikan sudah benar",
+            title = stringResource(R.string.lec_assess_confirm_panel_title),
             body = "",
             tone = TintTone.Amber,
             bullets = listOf(
-                "Nilai dan komentar tidak bisa diedit atau dihapus.",
-                "Hasil langsung terlihat oleh mahasiswa.",
-                "Tidak ada tahap publikasi tambahan.",
-                "Jawaban mahasiswa tetap utuh.",
+                stringResource(R.string.lec_assess_confirm_bullet_1),
+                stringResource(R.string.lec_assess_confirm_bullet_2),
+                stringResource(R.string.lec_assess_confirm_bullet_3),
+                stringResource(R.string.lec_assess_confirm_bullet_4),
             ),
         )
 
         if (saveError != null) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_12)))
             NoticeCard(text = saveError, tone = TintTone.Danger)
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         PrimaryButton(
-            text = "Ya, simpan penilaian final",
+            text = stringResource(R.string.lec_assess_confirm_primary),
             enabled = !isSaving,
             loading = isSaving,
             onClick = onConfirm,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         SecondaryButton(
-            text = "Kembali periksa",
+            text = stringResource(R.string.lec_assess_confirm_secondary),
             enabled = !isSaving,
             onClick = onCancel,
         )
@@ -335,79 +360,102 @@ private fun LockedGrade(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val score = detail.score?.toString() ?: "—"
+    val score = detail.score?.toString() ?: stringResource(R.string.lec_assess_no_value)
     val assessed = detail.assessedAt?.let { formatDeadline(it) } ?: detail.assessedAt
 
-    ScrollColumn(modifier = modifier, spacing = 0.dp) {
-        TintBar(text = "SUDAH DINILAI • TERKUNCI", tone = TintTone.Teal, uppercase = true)
-        Spacer(Modifier.height(16.dp))
-        Eyebrow("Penilaian final")
-        Spacer(Modifier.height(10.dp))
-        Text(text = "Nilai tersimpan.", style = EduText.Display)
-        Spacer(Modifier.height(10.dp))
-        Text(text = detail.studentName, style = EduText.Body)
-        Spacer(Modifier.height(18.dp))
+    ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
+        TintBar(
+            text = stringResource(R.string.lec_assess_locked_tintbar),
+            tone = TintTone.Teal,
+            uppercase = true,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        Eyebrow(stringResource(R.string.lec_assess_locked_eyebrow))
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(
+            text = stringResource(R.string.lec_assess_locked_headline),
+            style = EduTheme.type.display,
+        )
+        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+        Text(text = detail.studentName, style = EduTheme.type.body)
+        Spacer(Modifier.height(dimen(R.dimen.space_18)))
 
         HeroCard(modifier = Modifier.fillMaxWidth()) {
             Eyebrow(
-                text = "Nilai objektif Kinesthetic",
-                color = EduColors.Surface.copy(alpha = 0.72f),
+                text = stringResource(R.string.lec_assess_objective_label),
+                color = EduTheme.colors.onBrand.copy(alpha = 0.72f),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = "$score / 100",
-                style = EduText.NumeralLarge.copy(color = EduColors.Surface),
+                text = stringResource(R.string.lec_assess_locked_score_out_of, score),
+                style = EduTheme.type.numeralLarge.copy(color = EduTheme.colors.onBrand),
             )
             val savedComment = detail.comment
             if (!savedComment.isNullOrBlank()) {
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(dimen(R.dimen.space_12)))
                 Text(
                     text = savedComment,
-                    style = EduText.BodySmall.copy(
-                        color = EduColors.Surface.copy(alpha = 0.9f),
+                    style = EduTheme.type.bodySmall.copy(
+                        color = EduTheme.colors.onBrand.copy(alpha = 0.9f),
                     ),
                 )
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         EduCard(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Studi kasus Kinesthetic", style = EduText.CardTitle)
-            if (assessed != null) {
-                Spacer(Modifier.height(6.dp))
-                Text(text = "Dinilai $assessed", style = EduText.BodySmall)
-            }
-            Spacer(Modifier.height(10.dp))
             Text(
-                text = "Hasil sudah terlihat oleh mahasiswa.",
-                style = EduText.BodySmall.copy(color = EduColors.Teal),
+                text = stringResource(R.string.lec_assess_locked_case_title),
+                style = EduTheme.type.cardTitle,
+            )
+            if (assessed != null) {
+                Spacer(Modifier.height(dimen(R.dimen.space_6)))
+                Text(
+                    text = stringResource(R.string.lec_assess_assessed_at, assessed),
+                    style = EduTheme.type.bodySmall,
+                )
+            }
+            Spacer(Modifier.height(dimen(R.dimen.space_10)))
+            Text(
+                text = stringResource(R.string.lec_assess_result_visible),
+                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.success),
             )
         }
 
         if (answerOpen) {
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
+            val submittedLabel = formatDeadline(detail.submittedAt)
             ContentCard(
-                title = "Jawaban final",
+                title = stringResource(R.string.lec_assess_answer_title),
                 body = detail.answerText,
-                meta = formatDeadline(detail.submittedAt)?.let { "Dikirim $it" },
+                meta = if (submittedLabel == null) {
+                    null
+                } else {
+                    stringResource(R.string.lec_assess_submitted_at, submittedLabel)
+                },
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_16)))
         NoticeCard(
-            text = "Nilai dan komentar final tidak dapat diubah atau dihapus. Jawaban " +
-                "mahasiswa tetap terkunci.",
+            text = stringResource(R.string.lec_assess_locked_notice),
             tone = TintTone.Primary,
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_20)))
         SecondaryButton(
-            text = if (answerOpen) "Tutup jawaban final" else "Lihat jawaban final",
+            text = stringResource(
+                if (answerOpen) {
+                    R.string.lec_assess_locked_toggle_close
+                } else {
+                    R.string.lec_assess_locked_toggle_open
+                },
+            ),
             onClick = onToggleAnswer,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         PrimaryButton(
-            text = "Kembali ke pengumpulan",
+            text = stringResource(R.string.lec_assess_back_button),
             onClick = onBack,
         )
     }
