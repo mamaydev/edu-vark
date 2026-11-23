@@ -1,0 +1,12 @@
+[Unit]
+Description=Check every 5 minutes that the EduVARK Actions runner is listening
+Documentation=file:/opt/eduvark/try-pam/docs/ci-cd/operations.md
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Unit=eduvark-runner-guard.service
+
+[Install]
+WantedBy=timers.target

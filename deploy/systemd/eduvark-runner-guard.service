@@ -1,0 +1,12 @@
+[Unit]
+Description=EduVARK GitHub Actions runner guard
+Documentation=file:/opt/eduvark/try-pam/docs/ci-cd/operations.md
+After=github-runner-eduvark.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/eduvark-runner-guard run
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=yes
