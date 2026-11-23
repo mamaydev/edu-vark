@@ -97,6 +97,13 @@ when the listener is genuinely wedged: a `connect error` older than 180s that wa
 never followed by `Listening for Jobs`. It is skipped while a job is executing and
 while the deploy engine holds its flock, and it is budgeted to 3 restarts per hour.
 
+The journal is read **from the moment the service started**, not from a rolling
+window. A wedge logs one `connect error` and then goes silent, so a rolling window
+would eventually drop that line and call a dead runner healthy — that happened on
+2026-11-23T10:40Z and went unnoticed for ~90 minutes. It also restarts a runner
+that has never reached `Listening for Jobs` within 10 minutes of starting (the
+signature of a DNS or egress failure), because silence is not health.
+
 ```bash
 # what would it do right now?
 pct exec 10100 -- /usr/local/sbin/eduvark-runner-guard check
@@ -166,6 +173,7 @@ Never run `docker volume prune`, `docker system prune --volumes`, or
 | `401` on every authenticated call | JWT secrets rotated | expected: users must log in again |
 | Uploads fail with 500 | R2 not configured | fill `R2_*` in `backend/.env.production`, recreate backend |
 | Deploy job queued forever | runner offline at the moment CI finished | see the recipe below; GitHub does not always reassign a job to a reconnected runner |
+| Runner `offline` but the process is alive, journal silent | DNS cannot resolve the Actions endpoints, or egress is broken | `getent hosts api.github.com`; `dig +short @192.168.0.1 github.com`. If the answer is not a GitHub IP, the ISP is intercepting DNS — point `/etc/resolv.conf` (or `pct set 10100 --nameserver`) at `192.168.0.1`, then `systemctl restart systemd-resolved github-runner-eduvark` |
 | Runner logs `A session for this runner already exists` / `Conflict` | previous listener was killed mid-session | wait 2-3 min for the lease to expire; the guard does not restart during this window |
 | Materials fail with `NoSuchKey` | object stored under a different key than `materials.object_key` | compare `docker exec eduvark-postgres psql -c "select object_key from materials"` with the bucket listing; copy the object to the DB key |
 | Deploy fails "not an ancestor of origin/main" | SHA from a PR/unmerged branch | merge first or use a commit on `main` |
@@ -195,6 +203,9 @@ queue-guard workflow (layer 2) exists.
 | 2026-11-23 | CD switched to automatic (`workflow_run` after CI on `main`); required reviewers removed from `homelab-testing` | `actor`/`run_id` now propagate through sudo |
 | 2026-11-23 | `R2_ENDPOINT` corrected (bucket path removed); 5 material objects copied from the doubled key prefix to the DB key | presigned downloads 200/200 bytes match; app opens materials |
 | 2026-11-23 | `eduvark-runner-guard.timer` installed (5 min, 3 restarts/hour, lock-aware) | would have caught the 03:24Z wedge within ~2 min instead of 46 |
+| 2026-11-23 | LXC DNS pointed at `1.1.1.1`, whose answers for `github.com` were intercepted (non-GitHub IPs) and whose lookups hung; switched to the LAN resolver `192.168.0.1` (`pct set 10100 --nameserver`) | runner back online, `api.github.com` 200 in 83ms, deploy of `7686bc3` succeeded |
+| 2026-11-23 | Guard fixed: journal scanned since service start (a rolling window lost the single wedge line), plus a "never reached Listening" rule | detects the 10:40Z silent wedge instead of reporting healthy |
+| 2026-11-23 | `GET /topics/:id` returned the student dashboard (stray handler from `cf10a93`) | handler removed, regression test added; deploy `7686bc3` verified |
 
 ## Open actions
 
