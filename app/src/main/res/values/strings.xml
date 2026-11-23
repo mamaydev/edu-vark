@@ -2,11 +2,11 @@
     <string name="app_name">EduVARK</string>
     <string name="login_title">EduVARK</string>
     <string name="login_subtitle">Masuk untuk memulai sesi pembelajaran IBD.</string>
-    <string name="login_id_label">NIM / NIP</string>
+    <string name="login_id_label">NIM / NIP / NIDN</string>
     <string name="password_label">Password</string>
     <string name="login_button">Masuk</string>
     <string name="login_loading">Memproses…</string>
-    <string name="login_empty_error">NIM/NIP dan password wajib diisi.</string>
+    <string name="login_empty_error">NIM/NIP/NIDN dan password wajib diisi.</string>
     <string name="change_password_title">Ganti Password</string>
     <string name="change_password_subtitle">Password sementara wajib diganti sebelum melanjutkan.</string>
     <string name="current_password_label">Password saat ini</string>
@@ -23,7 +23,7 @@
     <string name="home_title">EduVARK</string>
     <string name="home_welcome">Selamat datang</string>
     <string name="home_role">Role</string>
-    <string name="home_login_id">NIM/NIP</string>
+    <string name="home_login_id">NIM/NIP/NIDN</string>
     <string name="home_active_vark">VARK aktif</string>
     <string name="home_no_vark">Belum dipilih</string>
     <string name="home_logout">Logout</string>

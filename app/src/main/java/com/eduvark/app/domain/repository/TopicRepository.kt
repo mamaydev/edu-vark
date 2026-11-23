@@ -10,6 +10,7 @@ interface TopicRepository {
     suspend fun getStudentDashboard(): StudentDashboard
     suspend fun listTopics(): List<Topic>
     suspend fun getTopic(topicId: String): Topic
+    suspend fun getLecturerTopic(topicId: String): Topic
     suspend fun listMaterials(topicId: String): List<Material>
     suspend fun listLecturerMaterials(topicId: String): List<Material>
 

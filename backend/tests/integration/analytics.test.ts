@@ -64,21 +64,21 @@ describeDb('analytics integration', () => {
     resetLoginThrottle();
     classId = await createClass();
     lecturerId = await createUser({
-      loginId: 'lect1',
+      loginId: '1990010001',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createUser({
-      loginId: 'lect2',
+      loginId: '1990010002',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createTeachingAssignment(classId, lecturerId);
-    student1Id = await createStudent('stu1');
-    await createStudent('stu2');
-    student3Id = await createStudent('stu3');
-    student4Id = await createStudent('stu4');
-    await createStudent('stu5');
+    student1Id = await createStudent('2025000001');
+    await createStudent('2025000002');
+    student3Id = await createStudent('2025000003');
+    student4Id = await createStudent('2025000004');
+    await createStudent('2025000005');
 
     topicId = await createTopic({
       classId,
@@ -101,13 +101,13 @@ describeDb('analytics integration', () => {
       url: 'https://example.com/audio',
     });
 
-    const lecturer = await loginAs(app, 'lect1', 'LecturerPass123');
+    const lecturer = await loginAs(app, '1990010001', 'LecturerPass123');
     lecturerToken = lecturer.accessToken;
-    const student1 = await loginStudent('stu1', 'VISUAL');
-    const student2 = await loginStudent('stu2', 'VISUAL');
-    const student3 = await loginStudent('stu3', 'AURAL');
-    await loginStudent('stu4', 'VISUAL');
-    const student5 = await loginStudent('stu5', 'KINESTHETIC');
+    const student1 = await loginStudent('2025000001', 'VISUAL');
+    const student2 = await loginStudent('2025000002', 'VISUAL');
+    const student3 = await loginStudent('2025000003', 'AURAL');
+    await loginStudent('2025000004', 'VISUAL');
+    const student5 = await loginStudent('2025000005', 'KINESTHETIC');
 
     await putFeedback(student1.accessToken, 40);
     await putFeedback(student2.accessToken, 60);
@@ -232,7 +232,7 @@ describeDb('analytics integration', () => {
   });
 
   it('rejects a non-owner and an invalid category', async () => {
-    const otherLecturer = await loginAs(app, 'lect2', 'LecturerPass123');
+    const otherLecturer = await loginAs(app, '1990010002', 'LecturerPass123');
     const forbidden = await request(app)
       .get('/api/v1/lecturer/analytics/topics/' + topicId)
       .set('Authorization', bearer(otherLecturer.accessToken))

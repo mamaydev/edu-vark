@@ -85,15 +85,24 @@ export async function listCaseStudents(
         ON e.class_id = t.class_id
        AND e.status = 'ACTIVE'
       JOIN users u ON u.id = e.student_id AND u.status = 'ACTIVE'
-      JOIN auth_sessions sess
-        ON sess.user_id = u.id
-       AND sess.is_active = true
-       AND sess.vark_type = 'KINESTHETIC'
       LEFT JOIN submissions s
         ON s.case_study_id = cs.id
        AND s.student_id = u.id
       LEFT JOIN assessments a ON a.submission_id = s.id
-      WHERE cs.id = $1 AND cs.deleted_at IS NULL
+      WHERE cs.id = $1
+        AND cs.deleted_at IS NULL
+        AND (
+          -- A student who already submitted must remain visible even after
+          -- their Kinesthetic session was revoked or replaced by a new login.
+          s.id IS NOT NULL
+          OR EXISTS (
+            SELECT 1
+            FROM auth_sessions sess
+            WHERE sess.user_id = u.id
+              AND sess.is_active = true
+              AND sess.vark_type = 'KINESTHETIC'
+          )
+        )
       ORDER BY u.full_name
     `,
     [caseId],

@@ -23,6 +23,7 @@ import com.eduvark.app.ui.components.EduField
 import com.eduvark.app.ui.components.PasswordField
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.Eyebrow
+import com.eduvark.app.ui.components.FieldHelper
 import com.eduvark.app.ui.components.FieldLabel
 import com.eduvark.app.ui.components.HeroCard
 import com.eduvark.app.ui.components.NoticeCard
@@ -88,9 +89,12 @@ fun LoginScreen(
                 EduField(
                     value = loginId,
                     onValueChange = { loginId = it },
-                    placeholder = "NIM / NIP",
+                    placeholder = "NIM / NIP / NIDN atau admin",
                     enabled = !state.isLoading,
                     keyboardType = KeyboardType.Text,
+                )
+                FieldHelper(
+                    text = "Mahasiswa/dosen: NIM/NIP/NIDN 10–11 digit. Admin: username admin.",
                 )
             }
 
@@ -122,7 +126,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(18.dp))
             Text(
-                text = "Akun mahasiswa, dosen, dan admin menggunakan halaman masuk yang sama.",
+                text = "Mahasiswa dan dosen masuk dengan NIM/NIP/NIDN. Admin masuk dengan username admin.",
                 style = EduText.BodySmall,
             )
 

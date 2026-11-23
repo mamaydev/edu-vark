@@ -112,7 +112,7 @@ fun AdminCreateUserScreen(
                         loginId = it
                         localError = null
                     },
-                    placeholder = "NIM / NIP",
+                    placeholder = "NIM / NIP / NIDN",
                     error = true,
                     enabled = !state.isSaving,
                 )
@@ -184,8 +184,15 @@ fun AdminCreateUserScreen(
                         loginId = it
                         localError = null
                     },
-                    placeholder = "NIM / NIP",
+                    placeholder = "NIM / NIP / NIDN",
                     enabled = !state.isSaving,
+                )
+                FieldHelper(
+                    text = if (role == UserRole.ADMIN) {
+                        "Akun admin boleh memakai username."
+                    } else {
+                        "NIM/NIP/NIDN wajib 10–11 digit angka."
+                    },
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -280,7 +287,7 @@ private fun roleHint(role: UserRole): String = when (role) {
 }
 
 /**
- * The backend answers a duplicate login with `LOGIN_ID_TAKEN` / "NIM/NIP sudah digunakan.";
+ * The backend answers a duplicate login with `LOGIN_ID_TAKEN` / "NIM/NIP/NIDN sudah digunakan.";
  * the ViewModel surfaces only the message, so match on the wording it forwards.
  */
 private fun isDuplicateIdentityError(message: String?): Boolean {

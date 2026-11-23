@@ -57,14 +57,14 @@ describeDb('feedback integration', () => {
     resetLoginThrottle();
     classId = await createClass();
     lecturerId = await createUser({
-      loginId: 'lect1',
+      loginId: '1990010001',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createTeachingAssignment(classId, lecturerId);
-    await createStudent('stu1');
-    await createStudent('stu2');
-    await createStudent('stu3');
+    await createStudent('2025000001');
+    await createStudent('2025000002');
+    await createStudent('2025000003');
 
     topicId = await createTopic({
       classId,
@@ -93,7 +93,7 @@ describeDb('feedback integration', () => {
   });
 
   it('starts with null feedback, then saves and updates without history', async () => {
-    const student = await loginStudent('stu1', 'VISUAL');
+    const student = await loginStudent('2025000001', 'VISUAL');
 
     const initial = await request(app)
       .get('/api/v1/topics/' + topicId + '/feedback')
@@ -125,8 +125,8 @@ describeDb('feedback integration', () => {
   });
 
   it('keeps feedback from different VARK categories separate', async () => {
-    const visual = await loginStudent('stu1', 'VISUAL');
-    const aural = await loginStudent('stu2', 'AURAL');
+    const visual = await loginStudent('2025000001', 'VISUAL');
+    const aural = await loginStudent('2025000002', 'AURAL');
 
     await request(app)
       .put('/api/v1/topics/' + topicId + '/feedback')
@@ -156,7 +156,7 @@ describeDb('feedback integration', () => {
   });
 
   it('rejects feedback from a Kinesthetic session', async () => {
-    const student = await loginStudent('stu3', 'KINESTHETIC');
+    const student = await loginStudent('2025000003', 'KINESTHETIC');
 
     const response = await request(app)
       .put('/api/v1/topics/' + topicId + '/feedback')
@@ -168,7 +168,7 @@ describeDb('feedback integration', () => {
   });
 
   it('rejects values outside 0-100', async () => {
-    const student = await loginStudent('stu1', 'VISUAL');
+    const student = await loginStudent('2025000001', 'VISUAL');
 
     await request(app)
       .put('/api/v1/topics/' + topicId + '/feedback')
@@ -199,7 +199,7 @@ describeDb('feedback integration', () => {
       url: 'https://example.com/audio-only',
     });
 
-    const student = await loginStudent('stu1', 'VISUAL');
+    const student = await loginStudent('2025000001', 'VISUAL');
     const response = await request(app)
       .get('/api/v1/topics/' + emptyTopic + '/feedback')
       .set('Authorization', bearer(student.accessToken))
@@ -212,14 +212,14 @@ describeDb('feedback integration', () => {
   });
 
   it('requires VARK and student role', async () => {
-    const noVark = await loginAs(app, 'stu1', 'StudentPass123');
+    const noVark = await loginAs(app, '2025000001', 'StudentPass123');
     const gate = await request(app)
       .get('/api/v1/topics/' + topicId + '/feedback')
       .set('Authorization', bearer(noVark.accessToken))
       .expect(428);
     expect(gate.body.error.code).toBe('VARK_REQUIRED');
 
-    const lecturer = await loginAs(app, 'lect1', 'LecturerPass123');
+    const lecturer = await loginAs(app, '1990010001', 'LecturerPass123');
     const forbidden = await request(app)
       .get('/api/v1/topics/' + topicId + '/feedback')
       .set('Authorization', bearer(lecturer.accessToken))

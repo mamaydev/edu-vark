@@ -6,7 +6,7 @@ import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.domain.usecase.CreateLinkMaterialUseCase
 import com.eduvark.app.domain.usecase.DeleteMaterialUseCase
 import com.eduvark.app.domain.usecase.GetLecturerMaterialsUseCase
-import com.eduvark.app.domain.usecase.GetTopicUseCase
+import com.eduvark.app.domain.usecase.GetLecturerTopicUseCase
 import com.eduvark.app.domain.usecase.UploadMaterialUseCase
 import com.eduvark.app.testutil.FakeTopicRepository
 import kotlinx.coroutines.Dispatchers
@@ -38,12 +38,22 @@ class LecturerMaterialsViewModelTest {
 
     private fun createViewModel(repository: FakeTopicRepository) = LecturerMaterialsViewModel(
         savedStateHandle = SavedStateHandle(mapOf("topicId" to "topic-1")),
-        getTopicUseCase = GetTopicUseCase(repository),
+        getTopicUseCase = GetLecturerTopicUseCase(repository),
         getMaterialsUseCase = GetLecturerMaterialsUseCase(repository),
         createLinkMaterialUseCase = CreateLinkMaterialUseCase(repository),
         uploadMaterialUseCase = UploadMaterialUseCase(repository),
         deleteMaterialUseCase = DeleteMaterialUseCase(repository),
     )
+
+    @Test
+    fun `loads a draft topic through the lecturer endpoint without VARK`() = runTest {
+        val repository = FakeTopicRepository().apply { failStudentTopic = true }
+        val viewModel = createViewModel(repository)
+        advanceUntilIdle()
+
+        assertEquals("Topik Basis Data", viewModel.state.value.topic?.title)
+        assertEquals(null, viewModel.state.value.error)
+    }
 
     @Test
     fun `upload rejects a whitespace-only title before calling the API`() = runTest {

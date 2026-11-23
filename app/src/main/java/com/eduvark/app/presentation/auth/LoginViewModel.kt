@@ -2,6 +2,7 @@ package com.eduvark.app.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eduvark.app.core.common.LoginIdRules
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.usecase.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,7 +35,11 @@ class LoginViewModel @Inject constructor(
     fun submit(loginId: String, password: String) {
         val trimmedLoginId = loginId.trim()
         if (trimmedLoginId.isEmpty() || password.isEmpty()) {
-            _state.update { it.copy(error = "NIM/NIP dan password wajib diisi.") }
+            _state.update { it.copy(error = "NIM/NIP/NIDN dan password wajib diisi.") }
+            return
+        }
+        if (!LoginIdRules.isValidLoginId(trimmedLoginId)) {
+            _state.update { it.copy(error = LoginIdRules.LOGIN_ID_MESSAGE) }
             return
         }
         if (_state.value.isLoading) return

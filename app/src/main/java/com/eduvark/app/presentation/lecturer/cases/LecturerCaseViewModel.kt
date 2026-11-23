@@ -8,7 +8,7 @@ import com.eduvark.app.domain.model.CaseStudy
 import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.usecase.GetLecturerCaseUseCase
 import com.eduvark.app.domain.usecase.GetLecturerMaterialsUseCase
-import com.eduvark.app.domain.usecase.GetTopicUseCase
+import com.eduvark.app.domain.usecase.GetLecturerTopicUseCase
 import com.eduvark.app.domain.usecase.UpsertCaseUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -33,7 +33,7 @@ data class LecturerCaseUiState(
 class LecturerCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getLecturerCaseUseCase: GetLecturerCaseUseCase,
-    private val getTopicUseCase: GetTopicUseCase,
+    private val getTopicUseCase: GetLecturerTopicUseCase,
     private val getMaterialsUseCase: GetLecturerMaterialsUseCase,
     private val upsertCaseUseCase: UpsertCaseUseCase,
 ) : ViewModel() {

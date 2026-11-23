@@ -47,6 +47,8 @@ class FakeTopicRepository(
 ) : TopicRepository {
 
     var lastReorder: List<String>? = null
+    var failStudentTopic = false
+    var failLecturerTopic = false
 
     override suspend fun getStudentDashboard(): StudentDashboard {
         failure?.let { throw it }
@@ -64,6 +66,13 @@ class FakeTopicRepository(
 
     override suspend fun getTopic(topicId: String): Topic {
         failure?.let { throw it }
+        if (failStudentTopic) throw AppFailure.Unknown
+        return topics.firstOrNull { it.id == topicId } ?: throw AppFailure.Unknown
+    }
+
+    override suspend fun getLecturerTopic(topicId: String): Topic {
+        failure?.let { throw it }
+        if (failLecturerTopic) throw AppFailure.Unknown
         return topics.firstOrNull { it.id == topicId } ?: throw AppFailure.Unknown
     }
 

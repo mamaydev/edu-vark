@@ -144,7 +144,7 @@ export async function createUser(
     });
   } catch (error) {
     if (isUniqueViolation(error)) {
-      throw conflict('LOGIN_ID_TAKEN', 'NIM/NIP sudah digunakan.');
+      throw conflict('LOGIN_ID_TAKEN', 'NIM/NIP/NIDN sudah digunakan.');
     }
     throw error;
   }

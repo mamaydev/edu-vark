@@ -54,7 +54,6 @@ publicTopicsRouter.get(
   authenticate,
   requireRole('STUDENT', 'LECTURER'),
   requireVark,
-  getStudentDashboardHandler,
   getTopicHandler,
 );
 

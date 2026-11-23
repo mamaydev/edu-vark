@@ -30,7 +30,7 @@ class LoginScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("NIM / NIP").assertIsDisplayed()
+        composeRule.onNodeWithText("NIM / NIP / NIDN atau admin").assertIsDisplayed()
         composeRule.onNodeWithText("Password").assertIsDisplayed()
         composeRule.onNodeWithText("Masuk").assertIsDisplayed()
     }

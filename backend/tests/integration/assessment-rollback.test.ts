@@ -35,13 +35,13 @@ describeDb('assessment transaction rollback', () => {
   it('rolls back assessment when audit fails and keeps submission text unchanged', async () => {
     const classId = await createClass();
     const lecturerId = await createUser({
-      loginId: 'lect1',
+      loginId: '1990010001',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createTeachingAssignment(classId, lecturerId);
     const studentId = await createUser({
-      loginId: 'stu1',
+      loginId: '2025000001',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
@@ -54,7 +54,7 @@ describeDb('assessment transaction rollback', () => {
       status: 'PUBLISHED',
     });
 
-    const lecturer = await loginAs(app, 'lect1', 'LecturerPass123');
+    const lecturer = await loginAs(app, '1990010001', 'LecturerPass123');
     await request(app)
       .put('/api/v1/lecturer/topics/' + topicId + '/case')
       .set('Authorization', bearer(lecturer.accessToken))
@@ -65,7 +65,7 @@ describeDb('assessment transaction rollback', () => {
       })
       .expect(200);
 
-    const student = await loginAs(app, 'stu1', 'StudentPass123');
+    const student = await loginAs(app, '2025000001', 'StudentPass123');
     await request(app)
       .post('/api/v1/auth/vark')
       .set('Authorization', bearer(student.accessToken))

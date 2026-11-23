@@ -56,12 +56,12 @@ describeDb('auth integration', () => {
 
   it('logs in an active student and creates one session', async () => {
     const userId = await createUser({
-      loginId: 'stu1',
+      loginId: '2025000001',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
 
-    const data = await loginOk('stu1', 'StudentPass123');
+    const data = await loginOk('2025000001', 'StudentPass123');
 
     expect(data.varkRequired).toBe(true);
     expect(data.activeVark).toBeNull();
@@ -71,31 +71,42 @@ describeDb('auth integration', () => {
 
   it('rejects invalid credentials and inactive accounts', async () => {
     await createUser({
-      loginId: 'inactive1',
+      loginId: '1990010010',
       password: 'InactivePass123',
       role: 'STUDENT',
       status: 'INACTIVE',
     });
 
-    await login('missing', 'WhateverPass123').expect(401);
-    const inactive = await login('inactive1', 'InactivePass123').expect(403);
+    await login('9999999999', 'WhateverPass123').expect(401);
+    const inactive = await login('1990010010', 'InactivePass123').expect(403);
     expect(inactive.body.error.code).toBe('ACCOUNT_INACTIVE');
+  });
+
+  it('rejects a non-academic identifier for non-admin accounts', async () => {
+    await createUser({
+      loginId: 'legacy1',
+      password: 'StudentPass123',
+      role: 'STUDENT',
+    });
+
+    const response = await login('legacy1', 'StudentPass123').expect(401);
+    expect(response.body.error.code).toBe('INVALID_CREDENTIALS');
   });
 
   it('supports staff login/logout and revokes staff sessions', async () => {
     await createUser({
-      loginId: 'lect1',
+      loginId: '1990010001',
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
     await createUser({
-      loginId: 'admin1',
+      loginId: 'admin',
       password: 'AdminPass1234',
       role: 'ADMIN',
     });
 
-    const lecturer = await loginOk('lect1', 'LecturerPass123');
-    const admin = await loginOk('admin1', 'AdminPass1234');
+    const lecturer = await loginOk('1990010001', 'LecturerPass123');
+    const admin = await loginOk('admin', 'AdminPass1234');
     expect(lecturer.varkRequired).toBe(false);
     expect(admin.varkRequired).toBe(false);
 
@@ -108,7 +119,7 @@ describeDb('auth integration', () => {
       .set('Authorization', bearer(lecturer.accessToken))
       .expect(401);
 
-    const lecturerAgain = await loginOk('lect1', 'LecturerPass123');
+    const lecturerAgain = await loginOk('1990010001', 'LecturerPass123');
     await request(app)
       .get('/api/v1/auth/me')
       .set('Authorization', bearer(lecturer.accessToken))
@@ -130,13 +141,13 @@ describeDb('auth integration', () => {
 
   it('revokes the previous session when a new login succeeds', async () => {
     await createUser({
-      loginId: 'stu2',
+      loginId: '2025000002',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
 
-    const first = await loginOk('stu2', 'StudentPass123');
-    const second = await loginOk('stu2', 'StudentPass123');
+    const first = await loginOk('2025000002', 'StudentPass123');
+    const second = await loginOk('2025000002', 'StudentPass123');
 
     await request(app)
       .get('/api/v1/auth/me')
@@ -151,12 +162,12 @@ describeDb('auth integration', () => {
 
   it('rotates refresh tokens and rejects the old refresh token', async () => {
     await createUser({
-      loginId: 'stu3',
+      loginId: '2025000003',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
 
-    const first = await loginOk('stu3', 'StudentPass123');
+    const first = await loginOk('2025000003', 'StudentPass123');
     const refreshed = await request(app)
       .post('/api/v1/auth/refresh')
       .send({ refreshToken: first.refreshToken })
@@ -177,12 +188,12 @@ describeDb('auth integration', () => {
 
   it('logs out and invalidates the current session', async () => {
     await createUser({
-      loginId: 'stu4',
+      loginId: '2025000004',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
 
-    const data = await loginOk('stu4', 'StudentPass123');
+    const data = await loginOk('2025000004', 'StudentPass123');
 
     await request(app)
       .post('/api/v1/auth/logout')
@@ -197,12 +208,12 @@ describeDb('auth integration', () => {
 
   it('locks VARK after the first selection and exposes it in /me', async () => {
     await createUser({
-      loginId: 'stu5',
+      loginId: '2025000005',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
 
-    const data = await loginOk('stu5', 'StudentPass123');
+    const data = await loginOk('2025000005', 'StudentPass123');
 
     await request(app)
       .post('/api/v1/auth/vark')
@@ -226,12 +237,12 @@ describeDb('auth integration', () => {
 
   it('rejects VARK selection for staff', async () => {
     await createUser({
-      loginId: 'admin1',
+      loginId: 'admin',
       password: 'AdminPass1234',
       role: 'ADMIN',
     });
 
-    const data = await loginOk('admin1', 'AdminPass1234');
+    const data = await loginOk('admin', 'AdminPass1234');
 
     const response = await request(app)
       .post('/api/v1/auth/vark')
@@ -243,12 +254,12 @@ describeDb('auth integration', () => {
 
   it('blocks academic endpoints until VARK is selected', async () => {
     await createUser({
-      loginId: 'stu6',
+      loginId: '2025000006',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
 
-    const data = await loginOk('stu6', 'StudentPass123');
+    const data = await loginOk('2025000006', 'StudentPass123');
 
     const blocked = await request(gateApp)
       .get('/protected')
@@ -270,13 +281,13 @@ describeDb('auth integration', () => {
 
   it('blocks VARK selection until the temporary password is changed', async () => {
     await createUser({
-      loginId: 'stu7',
+      loginId: '2025000007',
       password: 'StudentPass123',
       role: 'STUDENT',
       mustChangePassword: true,
     });
 
-    const data = await loginOk('stu7', 'StudentPass123');
+    const data = await loginOk('2025000007', 'StudentPass123');
 
     const response = await request(app)
       .post('/api/v1/auth/vark')
@@ -293,12 +304,12 @@ describeDb('auth integration', () => {
 
   it('accepts a 6-character password but rejects reusing the current password', async () => {
     await createUser({
-      loginId: 'stu6',
+      loginId: '2025000006',
       password: 'abc123',
       role: 'STUDENT',
     });
 
-    const first = await loginOk('stu6', 'abc123');
+    const first = await loginOk('2025000006', 'abc123');
     await request(app)
       .post('/api/v1/auth/change-password')
       .set('Authorization', bearer(first.accessToken))
@@ -309,7 +320,7 @@ describeDb('auth integration', () => {
       })
       .expect(204);
 
-    const second = await loginOk('stu6', 'xyz789');
+    const second = await loginOk('2025000006', 'xyz789');
     const reused = await request(app)
       .post('/api/v1/auth/change-password')
       .set('Authorization', bearer(second.accessToken))
@@ -321,17 +332,17 @@ describeDb('auth integration', () => {
       .expect(422);
     expect(reused.body.error.code).toBe('PASSWORD_REUSED');
 
-    await loginOk('stu6', 'xyz789');
+    await loginOk('2025000006', 'xyz789');
   });
 
   it('rejects mismatched confirmation and throttles repeated wrong passwords', async () => {
     resetPasswordChangeThrottle();
     await createUser({
-      loginId: 'stu9',
+      loginId: '2025000009',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
-    const session = await loginOk('stu9', 'StudentPass123');
+    const session = await loginOk('2025000009', 'StudentPass123');
 
     const mismatch = await request(app)
       .post('/api/v1/auth/change-password')
@@ -371,12 +382,12 @@ describeDb('auth integration', () => {
 
   it('changes password, revokes sessions, and accepts only the new password', async () => {
     await createUser({
-      loginId: 'stu8',
+      loginId: '2025000008',
       password: 'StudentPass123',
       role: 'STUDENT',
     });
 
-    const data = await loginOk('stu8', 'StudentPass123');
+    const data = await loginOk('2025000008', 'StudentPass123');
 
     await request(app)
       .post('/api/v1/auth/change-password')
@@ -393,7 +404,7 @@ describeDb('auth integration', () => {
       .set('Authorization', bearer(data.accessToken))
       .expect(401);
 
-    await login('stu8', 'StudentPass123').expect(401);
-    await login('stu8', 'StudentPass456').expect(200);
+    await login('2025000008', 'StudentPass123').expect(401);
+    await login('2025000008', 'StudentPass456').expect(200);
   });
 });
