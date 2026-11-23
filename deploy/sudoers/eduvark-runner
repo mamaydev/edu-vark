@@ -4,5 +4,8 @@
 # The GitHub Actions runner is a non-root, non-docker user. It has no shell
 # escalation beyond the root-owned deployment engine, which re-validates the
 # repository, the commit and its own preconditions on every invocation.
+# Keep the workflow identity across sudo so the deployment record can name the
+# actor and the run that produced the release (read by `eduvark-deploy`).
+Defaults:eduvark-runner env_keep += "GITHUB_ACTOR GITHUB_RUN_ID GITHUB_SHA"
 Defaults:eduvark-runner !requiretty
 eduvark-runner ALL=(root) NOPASSWD: /usr/local/sbin/eduvark-deploy verify *, /usr/local/sbin/eduvark-deploy dry-run *, /usr/local/sbin/eduvark-deploy deploy *, /usr/local/sbin/eduvark-deploy rollback *, /usr/local/sbin/eduvark-deploy status
