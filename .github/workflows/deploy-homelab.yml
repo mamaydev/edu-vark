@@ -1,9 +1,17 @@
 name: Deploy homelab
 
-# Manual-only CD. There is deliberately no `on: push` trigger: merging to main
-# never deploys by itself. A human must start this workflow and approve the
-# protected `homelab-testing` environment.
+# CD is automatic on `main`, but only *after* the CI workflow for that commit
+# succeeded: the trigger is `workflow_run`, not `push`. A red build therefore
+# never reaches the server, and there is no race where deploy starts before CI
+# finishes.
+#
+# `workflow_dispatch` stays available for the controlled modes (verify /
+# dry-run) and for redeploying an older commit.
 on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       sha:
@@ -31,10 +39,15 @@ concurrency:
 jobs:
   validate:
     name: Validate release candidate
+    # A failed CI run still triggers `workflow_run`; refuse it here.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
       sha: ${{ steps.resolve.outputs.sha }}
+      mode: ${{ steps.resolve.outputs.mode }}
     steps:
       - name: Resolve and validate commit
         id: resolve
@@ -42,17 +55,29 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const raw = String(context.payload.inputs.sha || '').trim().toLowerCase();
-            if (!/^[0-9a-f]{7,40}$/.test(raw)) {
-              core.setFailed('Input must be a 7-40 character lowercase hex commit SHA');
-              return;
+            const manual = context.eventName === 'workflow_dispatch';
+            const mode = manual ? String(context.payload.inputs?.mode || 'verify') : 'deploy';
+
+            let sha;
+            if (manual) {
+              const raw = String(context.payload.inputs?.sha || '').trim().toLowerCase();
+              if (!/^[0-9a-f]{7,40}$/.test(raw)) {
+                core.setFailed('Input must be a 7-40 character lowercase hex commit SHA');
+                return;
+              }
+              sha = raw;
+              if (raw.length < 40) {
+                const commit = await github.rest.repos.getCommit({ owner, repo, ref: raw });
+                sha = commit.data.sha;
+              }
+            } else {
+              sha = context.payload.workflow_run.head_sha;
+              if (context.payload.workflow_run.head_branch !== 'main') {
+                core.setFailed(`CI run is for ${context.payload.workflow_run.head_branch}, not main`);
+                return;
+              }
             }
-            let sha = raw;
-            if (raw.length < 40) {
-              const commit = await github.rest.repos.getCommit({ owner, repo, ref: raw });
-              sha = commit.data.sha;
-            }
-            core.info(`Resolved commit: ${sha}`);
+            core.info(`Resolved commit: ${sha} (mode: ${mode})`);
 
             const cmp = await github.rest.repos.compareCommits({
               owner, repo, base: 'main', head: sha,
@@ -74,6 +99,7 @@ jobs:
             }
             core.info('CI run on main: success');
             core.setOutput('sha', sha);
+            core.setOutput('mode', mode);
 
   deploy:
     name: Release to homelab-testing
@@ -103,7 +129,7 @@ jobs:
         shell: bash
         env:
           RELEASE_SHA: ${{ needs.validate.outputs.sha }}
-          DEPLOY_MODE: ${{ inputs.mode }}
+          DEPLOY_MODE: ${{ needs.validate.outputs.mode }}
         run: |
           set -euo pipefail
           test "${#RELEASE_SHA}" -eq 40
