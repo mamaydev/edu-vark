@@ -73,11 +73,11 @@ export async function getTopicAnalytics(
       if (!student) {
         throw notFound('STUDENT_NOT_FOUND', 'Mahasiswa tidak ditemukan di kelas ini.');
       }
-      if (
-        student.vark_type === 'KINESTHETIC' ||
-        (category !== null && student.vark_type !== category)
-      ) {
-        throw forbidden('VARK_MISMATCH', 'Kategori tidak sesuai dengan VARK mahasiswa.');
+      if (student.vark_type === 'KINESTHETIC' && category !== null) {
+        throw forbidden(
+          'VARK_MISMATCH',
+          'Mahasiswa Kinesthetic tidak memiliki feedback Visual/Aural/Read-Write.',
+        );
       }
     }
 
@@ -95,7 +95,7 @@ export async function getTopicAnalytics(
           studentId: row.student_id,
           fullName: row.full_name,
           loginId: row.login_id,
-          vark: row.vark_type,
+          vark: row.vark_type ?? row.feedback_vark ?? 'VISUAL',
           feedback: { VISUAL: null, AURAL: null, READ_WRITE: null },
         });
       }

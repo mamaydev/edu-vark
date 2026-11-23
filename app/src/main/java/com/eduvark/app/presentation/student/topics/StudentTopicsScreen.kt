@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.ui.components.EduField
 import com.eduvark.app.ui.components.EduIcons
+import com.eduvark.app.ui.components.EduPullToRefresh
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.Eyebrow
 import com.eduvark.app.ui.components.FieldLabel
@@ -78,7 +79,19 @@ fun StudentTopicsScreen(
                 modifier = Modifier.padding(padding),
             )
 
-            else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = 0.dp) {
+            else -> EduPullToRefresh(
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.padding(padding),
+            ) {
+                ScrollColumn(spacing = 0.dp) {
+                if (state.refreshError != null) {
+                    com.eduvark.app.ui.components.NoticeCard(
+                        text = state.refreshError.orEmpty(),
+                        tone = com.eduvark.app.ui.components.TintTone.Danger,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                }
                 Eyebrow("Implementasi Basis Data")
                 Spacer(Modifier.height(10.dp))
                 Text(text = "Ruang belajarmu", style = EduText.Display)
@@ -148,6 +161,7 @@ fun StudentTopicsScreen(
                         )
                         Spacer(Modifier.height(12.dp))
                     }
+                }
                 }
             }
         }

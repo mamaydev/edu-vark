@@ -273,6 +273,99 @@ describeDb('topics and materials integration', () => {
     expect(materials.body.data[0].signedUrl).toContain('https://signed.example/');
   });
 
+  it('trims material titles and rejects blank or oversized titles', async () => {
+    const lecturer = await loginLecturer();
+    const topic = await createTopic(lecturer.accessToken, 'Topik Validasi Judul');
+
+    const blank = await request(app)
+      .post('/api/v1/lecturer/topics/' + topic.id + '/materials/link')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .send({ title: '   \n  ', vark: 'VISUAL', url: 'https://example.com/a' })
+      .expect(422);
+    expect(blank.body.error.code).toBe('VALIDATION_ERROR');
+
+    const oversized = await request(app)
+      .post('/api/v1/lecturer/topics/' + topic.id + '/materials/link')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .send({ title: 'a'.repeat(201), vark: 'VISUAL', url: 'https://example.com/a' })
+      .expect(422);
+    expect(oversized.body.error.code).toBe('VALIDATION_ERROR');
+
+    const accepted = await request(app)
+      .post('/api/v1/lecturer/topics/' + topic.id + '/materials/link')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .send({ title: '  Materi Visual  ', vark: 'VISUAL', url: 'https://example.com/a' })
+      .expect(201);
+    expect(accepted.body.data.title).toBe('Materi Visual');
+  });
+
+  it('lets the owning lecturer list materials without a student VARK', async () => {
+    const lecturer = await loginLecturer();
+    const topic = await createTopic(lecturer.accessToken, 'Topik Materi Dosen');
+    await request(app)
+      .post('/api/v1/lecturer/topics/' + topic.id + '/materials/link')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .send({ title: 'Materi Dosen', vark: 'KINESTHETIC', url: 'https://example.com/dosen' })
+      .expect(201);
+
+    const materials = await request(app)
+      .get('/api/v1/lecturer/topics/' + topic.id + '/materials')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+    expect(materials.body.data).toHaveLength(1);
+    expect(materials.body.data[0].title).toBe('Materi Dosen');
+
+    const student = await loginStudent('stu1', 'VISUAL');
+    await request(app)
+      .get('/api/v1/lecturer/topics/' + topic.id + '/materials')
+      .set('Authorization', bearer(student.accessToken))
+      .expect(403);
+  });
+
+  it('returns student dashboard counters scoped to enrollment and VARK', async () => {
+    const lecturer = await loginLecturer();
+    const topic = await createTopic(lecturer.accessToken, 'Topik Dashboard');
+    await request(app)
+      .post('/api/v1/lecturer/topics/' + topic.id + '/materials/link')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .send({ title: 'Materi Visual', vark: 'VISUAL', url: 'https://example.com/v' })
+      .expect(201);
+    await publishTopic(lecturer.accessToken, topic.id);
+
+    const student = await loginStudent('stu1', 'VISUAL');
+    const before = await request(app)
+      .get('/api/v1/student/dashboard')
+      .set('Authorization', bearer(student.accessToken))
+      .expect(200);
+    expect(before.body.data).toMatchObject({
+      vark: 'VISUAL',
+      availableMaterials: 1,
+      notCompletedMaterials: 1,
+    });
+
+    await request(app)
+      .put('/api/v1/topics/' + topic.id + '/feedback')
+      .set('Authorization', bearer(student.accessToken))
+      .send({ value: 80 })
+      .expect(200);
+
+    const after = await request(app)
+      .get('/api/v1/student/dashboard')
+      .set('Authorization', bearer(student.accessToken))
+      .expect(200);
+    expect(after.body.data).toMatchObject({
+      vark: 'VISUAL',
+      availableMaterials: 1,
+      notCompletedMaterials: 0,
+    });
+
+    const lecturerForbidden = await request(app)
+      .get('/api/v1/student/dashboard')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(403);
+    expect(lecturerForbidden.body.error.code).toBe('FORBIDDEN');
+  });
+
   it('rejects a forged file type and a missing file', async () => {
     const lecturer = await loginLecturer();
     const topic = await createTopic(lecturer.accessToken, 'Topik Invalid');

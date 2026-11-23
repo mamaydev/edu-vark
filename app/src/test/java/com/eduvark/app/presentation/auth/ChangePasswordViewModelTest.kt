@@ -37,7 +37,7 @@ class ChangePasswordViewModelTest {
             ChangePasswordUseCase(FakeAuthRepository()),
         )
 
-        viewModel.submit("abc123", "abc123", "abc123")
+        viewModel.submit("abc123", "def456", "def456")
         advanceUntilIdle()
 
         assertTrue(viewModel.state.value.success)
@@ -52,6 +52,34 @@ class ChangePasswordViewModelTest {
         viewModel.submit("StudentPass123", "StudentPass456", "DifferentPass456")
 
         assertEquals("Konfirmasi password tidak sama.", viewModel.state.value.error)
+    }
+
+    @Test
+    fun `reusing the current password is rejected locally`() {
+        val repository = FakeAuthRepository()
+        val viewModel = ChangePasswordViewModel(ChangePasswordUseCase(repository))
+
+        viewModel.submit("StudentPass123", "StudentPass123", "StudentPass123")
+
+        assertEquals(
+            "Password baru harus berbeda dari password saat ini.",
+            viewModel.state.value.error,
+        )
+        assertEquals(null, repository.changedPassword)
+    }
+
+    @Test
+    fun `confirmation is sent to the repository`() = runTest {
+        val repository = FakeAuthRepository()
+        val viewModel = ChangePasswordViewModel(ChangePasswordUseCase(repository))
+
+        viewModel.submit("StudentPass123", "StudentPass456", "StudentPass456")
+        advanceUntilIdle()
+
+        assertEquals(
+            Triple("StudentPass123", "StudentPass456", "StudentPass456"),
+            repository.changedPassword,
+        )
     }
 
     @Test

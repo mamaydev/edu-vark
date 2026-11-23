@@ -14,7 +14,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,6 +22,7 @@ import com.eduvark.app.domain.model.UserRole
 import com.eduvark.app.ui.components.EduCard
 import com.eduvark.app.ui.components.EduDropdown
 import com.eduvark.app.ui.components.EduField
+import com.eduvark.app.ui.components.PasswordField
 import com.eduvark.app.ui.components.EduRadioRow
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.Eyebrow
@@ -190,7 +190,7 @@ fun AdminCreateUserScreen(
 
                 Spacer(Modifier.height(16.dp))
                 FieldLabel("Kata sandi awal")
-                EduField(
+                PasswordField(
                     value = password,
                     onValueChange = {
                         password = it
@@ -198,13 +198,12 @@ fun AdminCreateUserScreen(
                     },
                     placeholder = "Minimal 6 karakter",
                     enabled = !state.isSaving,
-                    keyboardType = KeyboardType.Password,
-                    visualTransformation = PasswordVisualTransformation(),
+                    leadingLabel = "kata sandi awal",
                 )
 
                 Spacer(Modifier.height(16.dp))
                 FieldLabel("Ulangi kata sandi awal")
-                EduField(
+                PasswordField(
                     value = confirmPassword,
                     onValueChange = {
                         confirmPassword = it
@@ -212,8 +211,7 @@ fun AdminCreateUserScreen(
                     },
                     placeholder = "Ulangi kata sandi",
                     enabled = !state.isSaving,
-                    keyboardType = KeyboardType.Password,
-                    visualTransformation = PasswordVisualTransformation(),
+                    leadingLabel = "konfirmasi kata sandi awal",
                 )
                 if (passwordsMismatch) {
                     FieldHelper(

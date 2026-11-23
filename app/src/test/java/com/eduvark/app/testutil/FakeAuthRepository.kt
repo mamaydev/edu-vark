@@ -42,8 +42,15 @@ class FakeAuthRepository(
 
     override suspend fun me(): UserProfile = loginResult.user
 
-    override suspend fun changePassword(currentPassword: String, newPassword: String) {
+    var changedPassword: Triple<String, String, String>? = null
+
+    override suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmation: String,
+    ) {
         changePasswordFailure?.let { throw it }
+        changedPassword = Triple(currentPassword, newPassword, confirmation)
     }
 
     override suspend fun selectVark(vark: VarkType): VarkType {

@@ -5,6 +5,7 @@ import { createApp } from '../../src/app';
 import { errorHandler } from '../../src/middleware/error-handler';
 import { authenticate, requireVark } from '../../src/middleware/auth';
 import { resetLoginThrottle } from '../../src/lib/login-throttle';
+import { resetPasswordChangeThrottle } from '../../src/lib/password-change-throttle';
 import {
   activeSessionCount,
   closeDb,
@@ -290,7 +291,7 @@ describeDb('auth integration', () => {
       .expect(200);
   });
 
-  it('accepts a 6-character password and allows reusing the same password', async () => {
+  it('accepts a 6-character password but rejects reusing the current password', async () => {
     await createUser({
       loginId: 'stu6',
       password: 'abc123',
@@ -301,17 +302,71 @@ describeDb('auth integration', () => {
     await request(app)
       .post('/api/v1/auth/change-password')
       .set('Authorization', bearer(first.accessToken))
-      .send({ currentPassword: 'abc123', newPassword: 'xyz789' })
+      .send({
+        currentPassword: 'abc123',
+        newPassword: 'xyz789',
+        confirmPassword: 'xyz789',
+      })
       .expect(204);
 
     const second = await loginOk('stu6', 'xyz789');
-    await request(app)
+    const reused = await request(app)
       .post('/api/v1/auth/change-password')
       .set('Authorization', bearer(second.accessToken))
-      .send({ currentPassword: 'xyz789', newPassword: 'xyz789' })
-      .expect(204);
+      .send({
+        currentPassword: 'xyz789',
+        newPassword: 'xyz789',
+        confirmPassword: 'xyz789',
+      })
+      .expect(422);
+    expect(reused.body.error.code).toBe('PASSWORD_REUSED');
 
     await loginOk('stu6', 'xyz789');
+  });
+
+  it('rejects mismatched confirmation and throttles repeated wrong passwords', async () => {
+    resetPasswordChangeThrottle();
+    await createUser({
+      loginId: 'stu9',
+      password: 'StudentPass123',
+      role: 'STUDENT',
+    });
+    const session = await loginOk('stu9', 'StudentPass123');
+
+    const mismatch = await request(app)
+      .post('/api/v1/auth/change-password')
+      .set('Authorization', bearer(session.accessToken))
+      .send({
+        currentPassword: 'StudentPass123',
+        newPassword: 'StudentPass456',
+        confirmPassword: 'StudentPass789',
+      })
+      .expect(422);
+    expect(mismatch.body.error.code).toBe('VALIDATION_ERROR');
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const wrong = await request(app)
+        .post('/api/v1/auth/change-password')
+        .set('Authorization', bearer(session.accessToken))
+        .send({
+          currentPassword: 'WrongPass123',
+          newPassword: 'StudentPass456',
+          confirmPassword: 'StudentPass456',
+        })
+        .expect(422);
+      expect(wrong.body.error.code).toBe('INVALID_PASSWORD');
+    }
+
+    const throttled = await request(app)
+      .post('/api/v1/auth/change-password')
+      .set('Authorization', bearer(session.accessToken))
+      .send({
+        currentPassword: 'StudentPass123',
+        newPassword: 'StudentPass456',
+        confirmPassword: 'StudentPass456',
+      })
+      .expect(429);
+    expect(throttled.body.error.code).toBe('TOO_MANY_ATTEMPTS');
   });
 
   it('changes password, revokes sessions, and accepts only the new password', async () => {
@@ -329,6 +384,7 @@ describeDb('auth integration', () => {
       .send({
         currentPassword: 'StudentPass123',
         newPassword: 'StudentPass456',
+        confirmPassword: 'StudentPass456',
       })
       .expect(204);
 

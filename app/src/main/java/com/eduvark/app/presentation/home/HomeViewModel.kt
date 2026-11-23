@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.AdminAccountStatus
 import com.eduvark.app.domain.model.AdminUser
+import com.eduvark.app.domain.model.StudentDashboard
 import com.eduvark.app.domain.model.Topic
 import com.eduvark.app.domain.model.TopicStatus
 import com.eduvark.app.domain.model.UserProfile
 import com.eduvark.app.domain.model.UserRole
 import com.eduvark.app.domain.usecase.GetMeUseCase
+import com.eduvark.app.domain.usecase.GetStudentDashboardUseCase
 import com.eduvark.app.domain.usecase.GetTopicsUseCase
 import com.eduvark.app.domain.usecase.ListAdminUsersUseCase
 import com.eduvark.app.domain.usecase.LogoutUseCase
@@ -50,11 +52,14 @@ data class AdminSummary(
 
 data class HomeUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val user: UserProfile? = null,
     val topics: List<Topic> = emptyList(),
+    val studentDashboard: StudentDashboard? = null,
     val adminUsers: List<AdminUser> = emptyList(),
     val adminSummary: AdminSummary? = null,
     val error: String? = null,
+    val refreshError: String? = null,
     val loggedOut: Boolean = false,
 ) {
     val publishedTopics: List<Topic>
@@ -72,33 +77,82 @@ class HomeViewModel @Inject constructor(
     private val getMeUseCase: GetMeUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val getTopicsUseCase: GetTopicsUseCase,
+    private val getStudentDashboardUseCase: GetStudentDashboardUseCase,
     private val listAdminUsersUseCase: ListAdminUsersUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
+    private var requestInFlight = false
+
     init {
         load()
     }
 
-    fun load() {
+    fun load() = fetch(showFullLoading = true)
+
+    fun refresh() = fetch(showFullLoading = false)
+
+    private fun fetch(showFullLoading: Boolean) {
+        if (requestInFlight) return
+        requestInFlight = true
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null, loggedOut = false) }
+            _state.update {
+                if (showFullLoading) {
+                    it.copy(
+                        isLoading = true,
+                        error = null,
+                        refreshError = null,
+                        loggedOut = false,
+                    )
+                } else {
+                    it.copy(
+                        isRefreshing = true,
+                        error = null,
+                        refreshError = null,
+                        loggedOut = false,
+                    )
+                }
+            }
             try {
                 val user = getMeUseCase()
-                _state.update { it.copy(user = user, isLoading = false) }
+                _state.update {
+                    it.copy(user = user, isLoading = false, isRefreshing = false)
+                }
                 loadDashboardData(user)
             } catch (error: AppFailure) {
                 if (error is AppFailure.Api && error.statusCode == 401) {
-                    _state.update { it.copy(isLoading = false, loggedOut = true) }
+                    _state.update {
+                        it.copy(isLoading = false, isRefreshing = false, loggedOut = true)
+                    }
                 } else {
-                    _state.update { it.copy(isLoading = false, error = error.message) }
+                    _state.update {
+                        if (it.user == null) {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                error = error.message,
+                            )
+                        } else {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                refreshError = error.message,
+                            )
+                        }
+                    }
                 }
             } catch (error: Exception) {
                 _state.update {
-                    it.copy(isLoading = false, error = "Terjadi kesalahan. Coba lagi.")
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        error = "Terjadi kesalahan. Coba lagi.",
+                    )
                 }
+            } finally {
+                requestInFlight = false
             }
         }
     }
@@ -132,6 +186,13 @@ class HomeViewModel @Inject constructor(
             async {
                 runCatching { getTopicsUseCase() }.onSuccess { topics ->
                     _state.update { it.copy(topics = topics) }
+                }
+            }
+            if (user.role == UserRole.STUDENT) {
+                async {
+                    runCatching { getStudentDashboardUseCase() }.onSuccess { dashboard ->
+                        _state.update { it.copy(studentDashboard = dashboard) }
+                    }
                 }
             }
         }

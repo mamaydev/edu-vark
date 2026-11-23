@@ -26,8 +26,11 @@ class GetMeUseCase @Inject constructor(
 class ChangePasswordUseCase @Inject constructor(
     private val authRepository: AuthRepository,
 ) {
-    suspend operator fun invoke(currentPassword: String, newPassword: String) =
-        authRepository.changePassword(currentPassword, newPassword)
+    suspend operator fun invoke(
+        currentPassword: String,
+        newPassword: String,
+        confirmation: String,
+    ) = authRepository.changePassword(currentPassword, newPassword, confirmation)
 }
 
 class SelectVarkUseCase @Inject constructor(

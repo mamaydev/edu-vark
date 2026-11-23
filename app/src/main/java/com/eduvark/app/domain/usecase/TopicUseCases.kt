@@ -7,6 +7,12 @@ import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.domain.repository.TopicRepository
 import javax.inject.Inject
 
+class GetStudentDashboardUseCase @Inject constructor(
+    private val repository: TopicRepository,
+) {
+    suspend operator fun invoke() = repository.getStudentDashboard()
+}
+
 class GetTopicsUseCase @Inject constructor(
     private val repository: TopicRepository,
 ) {
@@ -24,6 +30,13 @@ class GetMaterialsUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(topicId: String): List<Material> =
         repository.listMaterials(topicId)
+}
+
+class GetLecturerMaterialsUseCase @Inject constructor(
+    private val repository: TopicRepository,
+) {
+    suspend operator fun invoke(topicId: String): List<Material> =
+        repository.listLecturerMaterials(topicId)
 }
 
 class CreateTopicUseCase @Inject constructor(

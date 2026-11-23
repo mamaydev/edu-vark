@@ -225,6 +225,50 @@ object EduIcons {
         }
     }
 
+    val Eye: ImageVector = icon("eye") {
+        path(
+            stroke = SolidColor(Color.Black),
+            strokeLineWidth = STROKE,
+            strokeLineCap = StrokeCap.Round,
+            strokeLineJoin = StrokeJoin.Round,
+        ) {
+            moveTo(2.5f, 12f)
+            curveTo(5f, 7.5f, 8.2f, 5.5f, 12f, 5.5f)
+            curveTo(15.8f, 5.5f, 19f, 7.5f, 21.5f, 12f)
+            curveTo(19f, 16.5f, 15.8f, 18.5f, 12f, 18.5f)
+            curveTo(8.2f, 18.5f, 5f, 16.5f, 2.5f, 12f)
+            close()
+            moveTo(12f, 9f)
+            curveTo(13.7f, 9f, 15f, 10.3f, 15f, 12f)
+            curveTo(15f, 13.7f, 13.7f, 15f, 12f, 15f)
+            curveTo(10.3f, 15f, 9f, 13.7f, 9f, 12f)
+            curveTo(9f, 10.3f, 10.3f, 9f, 12f, 9f)
+            close()
+        }
+    }
+
+    val EyeOff: ImageVector = icon("eyeOff") {
+        path(
+            stroke = SolidColor(Color.Black),
+            strokeLineWidth = STROKE,
+            strokeLineCap = StrokeCap.Round,
+            strokeLineJoin = StrokeJoin.Round,
+        ) {
+            moveTo(3f, 3f); lineTo(21f, 21f)
+            moveTo(10.6f, 6f)
+            curveTo(11.1f, 5.9f, 11.5f, 5.9f, 12f, 5.9f)
+            curveTo(15.8f, 5.9f, 19f, 7.9f, 21.5f, 12f)
+            curveTo(20.6f, 13.6f, 19.5f, 14.8f, 18.2f, 15.7f)
+            moveTo(6.2f, 7.4f)
+            curveTo(4.7f, 8.5f, 3.4f, 10f, 2.5f, 12f)
+            curveTo(5f, 16.5f, 8.2f, 18.5f, 12f, 18.5f)
+            curveTo(13.6f, 18.5f, 15.1f, 18.1f, 16.4f, 17.3f)
+            moveTo(9.9f, 9.9f)
+            curveTo(10.5f, 9.3f, 11.2f, 9f, 12f, 9f)
+            curveTo(13.7f, 9f, 15f, 10.3f, 15f, 12f)
+        }
+    }
+
     val Info: ImageVector = icon("info") {
         path(stroke = SolidColor(Color.Black), strokeLineWidth = STROKE, strokeLineCap = StrokeCap.Round, strokeLineJoin = StrokeJoin.Round) {
             moveTo(12f, 4f)

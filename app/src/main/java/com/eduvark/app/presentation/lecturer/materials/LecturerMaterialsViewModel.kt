@@ -10,7 +10,7 @@ import com.eduvark.app.domain.model.UploadPayload
 import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.domain.usecase.CreateLinkMaterialUseCase
 import com.eduvark.app.domain.usecase.DeleteMaterialUseCase
-import com.eduvark.app.domain.usecase.GetMaterialsUseCase
+import com.eduvark.app.domain.usecase.GetLecturerMaterialsUseCase
 import com.eduvark.app.domain.usecase.GetTopicUseCase
 import com.eduvark.app.domain.usecase.UploadMaterialUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,11 +30,13 @@ data class LecturerMaterialsUiState(
     val actionError: String? = null,
 )
 
+private const val MAX_TITLE_LENGTH = 200
+
 @HiltViewModel
 class LecturerMaterialsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getTopicUseCase: GetTopicUseCase,
-    private val getMaterialsUseCase: GetMaterialsUseCase,
+    private val getMaterialsUseCase: GetLecturerMaterialsUseCase,
     private val createLinkMaterialUseCase: CreateLinkMaterialUseCase,
     private val uploadMaterialUseCase: UploadMaterialUseCase,
     private val deleteMaterialUseCase: DeleteMaterialUseCase,
@@ -75,7 +77,12 @@ class LecturerMaterialsViewModel @Inject constructor(
     }
 
     fun addLink(title: String, vark: VarkType, url: String) {
-        if (title.trim().isEmpty() || url.trim().isEmpty()) {
+        val cleanTitle = title.trim()
+        validateTitle(cleanTitle)?.let { message ->
+            _state.update { it.copy(actionError = message) }
+            return
+        }
+        if (url.trim().isEmpty()) {
             _state.update { it.copy(actionError = "Judul dan URL wajib diisi.") }
             return
         }
@@ -83,10 +90,11 @@ class LecturerMaterialsViewModel @Inject constructor(
             _state.update { it.copy(actionError = "URL harus menggunakan HTTPS.") }
             return
         }
+        if (_state.value.isSaving) return
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true, actionError = null) }
             try {
-                createLinkMaterialUseCase(topicId, title.trim(), vark, url.trim())
+                createLinkMaterialUseCase(topicId, cleanTitle, vark, url.trim())
                 refreshAfterChange()
             } catch (error: AppFailure) {
                 _state.update { it.copy(isSaving = false, actionError = error.message) }
@@ -97,10 +105,16 @@ class LecturerMaterialsViewModel @Inject constructor(
     }
 
     fun upload(title: String, vark: VarkType, payload: UploadPayload) {
+        val cleanTitle = title.trim()
+        validateTitle(cleanTitle)?.let { message ->
+            _state.update { it.copy(actionError = message) }
+            return
+        }
+        if (_state.value.isSaving) return
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true, actionError = null) }
             try {
-                uploadMaterialUseCase(topicId, title, vark, payload)
+                uploadMaterialUseCase(topicId, cleanTitle, vark, payload)
                 refreshAfterChange()
             } catch (error: AppFailure) {
                 _state.update { it.copy(isSaving = false, actionError = error.message) }
@@ -126,6 +140,14 @@ class LecturerMaterialsViewModel @Inject constructor(
 
     fun reportError(message: String) {
         _state.update { it.copy(actionError = message, isSaving = false) }
+    }
+
+    private fun validateTitle(title: String): String? = when {
+        title.isEmpty() -> "Judul materi wajib diisi."
+        title.length > MAX_TITLE_LENGTH ->
+            "Judul materi maksimal $MAX_TITLE_LENGTH karakter."
+
+        else -> null
     }
 
     private suspend fun refreshAfterChange() {

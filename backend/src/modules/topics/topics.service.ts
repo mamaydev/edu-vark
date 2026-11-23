@@ -23,6 +23,12 @@ export interface TopicResponse {
   updatedAt: string;
 }
 
+export interface StudentDashboardResponse {
+  vark: VarkType;
+  availableMaterials: number;
+  notCompletedMaterials: number;
+}
+
 export interface MaterialResponse {
   id: string;
   topicId: string;
@@ -126,6 +132,21 @@ export async function listTopicsForStudent(
     );
     const total = await repo.countTopicsForStudent(client, classId);
     return { items: rows.map(toTopic), total };
+  });
+}
+
+export async function getStudentDashboard(
+  studentId: string,
+  vark: VarkType,
+): Promise<StudentDashboardResponse> {
+  return withTransaction(async (client) => {
+    const classId = requireStudentClass(await repo.findStudentClassId(client, studentId));
+    const row = await repo.getStudentDashboard(client, classId, studentId, vark);
+    return {
+      vark,
+      availableMaterials: row.available_materials,
+      notCompletedMaterials: row.not_completed_materials,
+    };
   });
 }
 

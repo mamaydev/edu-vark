@@ -1,6 +1,10 @@
 package com.eduvark.app.presentation.student.cases
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eduvark.app.domain.model.CaseStudy
+import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.SubmissionStatus
 import com.eduvark.app.ui.components.ArrowTitle
 import com.eduvark.app.ui.components.CardEyebrow
@@ -40,6 +46,7 @@ import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TonePanel
 import com.eduvark.app.ui.format.formatDateTime
+import com.eduvark.app.ui.format.formatBytes
 import com.eduvark.app.ui.format.formatDeadline
 import com.eduvark.app.ui.theme.EduColors
 import com.eduvark.app.ui.theme.EduText
@@ -58,6 +65,17 @@ fun StudentCaseScreen(
     var answer by rememberSaveable { mutableStateOf("") }
     var confirming by rememberSaveable { mutableStateOf(false) }
 
+    val context = LocalContext.current
+    val openMaterial: (Material) -> Unit = { material ->
+        val target = material.signedUrl ?: material.url
+        if (!target.isNullOrBlank()) {
+            try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
+            } catch (_: ActivityNotFoundException) {
+                // No PDF/file viewer installed; the link stays visible for retry.
+            }
+        }
+    }
     val status = caseStudy?.status
     val screenTitle = when (status) {
         SubmissionStatus.MENUNGGU_PENILAIAN, SubmissionStatus.TIDAK_MENGUMPULKAN ->
@@ -122,6 +140,8 @@ fun StudentCaseScreen(
             else -> AnswerEditor(
                 caseStudy = caseStudy,
                 topicTitle = state.topicTitle.orEmpty(),
+                materials = state.materials,
+                onOpenMaterial = openMaterial,
                 answer = answer,
                 onAnswerChange = { if (it.length <= 10000) answer = it },
                 submitError = state.submitError,
@@ -136,6 +156,8 @@ fun StudentCaseScreen(
 private fun AnswerEditor(
     caseStudy: CaseStudy,
     topicTitle: String,
+    materials: List<Material>,
+    onOpenMaterial: (Material) -> Unit,
     answer: String,
     onAnswerChange: (String) -> Unit,
     submitError: String?,
@@ -149,6 +171,11 @@ private fun AnswerEditor(
         Spacer(Modifier.height(16.dp))
         DeadlinePanel(caseStudy)
         Spacer(Modifier.height(16.dp))
+
+        if (materials.isNotEmpty()) {
+            SupportingMaterials(materials = materials, onOpen = onOpenMaterial)
+            Spacer(Modifier.height(16.dp))
+        }
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
             if (!caseStudy.theory.isNullOrBlank()) {
@@ -200,6 +227,42 @@ private fun AnswerEditor(
         )
         Spacer(Modifier.height(12.dp))
         Text(text = "1–10.000 karakter • Hanya satu kali kirim", style = EduText.BodySmall)
+    }
+}
+
+@Composable
+private fun SupportingMaterials(
+    materials: List<Material>,
+    onOpen: (Material) -> Unit,
+) {
+    EduCard(modifier = Modifier.fillMaxWidth()) {
+        Text(text = "Materi pendukung Kinesthetic", style = EduText.CardTitle)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Baca materi dari dosen sebelum menjawab studi kasus.",
+            style = EduText.Meta,
+        )
+        materials.forEach { material ->
+            Spacer(Modifier.height(10.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(EduColors.PrimaryTint, RoundedCornerShape(12.dp))
+                    .clickable { onOpen(material) }
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+            ) {
+                ArrowTitle(text = material.title, color = EduColors.Primary)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = listOfNotNull(
+                        material.kind.label,
+                        material.mime,
+                        formatBytes(material.sizeBytes),
+                    ).joinToString(" • "),
+                    style = EduText.Meta,
+                )
+            }
+        }
     }
 }
 

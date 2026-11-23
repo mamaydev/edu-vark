@@ -2,11 +2,13 @@ package com.eduvark.app.presentation.student.cases
 
 import androidx.lifecycle.SavedStateHandle
 import com.eduvark.app.domain.model.SubmissionStatus
+import com.eduvark.app.domain.usecase.GetMaterialsUseCase
 import com.eduvark.app.domain.usecase.GetStudentCaseUseCase
 import com.eduvark.app.domain.usecase.GetTopicUseCase
 import com.eduvark.app.domain.usecase.SubmitCaseUseCase
 import com.eduvark.app.testutil.FakeCaseRepository
 import com.eduvark.app.testutil.FakeTopicRepository
+import com.eduvark.app.testutil.sampleMaterial
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -35,10 +37,14 @@ class StudentCaseViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun createViewModel(repository: FakeCaseRepository) = StudentCaseViewModel(
+    private fun createViewModel(
+        repository: FakeCaseRepository,
+        topicRepository: FakeTopicRepository = FakeTopicRepository(),
+    ) = StudentCaseViewModel(
         savedStateHandle = SavedStateHandle(mapOf("topicId" to "topic-1")),
         getStudentCaseUseCase = GetStudentCaseUseCase(repository),
-        getTopicUseCase = GetTopicUseCase(FakeTopicRepository()),
+        getTopicUseCase = GetTopicUseCase(topicRepository),
+        getMaterialsUseCase = GetMaterialsUseCase(topicRepository),
         submitCaseUseCase = SubmitCaseUseCase(repository),
     )
 
@@ -55,6 +61,27 @@ class StudentCaseViewModelTest {
 
         assertEquals(SubmissionStatus.MENUNGGU_PENILAIAN, viewModel.state.value.caseStudy?.status)
         assertNotNull(viewModel.state.value.caseStudy?.submittedAt)
+    }
+
+    @Test
+    fun `loads Kinesthetic supporting materials with the case`() = runTest {
+        val topicRepository = FakeTopicRepository(
+            materials = listOf(
+                sampleMaterial().copy(
+                    title = "Panduan PDF",
+                    signedUrl = "https://signed.example/panduan.pdf",
+                ),
+            ),
+        )
+        val viewModel = createViewModel(FakeCaseRepository(), topicRepository)
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.state.value.materials.size)
+        assertEquals("Panduan PDF", viewModel.state.value.materials.first().title)
+        assertEquals(
+            "https://signed.example/panduan.pdf",
+            viewModel.state.value.materials.first().signedUrl,
+        )
     }
 
     @Test

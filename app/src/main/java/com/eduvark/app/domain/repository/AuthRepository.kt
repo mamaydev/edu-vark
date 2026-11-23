@@ -8,6 +8,10 @@ interface AuthRepository {
     suspend fun login(loginId: String, password: String): AuthSession
     suspend fun logout()
     suspend fun me(): UserProfile
-    suspend fun changePassword(currentPassword: String, newPassword: String)
+    suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmation: String,
+    )
     suspend fun selectVark(vark: VarkType): VarkType
 }

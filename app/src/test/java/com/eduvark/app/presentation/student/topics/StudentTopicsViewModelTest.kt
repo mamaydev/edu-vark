@@ -46,6 +46,24 @@ class StudentTopicsViewModelTest {
     }
 
     @Test
+    fun `refresh failure keeps the loaded topics visible`() = runTest {
+        val repository = FakeTopicRepository()
+        val viewModel = StudentTopicsViewModel(
+            getTopicsUseCase = GetTopicsUseCase(repository),
+            getMeUseCase = GetMeUseCase(FakeAuthRepository()),
+        )
+        advanceUntilIdle()
+
+        repository.failure = AppFailure.Api("NETWORK", "Tidak dapat memuat.", 503)
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.state.value.topics.size)
+        assertEquals("Tidak dapat memuat.", viewModel.state.value.refreshError)
+        assertNull(viewModel.state.value.error)
+    }
+
+    @Test
     fun `surfaces API failure`() = runTest {
         val viewModel = StudentTopicsViewModel(
             getTopicsUseCase = GetTopicsUseCase(

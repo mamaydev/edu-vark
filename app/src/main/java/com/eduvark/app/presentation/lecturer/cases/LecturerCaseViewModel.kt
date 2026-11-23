@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.CaseStudy
+import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.usecase.GetLecturerCaseUseCase
+import com.eduvark.app.domain.usecase.GetLecturerMaterialsUseCase
+import com.eduvark.app.domain.usecase.GetTopicUseCase
 import com.eduvark.app.domain.usecase.UpsertCaseUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -19,6 +22,9 @@ data class LecturerCaseUiState(
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val caseStudy: CaseStudy? = null,
+    val topicId: String = "",
+    val topicTitle: String? = null,
+    val materials: List<Material> = emptyList(),
     val error: String? = null,
     val saveError: String? = null,
 )
@@ -27,6 +33,8 @@ data class LecturerCaseUiState(
 class LecturerCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getLecturerCaseUseCase: GetLecturerCaseUseCase,
+    private val getTopicUseCase: GetTopicUseCase,
+    private val getMaterialsUseCase: GetLecturerMaterialsUseCase,
     private val upsertCaseUseCase: UpsertCaseUseCase,
 ) : ViewModel() {
 
@@ -47,8 +55,21 @@ class LecturerCaseViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null, saveError = null) }
             try {
-                val caseStudy = getLecturerCaseUseCase(topicId)
-                _state.value = LecturerCaseUiState(isLoading = false, caseStudy = caseStudy)
+                // Context is optional; a missing case or material list must not
+                // block the editor from creating the first case study.
+                val caseStudy = runCatching { getLecturerCaseUseCase(topicId) }.getOrNull()
+                val topicTitle = runCatching { getTopicUseCase(topicId).title }.getOrNull()
+                val materials = runCatching { getMaterialsUseCase(topicId) }.getOrDefault(emptyList())
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        caseStudy = caseStudy,
+                        topicId = topicId,
+                        topicTitle = topicTitle,
+                        materials = materials,
+                        error = null,
+                    )
+                }
             } catch (error: AppFailure) {
                 _state.update { it.copy(isLoading = false, error = error.message) }
             } catch (error: Exception) {

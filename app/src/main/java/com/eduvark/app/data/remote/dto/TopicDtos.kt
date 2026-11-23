@@ -62,6 +62,19 @@ data class MaterialResponse(
 )
 
 @Serializable
+data class StudentDashboardDto(
+    val vark: String,
+    val availableMaterials: Int = 0,
+    val notCompletedMaterials: Int = 0,
+)
+
+@Serializable
+data class StudentDashboardResponse(
+    val data: StudentDashboardDto? = null,
+    val error: ApiErrorDto? = null,
+)
+
+@Serializable
 data class CreateTopicRequest(
     val title: String,
     val description: String? = null,

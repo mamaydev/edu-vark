@@ -12,6 +12,7 @@ import {
   createTopicHandler,
   deleteMaterialHandler,
   deleteTopicHandler,
+  getStudentDashboardHandler,
   getTopicHandler,
   listTopicMaterialsHandler,
   listTopicsHandler,
@@ -32,6 +33,15 @@ const upload = multer({
 export const publicTopicsRouter = Router();
 
 publicTopicsRouter.get(
+  '/student/dashboard',
+  authenticate,
+  requireRole('STUDENT'),
+  requirePasswordChanged,
+  requireVark,
+  getStudentDashboardHandler,
+);
+
+publicTopicsRouter.get(
   '/topics',
   authenticate,
   requireRole('STUDENT', 'LECTURER'),
@@ -44,6 +54,7 @@ publicTopicsRouter.get(
   authenticate,
   requireRole('STUDENT', 'LECTURER'),
   requireVark,
+  getStudentDashboardHandler,
   getTopicHandler,
 );
 

@@ -68,10 +68,16 @@ export async function findStudentInClass(
       SELECT u.id, u.full_name, u.login_id, sess.vark_type
       FROM enrollments e
       JOIN users u ON u.id = e.student_id AND u.status = 'ACTIVE'
-      JOIN auth_sessions sess
-        ON sess.user_id = u.id
-       AND sess.is_active = true
-       AND sess.vark_type IS NOT NULL
+      LEFT JOIN LATERAL (
+        SELECT s.vark_type
+        FROM auth_sessions s
+        WHERE s.user_id = u.id
+          AND s.is_active = true
+          AND s.revoked_at IS NULL
+          AND s.vark_type IS NOT NULL
+        ORDER BY s.last_seen_at DESC
+        LIMIT 1
+      ) sess ON true
       WHERE e.class_id = $1
         AND e.student_id = $2
         AND e.status = 'ACTIVE'
@@ -97,21 +103,34 @@ export async function listFeedbackAnalytics(
         u.id AS student_id,
         u.full_name,
         u.login_id,
-        sess.vark_type,
+        COALESCE(f.vark_type, sess.vark_type) AS vark_type,
         f.vark_type AS feedback_vark,
         f.value
       FROM enrollments e
       JOIN users u ON u.id = e.student_id AND u.status = 'ACTIVE'
-      JOIN auth_sessions sess
-        ON sess.user_id = u.id
-       AND sess.is_active = true
-       AND sess.vark_type IN ('VISUAL', 'AURAL', 'READ_WRITE')
+      LEFT JOIN LATERAL (
+        SELECT s.vark_type
+        FROM auth_sessions s
+        WHERE s.user_id = u.id
+          AND s.is_active = true
+          AND s.revoked_at IS NULL
+          AND s.vark_type IS NOT NULL
+        ORDER BY s.last_seen_at DESC
+        LIMIT 1
+      ) sess ON true
       LEFT JOIN feedback f
         ON f.student_id = u.id
        AND f.topic_id = $1
+       AND ($3::text IS NULL OR f.vark_type = $3)
       WHERE e.class_id = $2
         AND e.status = 'ACTIVE'
-        AND ($3::text IS NULL OR sess.vark_type = $3)
+        AND (
+          f.value IS NOT NULL
+          OR (
+            sess.vark_type IN ('VISUAL', 'AURAL', 'READ_WRITE')
+            AND ($3::text IS NULL OR sess.vark_type = $3)
+          )
+        )
         AND ($4::uuid IS NULL OR u.id = $4)
       ORDER BY u.full_name, f.vark_type
     `,
@@ -132,10 +151,16 @@ export async function listKinestheticAnalytics(
         a.score
       FROM enrollments e
       JOIN users u ON u.id = e.student_id AND u.status = 'ACTIVE'
-      JOIN auth_sessions sess
-        ON sess.user_id = u.id
-       AND sess.is_active = true
-       AND sess.vark_type = 'KINESTHETIC'
+      LEFT JOIN LATERAL (
+        SELECT s.vark_type
+        FROM auth_sessions s
+        WHERE s.user_id = u.id
+          AND s.is_active = true
+          AND s.revoked_at IS NULL
+          AND s.vark_type = 'KINESTHETIC'
+        ORDER BY s.last_seen_at DESC
+        LIMIT 1
+      ) sess ON true
       LEFT JOIN case_studies cs
         ON cs.topic_id = $1
        AND cs.deleted_at IS NULL
@@ -143,7 +168,9 @@ export async function listKinestheticAnalytics(
         ON sub.case_study_id = cs.id
        AND sub.student_id = u.id
       LEFT JOIN assessments a ON a.submission_id = sub.id
-      WHERE e.class_id = $2 AND e.status = 'ACTIVE'
+      WHERE e.class_id = $2
+        AND e.status = 'ACTIVE'
+        AND sess.vark_type = 'KINESTHETIC'
       ORDER BY u.full_name
     `,
     [input.topicId, input.classId],

@@ -27,6 +27,7 @@ import com.eduvark.app.data.remote.dto.SaveFeedbackRequest
 import com.eduvark.app.data.remote.dto.SubmissionDetailResponse
 import com.eduvark.app.data.remote.dto.SubmitCaseRequest
 import com.eduvark.app.data.remote.dto.SubmissionResponse
+import com.eduvark.app.data.remote.dto.StudentDashboardResponse
 import com.eduvark.app.data.remote.dto.TopicAnalyticsResponse
 import com.eduvark.app.data.remote.dto.TopicListResponse
 import com.eduvark.app.data.remote.dto.TopicResponse
@@ -77,6 +78,9 @@ interface EduVarkApi {
 
     @GET("topics/{id}")
     suspend fun getTopic(@Path("id") topicId: String): TopicResponse
+
+    @GET("student/dashboard")
+    suspend fun getStudentDashboard(): StudentDashboardResponse
 
     @GET("topics/{id}/materials")
     suspend fun listMaterials(@Path("id") topicId: String): MaterialListResponse
@@ -187,6 +191,9 @@ interface EduVarkApi {
 
     @PATCH("lecturer/topics/reorder")
     suspend fun reorderTopics(@Body request: ReorderTopicsRequest): Response<Unit>
+
+    @GET("lecturer/topics/{id}/materials")
+    suspend fun listLecturerMaterials(@Path("id") topicId: String): MaterialListResponse
 
     @POST("lecturer/topics/{id}/materials/link")
     suspend fun createLinkMaterial(

@@ -14,13 +14,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eduvark.app.BuildConfig
 import com.eduvark.app.ui.components.EduField
+import com.eduvark.app.ui.components.PasswordField
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.Eyebrow
 import com.eduvark.app.ui.components.FieldLabel
@@ -97,13 +97,12 @@ fun LoginScreen(
             Spacer(Modifier.height(16.dp))
             Column {
                 FieldLabel("Kata sandi")
-                EduField(
+                PasswordField(
                     value = password,
                     onValueChange = { password = it },
                     placeholder = "Password",
                     enabled = !state.isLoading,
-                    keyboardType = KeyboardType.Password,
-                    visualTransformation = PasswordVisualTransformation(),
+                    leadingLabel = "kata sandi",
                 )
             }
 
