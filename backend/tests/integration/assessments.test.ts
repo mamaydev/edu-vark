@@ -142,6 +142,51 @@ describeDb('assessment integration', () => {
     expect(detail.body.data.answerText).toBe('Jawaban tetap terlihat.');
   });
 
+  it('keeps submitted answers listed after the enrollment and account are disabled', async () => {
+    const lecturer = await lecturerToken();
+    const first = await loginStudent('2025000001', 'KINESTHETIC');
+    const second = await loginStudent('2025000002', 'KINESTHETIC');
+    const firstSubmit = await submit(first.accessToken, 'Jawaban mahasiswa satu.');
+    const secondSubmit = await submit(second.accessToken, 'Jawaban mahasiswa dua.');
+
+    // The answers were stored first; the academic data then changed. The grading
+    // tab still shows the aggregate count, so the detail list must agree with it.
+    await getPool().query(
+      "UPDATE enrollments SET status = 'LEFT', left_at = now() WHERE student_id = $1",
+      [first.user.id],
+    );
+    await getPool().query("UPDATE users SET status = 'INACTIVE' WHERE id = $1", [
+      first.user.id,
+    ]);
+
+    const response = await request(app)
+      .get('/api/v1/lecturer/cases/' + caseId + '/submissions')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+
+    const rows = response.body.data as Array<{
+      studentId: string;
+      submissionId: string | null;
+    }>;
+    const listedSubmissions = rows
+      .map((row) => row.submissionId)
+      .filter((id): id is string => id !== null);
+    expect(listedSubmissions).toHaveLength(2);
+    expect(listedSubmissions).toEqual(
+      expect.arrayContaining([
+        firstSubmit.body.data.submissionId,
+        secondSubmit.body.data.submissionId,
+      ]),
+    );
+    expect(rows.some((row) => row.studentId === first.user.id)).toBe(true);
+
+    const caseResponse = await request(app)
+      .get('/api/v1/lecturer/topics/' + topicId + '/case')
+      .set('Authorization', bearer(lecturer.accessToken))
+      .expect(200);
+    expect(caseResponse.body.data.submissionCount).toBe(listedSubmissions.length);
+  });
+
   it('lists Kinesthetic students with derived statuses', async () => {
     const lecturer = await lecturerToken();
     const kinesthetic = await loginStudent('2025000001', 'KINESTHETIC');

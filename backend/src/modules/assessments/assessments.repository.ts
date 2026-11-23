@@ -70,6 +70,27 @@ export async function listCaseStudents(
 ): Promise<CaseStudentRow[]> {
   const result = await client.query<CaseStudentRow>(
     `
+      WITH target AS (
+        SELECT
+          cs.id AS case_id,
+          t.class_id,
+          (now() <= cs.deadline_at) AS before_deadline
+        FROM case_studies cs
+        JOIN topics t ON t.id = cs.topic_id AND t.deleted_at IS NULL
+        WHERE cs.id = $1 AND cs.deleted_at IS NULL
+      ),
+      -- Every student that has a stored answer must always be listed, even when
+      -- the enrollment, account or class changed after the submission was made.
+      -- Otherwise the aggregate count and this list disagree.
+      candidates AS (
+        SELECT e.student_id
+        FROM target tg
+        JOIN enrollments e ON e.class_id = tg.class_id
+        UNION
+        SELECT s.student_id
+        FROM target tg
+        JOIN submissions s ON s.case_study_id = tg.case_id
+      )
       SELECT
         u.id AS student_id,
         u.full_name,
@@ -77,30 +98,36 @@ export async function listCaseStudents(
         s.id AS submission_id,
         s.submitted_at,
         a.score,
-        (now() <= cs.deadline_at) AS before_deadline
-      FROM case_studies cs
-      JOIN topics t ON t.id = cs.topic_id AND t.deleted_at IS NULL
-      JOIN classes c ON c.id = t.class_id AND c.is_active = true
-      JOIN enrollments e
-        ON e.class_id = t.class_id
-       AND e.status = 'ACTIVE'
-      JOIN users u ON u.id = e.student_id AND u.status = 'ACTIVE'
+        tg.before_deadline
+      FROM target tg
+      JOIN candidates cand ON TRUE
+      JOIN users u ON u.id = cand.student_id
+      LEFT JOIN enrollments e
+        ON e.class_id = tg.class_id
+       AND e.student_id = u.id
       LEFT JOIN submissions s
-        ON s.case_study_id = cs.id
+        ON s.case_study_id = tg.case_id
        AND s.student_id = u.id
       LEFT JOIN assessments a ON a.submission_id = s.id
-      WHERE cs.id = $1
-        AND cs.deleted_at IS NULL
-        AND (
-          -- A student who already submitted must remain visible even after
-          -- their Kinesthetic session was revoked or replaced by a new login.
+      WHERE (
+          -- A student who already submitted always stays visible, regardless of
+          -- a revoked Kinesthetic session or a later inactive enrollment.
           s.id IS NOT NULL
-          OR EXISTS (
-            SELECT 1
-            FROM auth_sessions sess
-            WHERE sess.user_id = u.id
-              AND sess.is_active = true
-              AND sess.vark_type = 'KINESTHETIC'
+          OR (
+            e.status = 'ACTIVE'
+            AND u.status = 'ACTIVE'
+            AND EXISTS (
+              SELECT 1
+              FROM classes c
+              WHERE c.id = tg.class_id AND c.is_active = true
+            )
+            AND EXISTS (
+              SELECT 1
+              FROM auth_sessions sess
+              WHERE sess.user_id = u.id
+                AND sess.is_active = true
+                AND sess.vark_type = 'KINESTHETIC'
+            )
           )
         )
       ORDER BY u.full_name

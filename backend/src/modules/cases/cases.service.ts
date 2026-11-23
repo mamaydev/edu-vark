@@ -25,6 +25,9 @@ export interface CaseResponse {
   submittedAt: string | null;
   score: number | null;
   comment: string | null;
+  answer?: string | null;
+  gradedAt?: string | null;
+  gradedBy?: string | null;
   submissionCount?: number;
 }
 
@@ -47,6 +50,9 @@ function toCaseResponse(row: repo.CaseRow): CaseResponse {
     submittedAt: row.submitted_at?.toISOString() ?? null,
     score: row.score,
     comment: row.comment,
+    answer: row.answer_text,
+    gradedAt: row.assessed_at?.toISOString() ?? null,
+    gradedBy: row.assessed_by_name,
   };
 }
 
