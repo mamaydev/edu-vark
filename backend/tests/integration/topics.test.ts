@@ -98,6 +98,26 @@ describeDb('topics and materials integration', () => {
     await closeDb();
   });
 
+  it('returns the topic itself from GET /topics/:id, not the dashboard', async () => {
+    const lecturer = await loginLecturer();
+    const topic = await createTopic(lecturer.accessToken, 'Topik Detail');
+    await publishTopic(lecturer.accessToken, topic.id);
+
+    const student = await loginStudent();
+    const detail = await request(app)
+      .get('/api/v1/topics/' + topic.id)
+      .set('Authorization', bearer(student.accessToken))
+      .expect(200);
+
+    expect(detail.body.data.id).toBe(topic.id);
+    expect(detail.body.data.title).toBe('Topik Detail');
+    // Regression guard: a second handler on this route used to answer with the
+    // student dashboard shape ({ vark, availableMaterials, ... }) first, which
+    // made the Android client fail to deserialize the topic.
+    expect(detail.body.data).not.toHaveProperty('vark');
+    expect(detail.body.data).not.toHaveProperty('availableMaterials');
+  });
+
   it('publishes without materials and returns the exact unavailable message', async () => {
     const lecturer = await loginLecturer();
     const topic = await createTopic(lecturer.accessToken, 'Topik Tanpa Materi');

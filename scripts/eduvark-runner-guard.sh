@@ -25,7 +25,8 @@ set -Eeuo pipefail
 umask 077
 
 UNIT=${EDUVARK_RUNNER_UNIT:-github-runner-eduvark.service}
-WINDOW_MIN=${EDUVARK_GUARD_WINDOW_MIN:-15}
+SCAN_HOURS=${EDUVARK_GUARD_SCAN_HOURS:-6}
+STARTUP_GRACE=${EDUVARK_GUARD_STARTUP_GRACE:-600}
 GRACE_SEC=${EDUVARK_GUARD_GRACE:-180}
 MAX_RESTARTS=${EDUVARK_GUARD_MAX_RESTARTS:-3}
 RECONNECT_WAIT=${EDUVARK_GUARD_RECONNECT_WAIT:-240}
@@ -64,11 +65,19 @@ if ! flock -n 8; then
   exit 0
 fi
 
+# Scan from the moment the service started, not from a rolling window. A wedge
+# logs a single "connect error" and then goes silent; with a rolling window that
+# line eventually falls out of range and the guard would call a dead runner
+# healthy forever (observed 2026-11-23T10:40Z, ~90 minutes undetected).
+started_epoch=$(date -d "$(systemctl show "$UNIT" -p ActiveEnterTimestamp --value 2>/dev/null)" +%s 2>/dev/null || true)
+
 journal_args=(-u "$UNIT" --no-pager -o short-iso)
 if [ -n "$since" ]; then
   journal_args+=(--since "$since")
+elif [ -n "$started_epoch" ]; then
+  journal_args+=(--since "@${started_epoch}")
 else
-  journal_args+=(--since "-${WINDOW_MIN}min")
+  journal_args+=(--since "-${SCAN_HOURS}h")
 fi
 [ -n "$until" ] && journal_args+=(--until "$until")
 
@@ -90,6 +99,8 @@ if [ -n "$until" ]; then
 else
   ref_epoch=$(date +%s)
 fi
+uptime=0
+if [ -n "$started_epoch" ]; then uptime=$((ref_epoch - started_epoch)); fi
 if [ -n "$err_epoch" ]; then err_age=$((ref_epoch - err_epoch)); else err_age=-1; fi
 
 decision=""
@@ -103,9 +114,14 @@ elif [ -n "$last_run" ] && { [ -z "$last_done" ] || [ "$last_run" -gt "$last_don
   # whatever else the log says.
   decision=skip
   reason="job in progress (Running job after the last completed job)"
+elif [ "${errors:-0}" -eq 0 ] && [ -z "$since" ] && [ -z "$listen_epoch" ] && [ "$uptime" -gt "$STARTUP_GRACE" ]; then
+  # Started, never reached "Listening for Jobs", and logged no error at all
+  # (e.g. DNS could not resolve the Actions endpoint). Silence is not health.
+  decision=restart
+  reason="runner never reached 'Listening for Jobs' in ${uptime}s since it started"
 elif [ "${errors:-0}" -eq 0 ]; then
   decision=skip
-  reason="healthy (no connect errors in window)"
+  reason="healthy (no connect errors since the service started)"
 elif [ "${err_age:-0}" -lt "$GRACE_SEC" ]; then
   decision=skip
   reason="connect error only ${err_age}s old; giving the listener time to retry"
