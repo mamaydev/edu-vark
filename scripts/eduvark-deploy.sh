@@ -205,12 +205,22 @@ check_public_health() {
 }
 
 smoke_tests() {
-  local code
+  local auth_code version_code
   curl -fsS --max-time 10 "$PUBLIC_BASE_URL/api/v1/health" >/dev/null ||
     { log "smoke failed: /api/v1/health"; return 1; }
-  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$PUBLIC_BASE_URL/api/v1/topics")
-  [ "$code" = "401" ] || { log "smoke failed: /api/v1/topics expected 401, got $code"; return 1; }
-  log "smoke tests passed"
+  # Version 2 is the supported client contract; without a token this must
+  # reach auth and return 401 (not be rejected by the compatibility gate).
+  auth_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
+    -H 'X-EduVARK-Client-Version: 2' \
+    "$PUBLIC_BASE_URL/api/v1/topics")
+  [ "$auth_code" = "401" ] ||
+    { log "smoke failed: /api/v1/topics with client v2 expected 401, got $auth_code"; return 1; }
+  # A missing/old client version must be rejected by the gate before auth.
+  version_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
+    "$PUBLIC_BASE_URL/api/v1/topics")
+  [ "$version_code" = "426" ] ||
+    { log "smoke failed: /api/v1/topics without client version expected 426, got $version_code"; return 1; }
+  log "smoke tests passed (client v2 auth=401, missing version=426)"
 }
 
 write_state() {
