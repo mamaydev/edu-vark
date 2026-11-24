@@ -39,16 +39,13 @@
     <string name="home_empty_topics_message">Topics will appear after the lecturer publishes them.</string>
     <string name="home_kinesthetic_notice">Kinesthetic uses lecturer grading, not the understanding feedback slider.</string>
     <string name="home_display_lecturer">Help every learning style grow.</string>
-    <string name="home_hero_eyebrow_lecturer">CLASSES TAUGHT</string>
-    <string name="home_hero_subtitle_lecturer">Odd Semester 2026/2027 • %1$d topics published</string>
+    <string name="home_hero_eyebrow_lecturer">COURSES TAUGHT</string>
     <string name="home_stat_published_topics">Published topics</string>
     <string name="home_stat_drafts">Drafts</string>
     <string name="home_section_priority">Today\'s priorities</string>
     <string name="home_card_manage_topics_title">Manage topics and materials</string>
-    <string name="home_card_manage_topics_body">Order topics, upload materials per category, and set up case studies.</string>
     <string name="home_link_open_topics">Open topic list</string>
     <string name="home_card_analytics_title">Monitor class understanding</string>
-    <string name="home_card_analytics_body">V/A/R feedback and Kinesthetic grades are shown separately.</string>
     <string name="home_link_open_analytics">Open analytics</string>
     <string name="home_button_create_topic">+ New topic</string>
     <string name="home_eyebrow_admin">Administration</string>
@@ -58,12 +55,7 @@
     <string name="home_hero_accounts_breakdown">%1$d students • %2$d lecturers • %3$d admins</string>
     <string name="home_stat_active_accounts">Active accounts</string>
     <string name="home_stat_inactive_accounts">Inactive</string>
-    <string name="home_button_create_account">+ New account</string>
-    <string name="home_section_manage_users">Manage users</string>
-    <string name="home_empty_accounts_title">No accounts registered yet.</string>
-    <string name="home_empty_accounts_message">Add a student or lecturer account to get started.</string>
-    <string name="home_user_meta">%1$s • %2$s</string>
-    <string name="home_admin_scope_notice">Admin rights are limited to accounts. Materials, feedback, and grading are unavailable for this role.</string>
+    <string name="home_button_manage_users">Manage users</string>
     <string name="home_case_status_graded">Graded • %1$d/100</string>
     <string name="home_case_status_waiting">Waiting for grading</string>
     <string name="home_case_status_not_submitted">Not submitted</string>
@@ -84,9 +76,7 @@
     <string name="st_topic_screen_title">Learning topics</string>
     <string name="st_topic_class_name">Database Implementation</string>
     <string name="st_topic_display">Your learning space</string>
-    <string name="st_topic_summary">%1$d topics published • order set by the lecturer</string>
-    <string name="st_topic_vark_locked">%1$s active • Cannot be changed</string>
-    <string name="st_topic_vark_unset">Learning format not selected</string>
+    <string name="st_topic_summary">Number of available topics: %1$d</string>
     <string name="st_topic_search_label">Search topics</string>
     <string name="st_topic_search_placeholder">Search topic titles…</string>
     <string name="st_topic_no_match">No topics match \"%1$s\".</string>
@@ -102,6 +92,5 @@
     <string name="st_topic_empty_steps">01 → 02 → 03</string>
     <string name="st_topic_empty_panel_title">Topics will appear here</string>
     <string name="st_topic_empty_panel_body">Materials are shown according to the active format and the order set by the lecturer.</string>
-    <string name="st_topic_empty_vark_locked">%1$s active • Session locked</string>
     <string name="st_topic_reload">Reload</string>
 </resources>

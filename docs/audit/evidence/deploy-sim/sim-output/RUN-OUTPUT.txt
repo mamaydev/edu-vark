@@ -1,0 +1,8 @@
+
+Simulation complete. Assertions per scenario:
+  migration-fail: PASS=7 FAIL=0
+  public-closed: PASS=12 FAIL=0
+  smoke-fail: PASS=11 FAIL=0
+  success: PASS=3 FAIL=0
+
+RESULT: ALL SIMULATION ASSERTIONS PASS

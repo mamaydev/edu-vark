@@ -1,0 +1,138 @@
+{
+  "generatedAt": "2026-11-24T13:54:58.167Z",
+  "legend": "PASS = dijalankan dan berhasil. FAIL = dijalankan dan gagal/tidak kompatibel. NOT RUN = tidak dijalankan. NEEDS VERIFICATION = dijalankan sebagian / nilai produksi belum diverifikasi. Tingkat bukti dipisah: API (curl/harness), ViewModel/helper, real-screen (emulator+uiautomator), staging (tidak diuji).",
+  "apkVersions": {
+    "old": {
+      "source": "b7b6cd6 worktree",
+      "versionCode": 1,
+      "versionName": "1.0.0",
+      "sha256": "9b5756a08f7479e727155d17e3554fb279bdc1321cbd3e69edba4f29eaf6a113"
+    },
+    "new": {
+      "source": "fix/eduvark-functional-audit-2026",
+      "versionCode": 1,
+      "versionName": "1.0.0",
+      "sha256": "164912fa239f9862f071d6436140a9b0323a06fd90fb6cf1c1e2d56f70f3f59f"
+    }
+  },
+  "matrix": [
+    {
+      "combination": "APK lama x backend baru",
+      "loginAdmin": {
+        "status": "PASS",
+        "level": "real-screen+API",
+        "note": "01401400001 diterima; POST /auth/login 200; langsung ke beranda admin; tidak ada layar session-status"
+      },
+      "loginLegacyAdmin": {
+        "status": "FAIL",
+        "level": "API",
+        "note": "loginId \"admin\" -> 401 INVALID_CREDENTIALS (by design)"
+      },
+      "materialList": {
+        "status": "PASS",
+        "level": "API",
+        "note": "200; signedUrl null, url null, contentUrl terisi"
+      },
+      "fileOpen": {
+        "status": "FAIL",
+        "level": "real-screen",
+        "note": "tap kartu materi = no-op tanpa pesan; tidak ada GET /content; signedUrl ?: url keduanya null"
+      },
+      "analytics": {
+        "status": "FAIL",
+        "level": "real-screen",
+        "note": "DTO lama vark: String non-null -> parse error -> \"Terjadi kesalahan. Coba lagi.\" (server 200)"
+      },
+      "verdict": "TIDAK KOMPATIBEL PENUH — hanya login Admin yang berhasil; FILE dan Analitik rusak diam-diam/berpesan galat"
+    },
+    {
+      "combination": "APK baru x backend baru",
+      "loginAdmin": {
+        "status": "PASS",
+        "level": "real-screen+API"
+      },
+      "loginLegacyAdmin": {
+        "status": "PASS",
+        "level": "API",
+        "note": "\"admin\" -> 401 by design",
+        "statusDetail": "PASS (ditolak sesuai aturan baru)"
+      },
+      "materialList": {
+        "status": "PASS",
+        "level": "API",
+        "note": "contentUrl relatif; signedUrl/expiresAt null"
+      },
+      "fileOpen": {
+        "status": "PASS",
+        "level": "real-screen",
+        "note": "GET /content 200 (51 B); file cache 51 B; intent FileProvider ke PDF viewer; render PDF NOT RUN karena fixture stub",
+        "statusDetail": "PASS (unduh + serah-terima)"
+      },
+      "analytics": {
+        "status": "PASS",
+        "level": "real-screen",
+        "note": "render termasuk kinesthetic 92/100"
+      },
+      "verdict": "KOMPATIBEL (pasangan acuan cutover)"
+    },
+    {
+      "combination": "APK baru x backend lama",
+      "loginAdmin": {
+        "status": "FAIL",
+        "level": "real-screen",
+        "note": "01401400001 -> 401; UI \"NIM/NIP/NIDN atau password tidak valid.\""
+      },
+      "loginLegacyAdmin": {
+        "status": "PASS",
+        "level": "API",
+        "note": "\"admin\" -> 200 (backend lama)"
+      },
+      "materialList": {
+        "status": "PASS",
+        "level": "API",
+        "note": "signedUrl lama terisi; tidak ada contentUrl",
+        "statusDetail": "PASS (bentuk lama)"
+      },
+      "fileOpen": {
+        "status": "PASS",
+        "level": "real-screen",
+        "note": "GET /materials/:id/content -> 404; UI \"Materi tidak dapat dibuka\"; tanpa crash",
+        "statusDetail": "PASS degradasi terkendali (fitur tidak tersedia)"
+      },
+      "analytics": {
+        "status": "PASS",
+        "level": "real-screen",
+        "note": "payload lama 639 B; kinesthetic.assessedCount=0 pada sesi Visual; UI menampilkan — / 100 tanpa crash",
+        "statusDetail": "PASS render; data berbeda"
+      },
+      "verdict": "TIDAK KOMPATIBEL — jangan dipakai sebagai rollback parsial tanpa restore DB"
+    },
+    {
+      "combination": "APK lama x backend lama",
+      "loginAdmin": {
+        "status": "NOT RUN",
+        "level": "-"
+      },
+      "fileOpen": {
+        "status": "NOT RUN",
+        "level": "-"
+      },
+      "analytics": {
+        "status": "NOT RUN",
+        "level": "-"
+      },
+      "verdict": "NOT RUN — tidak dijalankan pada remediation ini"
+    }
+  ],
+  "minimumVersionGate": {
+    "status": "FAIL",
+    "evidence": "min-version-gate-evidence.json",
+    "reason": "Kedua APK versionCode=1; header permintaan identik (okhttp/4.12.0) tanpa header versi aplikasi; backend tidak memiliki kode gate versi. Backend tidak dapat membedakan client lama vs baru.",
+    "statusDetail": "NOT RELIABLE"
+  },
+  "staging": {
+    "status": "NOT RUN",
+    "note": "Tidak ada lingkungan staging yang disentuh/diuji; semua bukti dari emulator + backend lokal terisolasi."
+  },
+  "statusNormalization": "Kolom status memakai kosakata PASS/FAIL/NOT RUN/NEEDS VERIFICATION; kualifikasi dipindah ke statusDetail."
+}

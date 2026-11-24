@@ -1,0 +1,487 @@
+{
+  "capturedAt": "2026-11-24T14:20:56.151379+00:00",
+  "note": "Header sensitif dihapus; hanya keberadaan Authorization yang dicatat. Token tidak disimpan.",
+  "candidateBackend": {
+    "baseUrl": "http://127.0.0.1:3001/api/v1",
+    "guard": "CLIENT_COMPATIBILITY_ENFORCE=1, CLIENT_MIN_VERSION=2",
+    "oldSessionBlocked": [
+      {
+        "timestamp": "2026-11-24T14:17:35.016000+00:00",
+        "requestId": 7,
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "userAgent": "okhttp/4.12.0",
+        "clientVersionHeader": null,
+        "authorizationPresent": true,
+        "status": 426,
+        "responseBytes": null
+      }
+    ],
+    "baselineLoginRejectedNoHeader": [
+      {
+        "timestamp": "2026-11-24T14:14:55.432000+00:00",
+        "requestId": 2,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": null,
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:14:55.443000+00:00",
+        "requestId": 3,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "1",
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:35.096000+00:00",
+        "requestId": 33,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": null,
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:35.108000+00:00",
+        "requestId": 34,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "1",
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:39.598000+00:00",
+        "requestId": 46,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": null,
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:39.610000+00:00",
+        "requestId": 47,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "1",
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:45.060000+00:00",
+        "requestId": 56,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": null,
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:45.071000+00:00",
+        "requestId": 57,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "1",
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      }
+    ],
+    "baselineLoginRejectedV1": [
+      {
+        "timestamp": "2026-11-24T14:14:55.443000+00:00",
+        "requestId": 3,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "1",
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:35.108000+00:00",
+        "requestId": 34,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "1",
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:39.610000+00:00",
+        "requestId": 47,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "1",
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:45.071000+00:00",
+        "requestId": 57,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "1",
+        "authorizationPresent": false,
+        "status": 426,
+        "responseBytes": null
+      }
+    ],
+    "candidateApkLogin": [
+      {
+        "timestamp": "2026-11-24T14:18:21.525000+00:00",
+        "requestId": 9,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "okhttp/4.12.0",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:19:53.416000+00:00",
+        "requestId": 25,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "okhttp/4.12.0",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:35.160000+00:00",
+        "requestId": 35,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:39.495000+00:00",
+        "requestId": 39,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:44.958000+00:00",
+        "requestId": 49,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:49.316000+00:00",
+        "requestId": 59,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:50.812000+00:00",
+        "requestId": 62,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:53.144000+00:00",
+        "requestId": 65,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      }
+    ],
+    "candidateApkRequests": [
+      {
+        "timestamp": "2026-11-24T14:20:44.976000+00:00",
+        "requestId": 50,
+        "method": "POST",
+        "path": "/api/v1/auth/vark",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:44.992000+00:00",
+        "requestId": 51,
+        "method": "GET",
+        "path": "/api/v1/topics?page=1&pageSize=100",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:45.035000+00:00",
+        "requestId": 54,
+        "method": "GET",
+        "path": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:49.316000+00:00",
+        "requestId": 59,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:49.336000+00:00",
+        "requestId": 60,
+        "method": "POST",
+        "path": "/api/v1/auth/vark",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:49.354000+00:00",
+        "requestId": 61,
+        "method": "GET",
+        "path": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:50.812000+00:00",
+        "requestId": 62,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:50.832000+00:00",
+        "requestId": 63,
+        "method": "POST",
+        "path": "/api/v1/auth/vark",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:50.849000+00:00",
+        "requestId": 64,
+        "method": "GET",
+        "path": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:53.144000+00:00",
+        "requestId": 65,
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:53.164000+00:00",
+        "requestId": 66,
+        "method": "POST",
+        "path": "/api/v1/auth/vark",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:53.180000+00:00",
+        "requestId": 67,
+        "method": "GET",
+        "path": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": "2",
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      }
+    ],
+    "healthWithoutHeader": [
+      {
+        "timestamp": "2026-11-24T14:16:52.930000+00:00",
+        "requestId": 5,
+        "method": "GET",
+        "path": "/api/v1/health",
+        "userAgent": "okhttp/4.12.0",
+        "clientVersionHeader": null,
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:17:03.962000+00:00",
+        "requestId": 6,
+        "method": "GET",
+        "path": "/api/v1/health",
+        "userAgent": "okhttp/4.12.0",
+        "clientVersionHeader": null,
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:17:49.487000+00:00",
+        "requestId": 8,
+        "method": "GET",
+        "path": "/api/v1/health",
+        "userAgent": "okhttp/4.12.0",
+        "clientVersionHeader": "2",
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:31.496000+00:00",
+        "requestId": 31,
+        "method": "GET",
+        "path": "/api/v1/health",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": null,
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:35.085000+00:00",
+        "requestId": 32,
+        "method": "GET",
+        "path": "/api/v1/health",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": null,
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:39.587000+00:00",
+        "requestId": 45,
+        "method": "GET",
+        "path": "/api/v1/health",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": null,
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:20:45.047000+00:00",
+        "requestId": 55,
+        "method": "GET",
+        "path": "/api/v1/health",
+        "userAgent": "curl/8.7.1",
+        "clientVersionHeader": null,
+        "authorizationPresent": false,
+        "status": 200,
+        "responseBytes": null
+      }
+    ]
+  },
+  "oldBackend": {
+    "baseUrl": "http://127.0.0.1:3002/api/v1",
+    "oldApkActiveSessionBeforeSwitch": [
+      {
+        "timestamp": "2026-11-24T14:17:23.785000+00:00",
+        "requestId": 11,
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "userAgent": "okhttp/4.12.0",
+        "clientVersionHeader": null,
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      },
+      {
+        "timestamp": "2026-11-24T14:17:23.833000+00:00",
+        "requestId": 12,
+        "method": "GET",
+        "path": "/api/v1/admin/users?page=1&pageSize=100",
+        "userAgent": "okhttp/4.12.0",
+        "clientVersionHeader": null,
+        "authorizationPresent": true,
+        "status": 200,
+        "responseBytes": null
+      }
+    ]
+  }
+}

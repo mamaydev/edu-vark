@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { getPool } from '../../db/client';
 import { AppError, forbidden, unauthorized, unprocessable } from '../../lib/errors';
 import { parseDurationMs, parseDurationSeconds } from '../../lib/duration';
-import { isAcademicLoginId } from '../../lib/login-id';
+import { isValidLoginIdForRole } from '../../lib/login-id';
 import { writeAudit } from '../../lib/audit';
 import {
   assertLoginAllowed,
@@ -97,9 +97,10 @@ export async function login(
       );
     }
 
-    // Every non-admin account must authenticate with a 10–11 digit NIM,
-    // NIP, or NIDN. Admin keeps its username.
-    if (user.role !== 'ADMIN' && !isAcademicLoginId(input.loginId)) {
+    // Every role signs in with a 10–11 digit ASCII identifier: students use
+    // NIM, lecturers use NIDN, and admins use the system-issued 014014XXXXX
+    // pattern. The legacy `admin` username (FR-036) is retired.
+    if (!isValidLoginIdForRole(user.role, input.loginId)) {
       recordLoginFailure(identifierKey);
       recordLoginFailure(ipKey);
       throw unauthorized(

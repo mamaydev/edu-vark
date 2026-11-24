@@ -1,0 +1,143 @@
+{
+  "generatedAt": "2026-11-24T14:15:42.016Z",
+  "stage": "tulisan baru pasca-migrasi (skenario B)",
+  "database": "eduvark_rb_pre002 (pasca 002+003)",
+  "explicitProductWrites": [
+    {
+      "action": "POST /api/v1/admin/users",
+      "status": 201,
+      "id": "b24377dd-1528-4279-bf02-1ab1c5ed7db3",
+      "result": "user STUDENT 2025999999 + enrollment otomatis 4de21a9c-1bd0-403c-a02a-70955343a3d0"
+    },
+    {
+      "action": "POST /api/v1/lecturer/topics",
+      "status": 201,
+      "id": "284f3e09-74b8-40bf-ab0a-ce6467eb163f",
+      "result": "topik DRAFT \"Rollback Write Topic\""
+    },
+    {
+      "action": "POST /api/v1/lecturer/topics/:id/materials/link",
+      "status": 201,
+      "id": "ec7e9b09-804c-47c9-8ddf-146c595a0b12",
+      "result": "material LINK \"Rollback Write Material\""
+    },
+    {
+      "action": "POST /auth/change-password (user baru)",
+      "status": 204,
+      "result": "password sementara diganti (bukti alur akun baru)"
+    },
+    {
+      "action": "POST /api/v1/topics/:id/case/submission",
+      "status": 201,
+      "id": "f4482b6e-3225-4108-8c66-c36205e1cdd0",
+      "result": "submission baru oleh user baru"
+    },
+    {
+      "action": "POST /api/v1/submissions/:id/assessment",
+      "status": 201,
+      "id": "03a6a3f8-aa9a-4fbd-be21-36195f4842a8",
+      "result": "assessment score 88"
+    }
+  ],
+  "rejectedWriteAttempt": {
+    "action": "submission oleh siswa 2025000002 (sesi VISUAL)",
+    "status": 403,
+    "code": "VARK_MISMATCH",
+    "note": "bukan kegagalan rollback; regresi aturan VARK (submission hanya sesi KINESTHETIC)"
+  },
+  "sessionTraffic": {
+    "note": "login verifikasi (admin/lecturer/3 siswa) juga menambah auth_sessions & audit_logs; ini bukan data produk"
+  },
+  "rowCounts": {
+    "snapshot": {
+      "users": 4,
+      "enrollments": 2,
+      "topics": 1,
+      "materials": 1,
+      "submissions": 1,
+      "assessments": 1,
+      "auth_sessions": 18,
+      "audit_logs": 30,
+      "admin_identity_changes": 0
+    },
+    "postWrites": {
+      "users": 5,
+      "enrollments": 3,
+      "topics": 2,
+      "materials": 2,
+      "submissions": 2,
+      "assessments": 2,
+      "auth_sessions": 34,
+      "audit_logs": 57,
+      "admin_identity_changes": 1
+    }
+  },
+  "lostOnRestore": {
+    "users": 1,
+    "enrollments": 1,
+    "topics": 1,
+    "materials": 1,
+    "submissions": 1,
+    "assessments": 1,
+    "auth_sessions": 16,
+    "audit_logs": 27,
+    "admin_identity_changes": 1
+  },
+  "lostProductRows": {
+    "users": [
+      {
+        "id": "b24377dd-1528-4279-bf02-1ab1c5ed7db3",
+        "loginId": "2025999999"
+      }
+    ],
+    "enrollments": [
+      {
+        "id": "4de21a9c-1bd0-403c-a02a-70955343a3d0",
+        "studentId": "b24377dd-1528-4279-bf02-1ab1c5ed7db3"
+      }
+    ],
+    "topics": [
+      {
+        "id": "284f3e09-74b8-40bf-ab0a-ce6467eb163f",
+        "title": "Rollback Write Topic"
+      }
+    ],
+    "materials": [
+      {
+        "id": "ec7e9b09-804c-47c9-8ddf-146c595a0b12",
+        "title": "Rollback Write Material"
+      }
+    ],
+    "submissions": [
+      {
+        "id": "f4482b6e-3225-4108-8c66-c36205e1cdd0",
+        "studentId": "b24377dd-1528-4279-bf02-1ab1c5ed7db3"
+      }
+    ],
+    "assessments": [
+      {
+        "id": "03a6a3f8-aa9a-4fbd-be21-36195f4842a8",
+        "score": 88
+      }
+    ]
+  },
+  "lostProductRowIds": [
+    "b24377dd-1528-4279-bf02-1ab1c5ed7db3",
+    "4de21a9c-1bd0-403c-a02a-70955343a3d0",
+    "284f3e09-74b8-40bf-ab0a-ce6467eb163f",
+    "ec7e9b09-804c-47c9-8ddf-146c595a0b12",
+    "f4482b6e-3225-4108-8c66-c36205e1cdd0",
+    "03a6a3f8-aa9a-4fbd-be21-36195f4842a8"
+  ],
+  "scenarioA_noNewWrites": {
+    "lostProductRows": 0,
+    "lostMigrationArtifacts": {
+      "admin_identity_changes": 1,
+      "note": "baris penanda perubahan identitas Admin ikut hilang; login_id Admin kembali \"admin\"; kemampuan login numerik hilang (konsekuensi rollback, bukan data produk)"
+    }
+  },
+  "scenarioB_afterNewWrites": {
+    "lostProductRows": 6,
+    "note": "SEMUA tulisan produk pasca-snapshot hilang tanpa peringatan; termasuk user+enrollment, topik, material, submission, assessment; auth/audit traffic juga hilang"
+  }
+}

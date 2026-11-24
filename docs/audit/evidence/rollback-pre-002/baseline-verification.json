@@ -1,0 +1,119 @@
+{
+  "generatedAt": "2026-11-24T14:14:13.705Z",
+  "stage": "baseline pra-002 (schema 001 + Admin legacy)",
+  "database": "eduvark_rb_pre002",
+  "backend": "image lama b7b6cd6 (/tmp/eduvark-oldbackend/backend/dist/server.js), PORT=3995",
+  "storage": "LOCAL_STORAGE_DIR=/tmp/eduvark-restore-storage",
+  "schemaMigrations": [
+    "001_init.sql"
+  ],
+  "legacyAdminLogin": {
+    "status": 200,
+    "note": "loginId \"admin\" diterima; token ADMIN diterbitkan"
+  },
+  "numericAdminLogin": {
+    "status": 401,
+    "error": {
+      "error": {
+        "code": "INVALID_CREDENTIALS",
+        "message": "NIM/NIP/NIDN atau password tidak valid.",
+        "details": [],
+        "requestId": "3a7c205b-d418-441f-8e42-a56e6c48f289"
+      }
+    }
+  },
+  "materialList": {
+    "status": 200,
+    "contract": "bentuk lama: signedUrl terisi, contentUrl tidak ada",
+    "sample": {
+      "id": "81e9de87-7ea2-480c-b8f2-e68a2742749b",
+      "topicId": "a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "vark": "VISUAL",
+      "title": "Materi PDF Restore",
+      "kind": "FILE",
+      "mime": "application/pdf",
+      "sizeBytes": 51,
+      "url": null,
+      "signedUrl": "http://10.0.2.2:3000/api/v1/material-files?key=materials%2F0bd48328-1d96-424d-b3c9-39b5f0c95714.pdf&expires=1795529948&signature=[REDACTED]",
+      "expiresAt": "2026-11-24T14:19:08.905Z",
+      "uploadedAt": "2026-11-24T12:22:59.262Z"
+    }
+  },
+  "signedUrlDownload": {
+    "status": 200,
+    "bytesDownloaded": 51,
+    "sha256": "904636248025ad20fb9c6bd8b700179a2a42edb5df3636e926c7e09055ee3f75"
+  },
+  "contentEndpoint": {
+    "status": 404,
+    "error": {
+      "error": {
+        "code": "ROUTE_NOT_FOUND",
+        "message": "Endpoint tidak ditemukan.",
+        "details": [],
+        "requestId": "063568a1-cc73-4d95-af6b-894ff3e53333"
+      }
+    }
+  },
+  "analytics": {
+    "status": 200,
+    "payload": {
+      "data": {
+        "topicId": "a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+        "category": null,
+        "studentId": null,
+        "respondentCount": 0,
+        "mean": null,
+        "histogram": [
+          {
+            "bucket": "0-20",
+            "count": 0
+          },
+          {
+            "bucket": "21-40",
+            "count": 0
+          },
+          {
+            "bucket": "41-60",
+            "count": 0
+          },
+          {
+            "bucket": "61-80",
+            "count": 0
+          },
+          {
+            "bucket": "81-100",
+            "count": 0
+          }
+        ],
+        "notRespondedCount": 1,
+        "aggregation": "mean of latest feedback per student-topic-category",
+        "kinesthetic": {
+          "assessedCount": 0,
+          "meanScore": null,
+          "notSubmittedCount": 1
+        },
+        "students": [
+          {
+            "studentId": "f3da579a-6940-4927-b1dd-65bfb2d16b32",
+            "fullName": "Mahasiswa Restore",
+            "loginId": "2025000001",
+            "vark": "VISUAL",
+            "feedback": {
+              "VISUAL": null,
+              "AURAL": null,
+              "READ_WRITE": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "structureFile": "baseline-structure.json",
+  "snapshot": {
+    "file": "baseline/pre-002-snapshot.dump",
+    "sha256": "5aedcca25b15c25742d5110484ed8a351cc8388d43789a74c2eb2983e066414c",
+    "sizeBytes": 46741
+  },
+  "caveat": "Snapshot dibuat SEBELUM verifikasi baseline dijalankan, sehingga login/sesi uji baseline tidak masuk snapshot. DB baseline sendiri berasal dari clone DB uji pra-002 yang masih memuat riwayat sesi/audit lama (auth_sessions=18, audit_logs=30)."
+}

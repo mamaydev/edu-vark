@@ -7,16 +7,21 @@ import com.eduvark.app.domain.repository.FeedbackRepository
 class FakeFeedbackRepository(
     var value: Int? = null,
     var failure: AppFailure? = null,
+    var updatedAt: String? = null,
 ) : FeedbackRepository {
+
+    var saveCalls: Int = 0
 
     override suspend fun getFeedback(topicId: String): Feedback {
         failure?.let { throw it }
-        return Feedback(value = value, updatedAt = null)
+        return Feedback(value = value, updatedAt = updatedAt)
     }
 
     override suspend fun saveFeedback(topicId: String, value: Int): Feedback {
         failure?.let { throw it }
+        saveCalls += 1
         this.value = value
-        return Feedback(value = value, updatedAt = "2026-11-20T10:00:00Z")
+        this.updatedAt = "2026-11-20T10:00:00Z"
+        return Feedback(value = value, updatedAt = updatedAt)
     }
 }

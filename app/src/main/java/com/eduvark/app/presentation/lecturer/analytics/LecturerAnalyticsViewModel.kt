@@ -16,6 +16,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/** Kategori feedback subjektif yang ditampilkan pada analitik dosen. */
+val LECTURER_FEEDBACK_CATEGORIES = listOf(
+    VarkType.VISUAL,
+    VarkType.AURAL,
+    VarkType.READ_WRITE,
+)
+
+/**
+ * Statistik per kategori asal feedback. Nilai dihitung dari nilai feedback
+ * tersimpan per kategori asal, bukan dari satu label VARK mahasiswa.
+ *
+ * `respondents` hanya menghitung nilai non-null: nilai 0% tetap dihitung sebagai
+ * respons, sedangkan mahasiswa tanpa feedback (`null`) tidak dihitung.
+ */
+data class LecturerCategoryStat(
+    val category: VarkType,
+    val respondents: Int,
+    val mean: Double?,
+)
+
 data class LecturerAnalyticsUiState(
     val isLoading: Boolean = true,
     val analytics: TopicAnalytics? = null,
@@ -23,7 +43,54 @@ data class LecturerAnalyticsUiState(
     val selectedCategory: VarkType? = null,
     val selectedStudentId: String? = null,
     val error: String? = null,
-)
+) {
+    /** Statistik V/A/R dari nilai tersimpan per kategori asal. */
+    val categoryStats: List<LecturerCategoryStat> = LECTURER_FEEDBACK_CATEGORIES.map { category ->
+        val values = allStudents.mapNotNull { it.valueFor(category) }
+        LecturerCategoryStat(
+            category = category,
+            respondents = values.size,
+            mean = if (values.isEmpty()) null else values.average(),
+        )
+    }
+
+    val hasFeedback: Boolean = categoryStats.any { it.respondents > 0 }
+
+    val totalStudentCount: Int = allStudents.size
+
+    /** Jumlah responden resmi dari backend untuk cakupan filter aktif. */
+    val respondentCount: Int = analytics?.respondentCount ?: 0
+
+    /**
+     * CATATAN: `TopicAnalytics.notRespondedCount` dan
+     * `KinestheticAnalytics.notSubmittedCount` tetap ada di model domain/DTO
+     * (kontrak API dipertahankan), tetapi SENGAJA tidak diekspos sebagai
+     * properti UI. UI dosen tidak boleh merender total "belum merespons" /
+     * "belum mengumpulkan"; semantik 0% vs belum merespons cukup diwakili
+     * nilai `null` per mahasiswa di [visibleStudents].
+     */
+
+    /** Definisi agregasi yang dikirim backend; wajib ditampilkan ke dosen. */
+    val aggregationDefinition: String? = analytics?.aggregation
+
+    val kinestheticAssessedCount: Int = analytics?.kinesthetic?.assessedCount ?: 0
+
+    val kinestheticMeanScore: Double? = analytics?.kinesthetic?.meanScore
+
+    /**
+     * Filter daftar memakai KATEGORI ASAL nilai tersimpan (FR-030), bukan satu
+     * label VARK mahasiswa. Tanpa filter semua mahasiswa ditampilkan agar
+     * "belum merespons" (null) tetap terlihat dan tidak dianggap 0%.
+     */
+    val visibleStudents: List<StudentFeedback> = run {
+        val category = selectedCategory
+        if (category == null) {
+            allStudents
+        } else {
+            allStudents.filter { it.respondedIn(category) }
+        }
+    }
+}
 
 @HiltViewModel
 class LecturerAnalyticsViewModel @Inject constructor(

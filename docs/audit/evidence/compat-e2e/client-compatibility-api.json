@@ -1,0 +1,164 @@
+{
+  "capturedAt": "2026-11-24T14:20:45.084134+00:00",
+  "backend": {
+    "baseUrl": "http://127.0.0.1:3001/api/v1",
+    "nodeEnv": "test",
+    "guard": "CLIENT_COMPATIBILITY_ENFORCE=1, CLIENT_MIN_VERSION=2",
+    "sourceCommit": "b7b6cd6d2be19c1f0aa93f2b95454049984250d5"
+  },
+  "checks": {
+    "health_no_header": {
+      "httpStatus": 200,
+      "body": {
+        "status": "ok",
+        "service": "eduvark-backend",
+        "timestamp": "2026-11-24T14:20:45.047Z"
+      }
+    },
+    "login_no_header": {
+      "httpStatus": 426,
+      "body": {
+        "error": {
+          "code": "CLIENT_VERSION_UNSUPPORTED",
+          "message": "Versi aplikasi tidak didukung. Perbarui EduVARK sebelum melanjutkan.",
+          "details": {
+            "minSupportedVersion": 2,
+            "receivedVersion": null,
+            "header": "x-eduvark-client-version"
+          },
+          "requestId": "f6e688d7-1bb4-4b13-8619-33c469680598"
+        }
+      }
+    },
+    "login_v1": {
+      "httpStatus": 426,
+      "body": {
+        "error": {
+          "code": "CLIENT_VERSION_UNSUPPORTED",
+          "message": "Versi aplikasi tidak didukung. Perbarui EduVARK sebelum melanjutkan.",
+          "details": {
+            "minSupportedVersion": 2,
+            "receivedVersion": "1",
+            "header": "x-eduvark-client-version"
+          },
+          "requestId": "9fb21c5e-ad0b-48ee-a96a-159717906ae8"
+        }
+      }
+    },
+    "login_v2": {
+      "httpStatus": 200,
+      "body": {
+        "accessToken": "[REDACTED]",
+        "refreshToken": "[REDACTED]",
+        "expiresIn": 900,
+        "user": {
+          "id": "f3da579a-6940-4927-b1dd-65bfb2d16b32",
+          "loginId": "2025000001",
+          "fullName": "Mahasiswa Restore",
+          "role": "STUDENT",
+          "status": "ACTIVE",
+          "mustChangePassword": false,
+          "activeVark": null
+        },
+        "varkRequired": true,
+        "activeVark": null
+      }
+    },
+    "vark_v2": {
+      "httpStatus": 200,
+      "body": {
+        "activeVark": "VISUAL",
+        "locked": true
+      }
+    },
+    "topics_v2_after_vark": {
+      "httpStatus": 200,
+      "body": {
+        "data": [
+          {
+            "id": "a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+            "title": "Topik Restore Representatif",
+            "description": "Topik untuk uji restore.",
+            "sortOrder": 0,
+            "status": "PUBLISHED",
+            "materialAvailable": true,
+            "createdAt": "2026-11-24T12:22:59.233Z",
+            "updatedAt": "2026-11-24T12:22:59.248Z"
+          }
+        ],
+        "meta": {
+          "page": 1,
+          "pageSize": 100,
+          "total": 1
+        }
+      }
+    },
+    "topics_no_header_valid_token": {
+      "httpStatus": 426,
+      "body": {
+        "error": {
+          "code": "CLIENT_VERSION_UNSUPPORTED",
+          "message": "Versi aplikasi tidak didukung. Perbarui EduVARK sebelum melanjutkan.",
+          "details": {
+            "minSupportedVersion": 2,
+            "receivedVersion": null,
+            "header": "x-eduvark-client-version"
+          },
+          "requestId": "76e217ff-8134-401f-8e72-34f6d5b7a1cc"
+        }
+      }
+    },
+    "expired_old_signed_url_no_header": {
+      "httpStatus": 426,
+      "body": {
+        "error": {
+          "code": "CLIENT_VERSION_UNSUPPORTED",
+          "message": "Versi aplikasi tidak didukung. Perbarui EduVARK sebelum melanjutkan.",
+          "details": {
+            "minSupportedVersion": 2,
+            "receivedVersion": null,
+            "header": "x-eduvark-client-version"
+          },
+          "requestId": "b23dace3-d5ac-4338-85b6-7f2abf6702b7"
+        }
+      }
+    },
+    "expired_old_signed_url_with_v2_header": {
+      "httpStatus": 403,
+      "body": {
+        "error": {
+          "code": "SIGNED_URL_EXPIRED",
+          "message": "Tautan materi sudah kedaluwarsa.",
+          "details": [],
+          "requestId": "1dc207ca-1996-4159-8a66-d202680d33f8"
+        }
+      }
+    },
+    "material_content_v2": {
+      "httpStatus": 200,
+      "body": "%PDF-1.4\n% EduVARK compatibility fixture\n"
+    },
+    "materials_v2_after_vark": {
+      "httpStatus": 200,
+      "body": {
+        "data": [
+          {
+            "id": "81e9de87-7ea2-480c-b8f2-e68a2742749b",
+            "topicId": "a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+            "vark": "VISUAL",
+            "title": "Materi PDF Restore",
+            "kind": "FILE",
+            "mime": "application/pdf",
+            "sizeBytes": 51,
+            "url": null,
+            "contentUrl": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+            "linkTargetUrl": null,
+            "signedUrl": null,
+            "expiresAt": null,
+            "uploadedAt": "2026-11-24T12:22:59.262Z"
+          }
+        ]
+      }
+    }
+  }
+}

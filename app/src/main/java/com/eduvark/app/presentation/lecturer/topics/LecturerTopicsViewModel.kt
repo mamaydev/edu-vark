@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.Topic
+import com.eduvark.app.domain.model.TopicStatus
 import com.eduvark.app.domain.usecase.CreateTopicUseCase
 import com.eduvark.app.domain.usecase.DeleteTopicUseCase
 import com.eduvark.app.domain.usecase.GetTopicsUseCase
 import com.eduvark.app.domain.usecase.PublishTopicUseCase
 import com.eduvark.app.domain.usecase.ReorderTopicsUseCase
 import com.eduvark.app.domain.usecase.UnpublishTopicUseCase
+import com.eduvark.app.domain.usecase.UpdateTopicUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +33,7 @@ data class LecturerTopicsUiState(
 class LecturerTopicsViewModel @Inject constructor(
     private val getTopicsUseCase: GetTopicsUseCase,
     private val createTopicUseCase: CreateTopicUseCase,
+    private val updateTopicUseCase: UpdateTopicUseCase,
     private val publishTopicUseCase: PublishTopicUseCase,
     private val unpublishTopicUseCase: UnpublishTopicUseCase,
     private val deleteTopicUseCase: DeleteTopicUseCase,
@@ -115,6 +118,49 @@ class LecturerTopicsViewModel @Inject constructor(
                 _state.update { it.copy(isSaving = false, actionError = error.message) }
             } catch (error: Exception) {
                 _state.update { it.copy(isSaving = false, actionError = "Gagal menyimpan topik.") }
+            }
+        }
+    }
+
+    /**
+     * FR-009 / DEC-002: dosen dapat memperbarui judul dan deskripsi topik yang
+     * sudah ada (PATCH topik dengan ID yang sama), lalu status publikasi
+     * diterapkan terpisah hanya bila berubah. Data akademik yang sudah ada
+     * (submission/nilai) tidak tersentuh; proteksi arsip tetap di backend.
+     */
+    fun updateTopic(
+        topicId: String,
+        title: String,
+        description: String,
+        published: Boolean,
+    ) {
+        if (title.trim().isEmpty()) {
+            _state.update { it.copy(actionError = "Judul topik wajib diisi.") }
+            return
+        }
+        viewModelScope.launch {
+            _state.update { it.copy(isSaving = true, actionError = null) }
+            try {
+                val current = _state.value.topics.firstOrNull { it.id == topicId }
+                updateTopicUseCase(
+                    topicId = topicId,
+                    title = title.trim(),
+                    description = description.trim().ifBlank { null },
+                )
+                if (current != null) {
+                    val shouldPublish = published && current.status != TopicStatus.PUBLISHED
+                    val shouldUnpublish = !published && current.status != TopicStatus.DRAFT
+                    if (shouldPublish) publishTopicUseCase(topicId)
+                    if (shouldUnpublish) unpublishTopicUseCase(topicId)
+                }
+                val topics = getTopicsUseCase()
+                _state.update { it.copy(isSaving = false, topics = topics) }
+            } catch (error: AppFailure) {
+                _state.update { it.copy(isSaving = false, actionError = error.message) }
+            } catch (error: Exception) {
+                _state.update {
+                    it.copy(isSaving = false, actionError = "Gagal menyimpan perubahan topik.")
+                }
             }
         }
     }

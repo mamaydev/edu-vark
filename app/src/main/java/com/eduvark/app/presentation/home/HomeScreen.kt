@@ -61,7 +61,6 @@ import com.eduvark.app.ui.components.content
 import com.eduvark.app.ui.format.formatDeadline
 import androidx.compose.ui.text.font.FontWeight
 import com.eduvark.app.ui.components.TopicCard
-import com.eduvark.app.ui.components.UserCard
 import java.util.Calendar
 import com.eduvark.app.ui.theme.EduTheme
 import com.eduvark.app.R
@@ -77,7 +76,6 @@ fun HomeScreen(
     onOpenGrading: () -> Unit = {},
     onOpenAnalytics: () -> Unit = {},
     onCreateTopic: () -> Unit = {},
-    onCreateUser: () -> Unit = {},
     onOpenAdminAccounts: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -184,7 +182,6 @@ fun HomeScreen(
 
                     UserRole.ADMIN -> AdminHome(
                         state = state,
-                        onCreateUser = onCreateUser,
                         onOpenAccounts = onOpenAdminAccounts,
                     )
                 }
@@ -366,11 +363,6 @@ private fun LecturerHome(
         )
         Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(text = stringResource(R.string.home_class_name), style = EduTheme.type.heroTitle)
-        Spacer(Modifier.height(dimen(R.dimen.space_10)))
-        Text(
-            text = stringResource(R.string.home_hero_subtitle_lecturer, state.publishedTopics.size),
-            style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand),
-        )
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_12))) {
@@ -390,11 +382,6 @@ private fun LecturerHome(
 
     EduCard(modifier = Modifier.fillMaxWidth(), onClick = onOpenTopics) {
         Text(text = stringResource(R.string.home_card_manage_topics_title), style = EduTheme.type.cardTitle)
-        Spacer(Modifier.height(dimen(R.dimen.space_6)))
-        Text(
-            text = stringResource(R.string.home_card_manage_topics_body),
-            style = EduTheme.type.bodySmall,
-        )
         Spacer(Modifier.height(dimen(R.dimen.space_12)))
         TextLink(text = stringResource(R.string.home_link_open_topics), onClick = onOpenTopics)
     }
@@ -407,11 +394,6 @@ private fun LecturerHome(
         Text(
             text = stringResource(R.string.home_card_analytics_title),
             style = EduTheme.type.cardTitle.copy(color = EduTheme.colors.lime),
-        )
-        Spacer(Modifier.height(dimen(R.dimen.space_6)))
-        Text(
-            text = stringResource(R.string.home_card_analytics_body),
-            style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.lime),
         )
         Spacer(Modifier.height(dimen(R.dimen.space_12)))
         TextLink(
@@ -427,7 +409,6 @@ private fun LecturerHome(
 @Composable
 private fun AdminHome(
     state: HomeUiState,
-    onCreateUser: () -> Unit,
     onOpenAccounts: () -> Unit,
 ) {
     val summary = state.adminSummary
@@ -470,37 +451,9 @@ private fun AdminHome(
         )
     }
 
-    PrimaryButton(text = stringResource(R.string.home_button_create_account), onClick = onCreateUser)
-
-    SectionHeader(
-        title = stringResource(R.string.home_section_manage_users),
-        actionLabel = stringResource(R.string.home_action_all),
-        onAction = onOpenAccounts,
-    )
-
-    if (state.adminUsers.isEmpty() && !state.isLoading) {
-        EduCard {
-            Text(text = stringResource(R.string.home_empty_accounts_title), style = EduTheme.type.cardTitle)
-            Spacer(Modifier.height(dimen(R.dimen.space_6)))
-            Text(
-                text = stringResource(R.string.home_empty_accounts_message),
-                style = EduTheme.type.bodySmall,
-            )
-        }
-    } else {
-        state.adminUsers.take(2).forEach { account ->
-            UserCard(
-                name = account.fullName.ifBlank { account.loginId },
-                meta = stringResource(R.string.home_user_meta, account.loginId, account.role.label),
-                status = account.status.label,
-                statusTone = if (account.status.wireValue == "ACTIVE") TintTone.Teal else TintTone.Danger,
-                onClick = onOpenAccounts,
-            )
-        }
-    }
-
-    NoticeCard(
-        text = stringResource(R.string.home_admin_scope_notice),
+    PrimaryButton(
+        text = stringResource(R.string.home_button_manage_users),
+        onClick = onOpenAccounts,
     )
 }
 

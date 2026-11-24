@@ -54,7 +54,7 @@ class AdminRepositoryImpl @Inject constructor(
     }
 
     override suspend fun createUser(
-        loginId: String,
+        loginId: String?,
         fullName: String,
         role: UserRole,
         temporaryPassword: String,
@@ -76,9 +76,17 @@ class AdminRepositoryImpl @Inject constructor(
         userId: String,
         fullName: String?,
         role: UserRole?,
+        loginId: String?,
     ): AdminUser {
         val response = executor.execute {
-            api.updateAdminUser(userId, UpdateAdminUserRequest(fullName, role?.wireValue))
+            api.updateAdminUser(
+                userId,
+                UpdateAdminUserRequest(
+                    fullName = fullName,
+                    role = role?.wireValue,
+                    loginId = loginId,
+                ),
+            )
         }
         return response.data?.toDomain() ?: throw AppFailure.Unknown
     }

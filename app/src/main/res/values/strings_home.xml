@@ -39,16 +39,13 @@
     <string name="home_empty_topics_message">Topik akan muncul setelah dosen menerbitkannya.</string>
     <string name="home_kinesthetic_notice">Kinesthetic menggunakan penilaian dosen, bukan slider feedback pemahaman.</string>
     <string name="home_display_lecturer">Bantu setiap cara belajar bertumbuh.</string>
-    <string name="home_hero_eyebrow_lecturer">KELAS YANG DIAMPU</string>
-    <string name="home_hero_subtitle_lecturer">Semester Ganjil 2026/2027 • %1$d topik terbit</string>
+    <string name="home_hero_eyebrow_lecturer">MATA KULIAH YANG DIAMPU</string>
     <string name="home_stat_published_topics">Topik terbit</string>
     <string name="home_stat_drafts">Draf</string>
     <string name="home_section_priority">Prioritas hari ini</string>
     <string name="home_card_manage_topics_title">Kelola topik dan materi</string>
-    <string name="home_card_manage_topics_body">Susun urutan topik, unggah materi per kategori, dan atur studi kasus.</string>
     <string name="home_link_open_topics">Buka daftar topik</string>
     <string name="home_card_analytics_title">Pantau pemahaman kelas</string>
-    <string name="home_card_analytics_body">Feedback V/A/R dan nilai Kinesthetic ditampilkan terpisah.</string>
     <string name="home_link_open_analytics">Buka analitik</string>
     <string name="home_button_create_topic">+ Buat topik baru</string>
     <string name="home_eyebrow_admin">Ruang administrasi</string>
@@ -58,12 +55,7 @@
     <string name="home_hero_accounts_breakdown">%1$d mahasiswa • %2$d dosen • %3$d admin</string>
     <string name="home_stat_active_accounts">Akun aktif</string>
     <string name="home_stat_inactive_accounts">Nonaktif</string>
-    <string name="home_button_create_account">+ Buat akun baru</string>
-    <string name="home_section_manage_users">Kelola pengguna</string>
-    <string name="home_empty_accounts_title">Belum ada akun terdaftar.</string>
-    <string name="home_empty_accounts_message">Tambahkan akun mahasiswa atau dosen untuk memulai.</string>
-    <string name="home_user_meta">%1$s • %2$s</string>
-    <string name="home_admin_scope_notice">Hak admin terbatas pada akun. Materi, feedback, dan penilaian tidak tersedia untuk role ini.</string>
+    <string name="home_button_manage_users">Kelola pengguna</string>
     <string name="home_case_status_graded">Sudah dinilai • %1$d/100</string>
     <string name="home_case_status_waiting">Menunggu penilaian</string>
     <string name="home_case_status_not_submitted">Tidak mengumpulkan</string>
@@ -84,9 +76,7 @@
     <string name="st_topic_screen_title">Topik pembelajaran</string>
     <string name="st_topic_class_name">Implementasi Basis Data</string>
     <string name="st_topic_display">Ruang belajarmu</string>
-    <string name="st_topic_summary">%1$d topik terbit · urutan ditentukan dosen</string>
-    <string name="st_topic_vark_locked">%1$s aktif • Tidak dapat diganti</string>
-    <string name="st_topic_vark_unset">Format belajar belum dipilih</string>
+    <string name="st_topic_summary">Jumlah topik yang tersedia: %1$d</string>
     <string name="st_topic_search_label">Cari topik</string>
     <string name="st_topic_search_placeholder">Cari judul topik…</string>
     <string name="st_topic_no_match">Tidak ada topik yang cocok dengan \"%1$s\".</string>
@@ -102,6 +92,5 @@
     <string name="st_topic_empty_steps">01 → 02 → 03</string>
     <string name="st_topic_empty_panel_title">Topik akan muncul di sini</string>
     <string name="st_topic_empty_panel_body">Materi ditampilkan sesuai format aktif dan urutan yang diatur dosen.</string>
-    <string name="st_topic_empty_vark_locked">%1$s aktif • Sesi terkunci</string>
     <string name="st_topic_reload">Muat ulang</string>
 </resources>

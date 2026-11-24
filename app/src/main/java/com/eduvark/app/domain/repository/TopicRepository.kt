@@ -14,7 +14,14 @@ interface TopicRepository {
     suspend fun listMaterials(topicId: String): List<Material>
     suspend fun listLecturerMaterials(topicId: String): List<Material>
 
+    /** Unduh isi berkas materi lewat alamat tetap EduVARK (otorisasi per permintaan). */
+    suspend fun downloadMaterialContent(materialId: String): ByteArray
+
+    /** Ambil tujuan tautan eksternal setelah backend memeriksa izin terkini. */
+    suspend fun getMaterialLinkTarget(materialId: String): String
+
     suspend fun createTopic(title: String, description: String?): Topic
+    suspend fun updateTopic(topicId: String, title: String?, description: String?): Topic
     suspend fun publishTopic(topicId: String): Topic
     suspend fun unpublishTopic(topicId: String): Topic
     suspend fun deleteTopic(topicId: String)

@@ -1,0 +1,143 @@
+{
+  "generatedAt": "2026-11-24T14:15:42.016Z",
+  "stage": "migrasi 002+003 diterapkan pada DB baseline (schema 001 + Admin legacy)",
+  "database": "eduvark_rb_pre002",
+  "backend": "kode baru (dist/server.js) PORT=3996; migrasi dijalankan via node dist/db/migrate.js",
+  "migrationRunner": {
+    "command": "DATABASE_URL=postgres://…/eduvark_rb_pre002 node dist/db/migrate.js",
+    "exitCode": 0,
+    "appliedCount": 2,
+    "log": "logs/rb-migrate.log"
+  },
+  "schemaMigrations": [
+    "001_init.sql",
+    "002_admin_login_ids.sql",
+    "003_admin_session_revoke_and_range.sql"
+  ],
+  "adminIdentityChange": {
+    "loginIdBefore": "admin",
+    "loginIdAfter": "01401400001",
+    "adminUserId": "c1bf7114-67f1-4296-87fa-5098e8123fc4",
+    "markerRow": true
+  },
+  "legacyAdminLogin": {
+    "status": 401,
+    "error": {
+      "error": {
+        "code": "INVALID_CREDENTIALS",
+        "message": "NIM/NIP/NIDN atau password tidak valid.",
+        "details": [],
+        "requestId": "ec7814f8-8201-4114-af82-e7f140224ba5"
+      }
+    }
+  },
+  "numericAdminLogin": {
+    "status": 200
+  },
+  "adminSessionsActiveAfter002": 0,
+  "materialList": {
+    "status": 200,
+    "contract": "kontrak baru: signedUrl=null, contentUrl=/api/v1/materials/:id/content",
+    "keys": [
+      "id",
+      "topicId",
+      "vark",
+      "title",
+      "kind",
+      "mime",
+      "sizeBytes",
+      "url",
+      "contentUrl",
+      "linkTargetUrl",
+      "signedUrl",
+      "expiresAt",
+      "uploadedAt"
+    ]
+  },
+  "contentEndpoint": {
+    "status": 200,
+    "bytes": 51,
+    "sha256": "904636248025ad20fb9c6bd8b700179a2a42edb5df3636e926c7e09055ee3f75"
+  },
+  "analytics": {
+    "status": 200,
+    "payload": {
+      "data": {
+        "topicId": "a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+        "category": null,
+        "studentId": null,
+        "respondentCount": 0,
+        "mean": null,
+        "histogram": [
+          {
+            "bucket": "0-20",
+            "count": 0
+          },
+          {
+            "bucket": "21-40",
+            "count": 0
+          },
+          {
+            "bucket": "41-60",
+            "count": 0
+          },
+          {
+            "bucket": "61-80",
+            "count": 0
+          },
+          {
+            "bucket": "81-100",
+            "count": 0
+          }
+        ],
+        "notRespondedCount": 1,
+        "aggregation": "Rerata aritmetika feedback terbaru per mahasiswa-topik-kategori (Visual/Audio/Read-Write). Mahasiswa tanpa feedback tidak dihitung sebagai nilai 0%.",
+        "definitions": {
+          "respondentCount": "Jumlah mahasiswa yang memiliki nilai feedback tersimpan pada cakupan filter.",
+          "notRespondedCount": "Field kompatibilitas dengan definisi existing: jumlah mahasiswa pada populasi respons (enrollment ACTIVE di kelas, memiliki feedback untuk filter ATAU sesi aktif terakhir Visual/Audio/Read-Write yang cocok filter) yang belum memiliki feedback pada filter itu. Sesi Kinesthetic tidak masuk populasi ini. Berbeda dari nilai 0%; FR-048 (status individu) terpisah.",
+          "mean": "Rerata nilai feedback pada cakupan filter. Nilai 0% tetap dihitung; mahasiswa tanpa feedback tidak.",
+          "kinestheticAssessedCount": "Jumlah seluruh penilaian final Kinesthetic yang tersimpan pada studi kasus topik ini, termasuk setelah logout, pergantian VARK, dan enrollment LEFT.",
+          "kinestheticMeanScore": "Rerata seluruh nilai final Kinesthetic pada studi kasus topik ini; tidak digabung dengan feedback V/A/R.",
+          "kinestheticNotSubmittedCount": "Field kompatibilitas: jumlah mahasiswa bersesi Kinesthetic aktif yang belum mengirim jawaban studi kasus topik ini. Bukan status individu FR-048."
+        },
+        "kinesthetic": {
+          "assessedCount": 1,
+          "meanScore": 92,
+          "notSubmittedCount": 1
+        },
+        "students": [
+          {
+            "studentId": "d6c373cd-b80a-4404-9db4-376fe11f8b60",
+            "fullName": "Mahasiswa Kompatibilitas",
+            "loginId": "2025000002",
+            "vark": null,
+            "originCategories": [],
+            "feedback": {
+              "VISUAL": null,
+              "AURAL": null,
+              "READ_WRITE": null
+            }
+          },
+          {
+            "studentId": "f3da579a-6940-4927-b1dd-65bfb2d16b32",
+            "fullName": "Mahasiswa Restore",
+            "loginId": "2025000001",
+            "vark": null,
+            "originCategories": [],
+            "feedback": {
+              "VISUAL": null,
+              "AURAL": null,
+              "READ_WRITE": null
+            }
+          }
+        ]
+      }
+    },
+    "note": "bentuk baru memuat definitions + kinesthetic"
+  },
+  "identityPreservation": {
+    "mechanism": "UUID Admin tidak berubah; hanya login_id yang berubah (lihat baseline-structure.json vs post-migration-structure.json)",
+    "verifiedBy": "admin_identity_changes old=admin new=01401400001"
+  },
+  "migrationRunnerNote": "Server baru TIDAK menjalankan migrasi otomatis saat start; migrasi harus dieksekusi eksplisit (node dist/db/migrate.js / npm run db:migrate). Ini berlaku untuk runbook deployment."
+}

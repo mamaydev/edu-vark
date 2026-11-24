@@ -8,6 +8,7 @@ import com.eduvark.app.data.remote.dto.LoginRequest
 import com.eduvark.app.data.remote.dto.UserDto
 import com.eduvark.app.data.remote.dto.VarkRequest
 import com.eduvark.app.data.remote.safeApiCall
+import com.eduvark.app.data.remote.toAppFailureOrNull
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.AuthSession
 import com.eduvark.app.domain.model.UserProfile
@@ -60,11 +61,11 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        try {
-            execute { api.logout() }
-        } finally {
-            sessionStore.clear()
-        }
+        val response = execute("POST /auth/logout") { api.logout() }
+        response.toAppFailureOrNull(json)?.let { throw it }
+        // The server confirmed the session revocation; only now may the local
+        // session be discarded (FR-001/DEC-005).
+        sessionStore.clear()
     }
 
     override suspend fun me(): UserProfile {
@@ -80,7 +81,7 @@ class AuthRepositoryImpl @Inject constructor(
         newPassword: String,
         confirmation: String,
     ) {
-        execute {
+        val response = execute("POST /auth/change-password") {
             api.changePassword(
                 ChangePasswordRequest(
                     currentPassword = currentPassword,
@@ -89,6 +90,9 @@ class AuthRepositoryImpl @Inject constructor(
                 ),
             )
         }
+        response.toAppFailureOrNull(json)?.let { throw it }
+        // All server sessions are revoked on success, so the local session is
+        // cleared only after a valid HTTP success (FR-003/DEC-007).
         sessionStore.clear()
     }
 

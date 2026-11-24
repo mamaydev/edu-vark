@@ -25,10 +25,8 @@
     <!-- Login -->
     <string name="auth_hero_eyebrow">EDUVARK</string>
     <string name="auth_hero_title">One class.\nMany ways\nto understand.</string>
-    <string name="auth_hero_subtitle">Database Implementation\nOdd Semester 2026/2027</string>
     <string name="auth_welcome_eyebrow">Welcome</string>
     <string name="auth_title">Sign in to learn</string>
-    <string name="auth_subtitle">Use the account provided by your admin.</string>
     <string name="auth_login_id_label">NIM/NIDN</string>
     <string name="auth_login_id_placeholder">NIM / NIDN</string>
     <string name="auth_password_label">Password</string>
@@ -36,7 +34,6 @@
     <string name="auth_password_leading">password</string>
     <string name="auth_submit">Sign in</string>
     <string name="auth_submit_loading">Processing…</string>
-    <string name="auth_login_hint">Students and lecturers sign in with NIM/NIDN. Admins sign in with the admin username.</string>
 
     <!-- Inactive account -->
     <string name="auth_inactive_status_title">Account status</string>
@@ -87,21 +84,12 @@
     <string name="account_headline_student">Your learning account</string>
     <string name="account_headline_lecturer">Your teaching account</string>
     <string name="account_headline_admin">Admin account</string>
-    <string name="account_subtitle_student">Database Implementation · Odd Semester 2026/2027</string>
-    <string name="account_subtitle_lecturer">IBD lecturer · Odd Semester 2026/2027</string>
+    <string name="account_subtitle_student">Database Implementation</string>
     <string name="account_subtitle_admin">EduVARK administration space</string>
     <string name="account_active_status">%1$s • Active account</string>
     <string name="account_session_eyebrow_vark">ACTIVE SESSION FORMAT</string>
-    <string name="account_session_eyebrow_access">ACCESS RIGHTS</string>
     <string name="account_session_title_student">%1$s • Locked</string>
-    <string name="account_session_title_lecturer">Lecturer • No VARK</string>
-    <string name="account_session_title_admin">Admin • Account management</string>
     <string name="account_session_body_student">To change your format, sign out and sign in again. Feedback from other categories is kept.</string>
-    <string name="account_session_body_lecturer">Staff do not choose a learning format. VARK only applies to student sessions.</string>
-    <string name="account_session_body_admin">Admins only create, view, update, and deactivate accounts.</string>
-    <string name="account_notice_student">Learning space: one IBD class for one semester.</string>
-    <string name="account_notice_lecturer">Classes taught: one IBD class in one semester.</string>
-    <string name="account_notice_admin">Materials, feedback, and grading are not available for the admin role.</string>
     <string name="account_change_password">Change password</string>
     <string name="account_logout">Sign out</string>
     <string name="account_logout_note">Signing out ends the session and the active VARK choice.</string>

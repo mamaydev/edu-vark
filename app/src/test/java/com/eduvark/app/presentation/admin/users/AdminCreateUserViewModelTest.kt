@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -60,20 +61,33 @@ class AdminCreateUserViewModelTest {
             viewModel.create(invalidId, "Mahasiswa Baru", UserRole.STUDENT, "abc123")
             advanceUntilIdle()
 
-            assertEquals("NIM/NIP/NIDN harus 10–11 digit.", viewModel.state.value.error)
+            assertEquals("NIM/NIDN harus berupa 10–11 digit angka.", viewModel.state.value.error)
         }
     }
 
     @Test
-    fun `admin account keeps a username instead of a NIM`() = runTest {
+    fun `admin account does not send a login id and receives the auto id`() = runTest {
         val repository = FakeAdminRepository()
         val viewModel = AdminCreateUserViewModel(CreateAdminUserUseCase(repository))
 
-        viewModel.create("admin2", "Admin Kedua", UserRole.ADMIN, "abc123")
+        viewModel.create("", "Admin Kedua", UserRole.ADMIN, "abc123")
         advanceUntilIdle()
 
         assertTrue(viewModel.state.value.success)
-        assertEquals("admin2", repository.user.loginId)
+        assertNull(repository.lastCreatedLoginId)
+        assertEquals("01401400001", repository.user.loginId)
+    }
+
+    @Test
+    fun `admin account ignores a typed login id`() = runTest {
+        val repository = FakeAdminRepository()
+        val viewModel = AdminCreateUserViewModel(CreateAdminUserUseCase(repository))
+
+        viewModel.create("2025000299", "Admin Ketiga", UserRole.ADMIN, "abc123")
+        advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.success)
+        assertNull(repository.lastCreatedLoginId)
     }
 
 }

@@ -16,6 +16,7 @@ import com.eduvark.app.data.remote.dto.HealthResponse
 import com.eduvark.app.data.remote.dto.LinkMaterialRequest
 import com.eduvark.app.data.remote.dto.LoginRequest
 import com.eduvark.app.data.remote.dto.LoginResponse
+import com.eduvark.app.data.remote.dto.MaterialLinkTargetResponse
 import com.eduvark.app.data.remote.dto.MaterialListResponse
 import com.eduvark.app.data.remote.dto.MaterialResponse
 import com.eduvark.app.data.remote.dto.MeResponse
@@ -39,6 +40,7 @@ import com.eduvark.app.data.remote.dto.VarkRequest
 import com.eduvark.app.data.remote.dto.VarkResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -50,6 +52,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Streaming
 
 interface EduVarkApi {
     @GET("health")
@@ -194,6 +197,18 @@ interface EduVarkApi {
 
     @PATCH("lecturer/topics/reorder")
     suspend fun reorderTopics(@Body request: ReorderTopicsRequest): Response<Unit>
+
+    /**
+     * Unduh berkas materi lewat alamat tetap EduVARK. Setiap panggilan memakai
+     * Authorization Bearer dan backend memeriksa izin ulang (FR-015/C1-02).
+     */
+    @Streaming
+    @GET("materials/{id}/content")
+    suspend fun downloadMaterialContent(@Path("id") materialId: String): ResponseBody
+
+    /** Minta tujuan tautan eksternal setelah backend memeriksa izin terkini. */
+    @GET("materials/{id}/link-target")
+    suspend fun getMaterialLinkTarget(@Path("id") materialId: String): MaterialLinkTargetResponse
 
     @GET("lecturer/topics/{id}/materials")
     suspend fun listLecturerMaterials(@Path("id") topicId: String): MaterialListResponse

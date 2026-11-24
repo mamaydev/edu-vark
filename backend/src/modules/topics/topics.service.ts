@@ -1,12 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { withTransaction } from '../../db/transaction';
-import { getEnv } from '../../config/env';
 import { conflict, forbidden, notFound, unprocessable } from '../../lib/errors';
 import { AppError } from '../../lib/errors';
 import { MATERIAL_NOT_AVAILABLE_MESSAGE } from '../../lib/messages';
 import { writeAudit } from '../../lib/audit';
 import { validateUploadedFile, type UploadedFileInput } from '../../lib/file-validation';
-import { deleteObject, getSignedObjectUrl, putObject } from '../../lib/storage';
+import { deleteObject, putObject } from '../../lib/storage';
 import type { VarkType } from '../../types/auth';
 import * as repo from './topics.repository';
 
@@ -37,9 +36,16 @@ export interface MaterialResponse {
   kind: 'FILE' | 'LINK';
   mime: string | null;
   sizeBytes: number | null;
+  /** URL tujuan tautan eksternal (hanya untuk materi LINK). */
   url: string | null;
-  signedUrl: string | null;
-  expiresAt: string | null;
+  /** Alamat unduh tetap EduVARK untuk berkas terkelola (C1-02/FR-015). */
+  contentUrl: string | null;
+  /** Alamat pembukaan tautan eksternal melalui EduVARK (cek izin terkini). */
+  linkTargetUrl: string | null;
+  /** Selalu null: URL bertanda tangan tidak lagi diterbitkan (C1-02). */
+  signedUrl: null;
+  /** Selalu null: alamat tetap tidak memiliki masa berlaku tersendiri. */
+  expiresAt: null;
   uploadedAt: string;
 }
 
@@ -57,15 +63,8 @@ function toTopic(row: repo.TopicRow): TopicResponse {
 }
 
 async function toMaterial(row: repo.MaterialRow): Promise<MaterialResponse> {
-  let signedUrl: string | null = null;
-  let expiresAt: string | null = null;
-
-  if (row.kind === 'FILE' && row.object_key) {
-    signedUrl = await getSignedObjectUrl(row.object_key);
-    const ttl = getEnv().R2_SIGNED_URL_TTL_SECONDS;
-    expiresAt = new Date(Date.now() + ttl * 1000).toISOString();
-  }
-
+  // C1-02: URL bertanda tangan berhenti diterbitkan. Klien memakai alamat
+  // tetap yang selalu melewati otorisasi backend pada setiap permintaan.
   return {
     id: row.id,
     topicId: row.topic_id,
@@ -75,8 +74,12 @@ async function toMaterial(row: repo.MaterialRow): Promise<MaterialResponse> {
     mime: row.mime,
     sizeBytes: row.size_bytes === null ? null : Number(row.size_bytes),
     url: row.url,
-    signedUrl,
-    expiresAt,
+    contentUrl:
+      row.kind === 'FILE' ? '/api/v1/materials/' + row.id + '/content' : null,
+    linkTargetUrl:
+      row.kind === 'LINK' ? '/api/v1/materials/' + row.id + '/link-target' : null,
+    signedUrl: null,
+    expiresAt: null,
     uploadedAt: row.uploaded_at.toISOString(),
   };
 }

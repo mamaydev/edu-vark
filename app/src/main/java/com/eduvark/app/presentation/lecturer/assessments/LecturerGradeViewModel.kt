@@ -3,6 +3,7 @@ package com.eduvark.app.presentation.lecturer.assessments
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eduvark.app.core.text.P5TextRules
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.SubmissionDetail
 import com.eduvark.app.domain.model.SubmissionStatus
@@ -64,8 +65,14 @@ class LecturerGradeViewModel @Inject constructor(
     }
 
     fun save(score: Int, comment: String?) {
+        // FR-043: nilai integer 0–100, komentar opsional maksimal 1.000
+        // karakter (code point setelah trim). API tetap menjadi otoritas akhir.
         if (score < 0 || score > 100) {
             _state.update { it.copy(saveError = "Nilai harus 0–100.") }
+            return
+        }
+        if (!P5TextRules.isCommentLengthValid(comment.orEmpty())) {
+            _state.update { it.copy(saveError = "Komentar maksimal 1.000 karakter.") }
             return
         }
         if (_state.value.isSaving) return

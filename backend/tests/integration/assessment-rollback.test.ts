@@ -90,10 +90,18 @@ describeDb('assessment transaction rollback', () => {
     );
     expect(Number(assessments.rows[0]?.count)).toBe(0);
 
-    const submission = await getPool().query<{ answer_text: string }>(
-      'SELECT answer_text FROM submissions WHERE id = $1',
+    const submission = await getPool().query<{
+      answer_text: string;
+      submitted_at: Date;
+    }>(
+      'SELECT answer_text, submitted_at FROM submissions WHERE id = $1',
       [submitted.body.data.submissionId],
     );
     expect(submission.rows[0]?.answer_text).toBe('Teks final tidak boleh berubah.');
+    // Rollback harus mengembalikan timestamp pengiriman awal, bukan timestamp
+    // percobaan penilaian yang gagal.
+    expect(submission.rows[0]?.submitted_at.toISOString()).toBe(
+      submitted.body.data.submittedAt,
+    );
   });
 });

@@ -56,12 +56,18 @@ class AccountViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
+            _state.update { it.copy(error = null) }
             try {
                 logoutUseCase()
-            } catch (_: Exception) {
-                // Local session is cleared by the repository in its finally block.
-            } finally {
                 _state.update { it.copy(loggedOut = true) }
+            } catch (error: AppFailure) {
+                // The server session could not be revoked; keep the user signed
+                // in and surface the failure instead of pretending to log out.
+                _state.update { it.copy(error = error.message) }
+            } catch (_: Exception) {
+                _state.update {
+                    it.copy(error = "Terjadi kesalahan. Coba lagi.")
+                }
             }
         }
     }

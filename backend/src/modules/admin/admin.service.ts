@@ -1,5 +1,10 @@
 import { withTransaction } from '../../db/transaction';
-import { conflict, notFound } from '../../lib/errors';
+import { conflict, notFound, unprocessable } from '../../lib/errors';
+import {
+  ACADEMIC_LOGIN_ID_MESSAGE,
+  allocateAdminLoginId,
+  isAcademicLoginId,
+} from '../../lib/login-id';
 import { assertStrongPassword, hashPassword } from '../../lib/password';
 import { writeAudit } from '../../lib/audit';
 import { revokeAllSessions } from '../auth/auth.repository';
@@ -50,6 +55,18 @@ function isUniqueViolation(error: unknown): boolean {
     (error as { code?: string }).code === '23505'
   );
 }
+
+function isLoginIdUniqueViolation(error: unknown): boolean {
+  return (
+    isUniqueViolation(error) &&
+    (error as { constraint?: string }).constraint === 'ux_users_login'
+  );
+}
+
+/** Number of times an automatic Admin identity allocation may be retried. */
+const ADMIN_ALLOCATION_ATTEMPTS = 10;
+
+type TxClient = Parameters<typeof repo.findActiveClassId>[0];
 
 async function requireActiveClassId(
   client: Parameters<typeof repo.findActiveClassId>[0],
@@ -111,7 +128,7 @@ export async function getUser(userId: string): Promise<AdminUserResponse> {
 
 export async function createUser(
   input: {
-    loginId: string;
+    loginId?: string;
     fullName: string;
     role: UserRole;
     temporaryPassword: string;
@@ -121,27 +138,55 @@ export async function createUser(
   assertStrongPassword(input.temporaryPassword);
   const passwordHash = await hashPassword(input.temporaryPassword);
 
+  if (input.role === 'ADMIN') {
+    // Admin identities are always system-issued: any caller-supplied loginId
+    // is ignored. Retry if a concurrent academic insert wins the same number.
+    for (let attempt = 1; attempt <= ADMIN_ALLOCATION_ATTEMPTS; attempt += 1) {
+      try {
+        return await withTransaction(async (client) => {
+          const loginId = await allocateAdminLoginId(client);
+          return insertAccount(client, {
+            loginId,
+            fullName: input.fullName,
+            role: 'ADMIN',
+            passwordHash,
+            actorId,
+          });
+        });
+      } catch (error) {
+        if (isLoginIdUniqueViolation(error) && attempt < ADMIN_ALLOCATION_ATTEMPTS) {
+          continue;
+        }
+        if (isLoginIdUniqueViolation(error)) {
+          throw conflict(
+            'ADMIN_ID_ALLOCATION_CONFLICT',
+            'ID Admin otomatis bentrok. Ulangi permintaan.',
+          );
+        }
+        throw error;
+      }
+    }
+    throw conflict(
+      'ADMIN_ID_ALLOCATION_CONFLICT',
+      'ID Admin otomatis bentrok. Ulangi permintaan.',
+    );
+  }
+
+  const loginId = input.loginId?.trim() ?? '';
+  if (!isAcademicLoginId(loginId)) {
+    throw unprocessable('INVALID_LOGIN_ID', ACADEMIC_LOGIN_ID_MESSAGE);
+  }
+
   try {
-    return await withTransaction(async (client) => {
-      const userId = await repo.insertUser(client, {
-        loginId: input.loginId,
+    return await withTransaction((client) =>
+      insertAccount(client, {
+        loginId,
         fullName: input.fullName,
         role: input.role,
         passwordHash,
-      });
-
-      await ensureRoleAssignment(client, userId, input.role);
-
-      await writeAudit(client, {
         actorId,
-        action: 'ACCOUNT_CREATED',
-        entity: 'USER',
-        entityId: userId,
-        metadata: { role: input.role },
-      });
-
-      return getAdminUser(client, userId);
-    });
+      }),
+    );
   } catch (error) {
     if (isUniqueViolation(error)) {
       throw conflict('LOGIN_ID_TAKEN', 'NIM/NIP/NIDN sudah digunakan.');
@@ -150,48 +195,158 @@ export async function createUser(
   }
 }
 
+async function insertAccount(
+  client: TxClient,
+  input: {
+    loginId: string;
+    fullName: string;
+    role: UserRole;
+    passwordHash: string;
+    actorId: string;
+  },
+): Promise<AdminUserResponse> {
+  const userId = await repo.insertUser(client, {
+    loginId: input.loginId,
+    fullName: input.fullName,
+    role: input.role,
+    passwordHash: input.passwordHash,
+  });
+
+  await ensureRoleAssignment(client, userId, input.role);
+
+  await writeAudit(client, {
+    actorId: input.actorId,
+    action: 'ACCOUNT_CREATED',
+    entity: 'USER',
+    entityId: userId,
+    metadata: { role: input.role },
+  });
+
+  return getAdminUser(client, userId);
+}
+
+async function resolveAcademicTargetId(
+  client: TxClient,
+  rawLoginId: string | undefined,
+): Promise<string> {
+  const loginId = rawLoginId?.trim() ?? '';
+  if (!isAcademicLoginId(loginId)) {
+    throw unprocessable('INVALID_LOGIN_ID', ACADEMIC_LOGIN_ID_MESSAGE);
+  }
+  if (await repo.isLoginIdTaken(client, loginId)) {
+    throw conflict('LOGIN_ID_TAKEN', 'NIM/NIP/NIDN tujuan sudah digunakan akun lain.');
+  }
+  return loginId;
+}
+
 export async function updateUser(
   userId: string,
-  input: { fullName?: string; role?: UserRole },
+  input: { fullName?: string; role?: UserRole; loginId?: string },
   actorId: string,
 ): Promise<AdminUserResponse> {
-  return withTransaction(async (client) => {
-    const target = await repo.findAdminUserById(client, userId);
-    if (!target) throw notFound('USER_NOT_FOUND', 'Akun tidak ditemukan.');
+  const needsAllocationProbe = input.role === 'ADMIN';
 
-    if (target.role === 'ADMIN' && input.role && input.role !== 'ADMIN') {
-      if (target.id === actorId) {
-        throw conflict('LAST_ADMIN_PROTECTED', 'Tidak dapat menurunkan role admin sendiri.');
+  for (let attempt = 1; attempt <= ADMIN_ALLOCATION_ATTEMPTS; attempt += 1) {
+    try {
+      return await withTransaction(async (client) => {
+        // Lock order is always the same: active Admin set first (ordered by
+        // id), then the target row. Concurrent mutations then serialise on
+        // one lock set, and every role/status decision below reads the
+        // locked snapshot rather than a stale pre-lock read.
+        await repo.lockActiveAdmins(client);
+        const target = await repo.findAdminUserByIdForUpdate(client, userId);
+        if (!target) throw notFound('USER_NOT_FOUND', 'Akun tidak ditemukan.');
+
+        const nextRole = input.role ?? target.role;
+        const crossesAdmin =
+          (target.role === 'ADMIN') !== (nextRole === 'ADMIN');
+
+        // Guard the last active Admin before allocating or mutating anything.
+        if (target.role === 'ADMIN' && nextRole !== 'ADMIN') {
+          if (target.id === actorId) {
+            throw conflict(
+              'LAST_ADMIN_PROTECTED',
+              'Tidak dapat menurunkan role admin sendiri.',
+            );
+          }
+          const admins = await repo.countActiveAdmins(client);
+          if (admins <= 1) {
+            throw conflict(
+              'LAST_ADMIN_PROTECTED',
+              'Admin aktif terakhir tidak dapat diturunkan.',
+            );
+          }
+        }
+
+        let nextLoginId: string | undefined;
+        if (crossesAdmin) {
+          nextLoginId =
+            nextRole === 'ADMIN'
+              ? await allocateAdminLoginId(client)
+              : await resolveAcademicTargetId(client, input.loginId);
+        }
+        // Academic-to-academic role changes keep the owner's NIM/NIDN and
+        // ignore any supplied loginId (FR-034 only mandates role-boundary
+        // identity changes).
+
+        await repo.updateUser(client, userId, {
+          fullName: input.fullName,
+          role: input.role,
+          loginId: nextLoginId,
+        });
+
+        if (nextRole !== target.role) {
+          if (nextRole !== 'STUDENT') {
+            // Preserve academic history: enrollment rows become LEFT instead
+            // of being deleted when the account stops being a student.
+            await repo.deactivateEnrollments(client, userId);
+          }
+          if (nextRole !== 'LECTURER') {
+            // Teaching assignments are access grants; the aggregate itself is
+            // not history and is removed when the lecturer loses that role.
+            await repo.removeTeachingAssignments(client, userId);
+          }
+          await ensureRoleAssignment(client, userId, nextRole);
+        }
+
+        if (nextRole !== target.role || nextLoginId !== undefined) {
+          await revokeAllSessions(client, userId);
+        }
+
+        await writeAudit(client, {
+          actorId,
+          action: 'ACCOUNT_UPDATED',
+          entity: 'USER',
+          entityId: userId,
+          metadata: {
+            fields: Object.keys(input),
+            previousRole: target.role,
+            role: nextRole,
+            loginIdChanged: nextLoginId !== undefined,
+          },
+        });
+
+        return getAdminUser(client, userId);
+      });
+    } catch (error) {
+      if (
+        needsAllocationProbe &&
+        isLoginIdUniqueViolation(error) &&
+        attempt < ADMIN_ALLOCATION_ATTEMPTS
+      ) {
+        continue;
       }
-      const admins = await repo.countActiveAdmins(client);
-      if (admins <= 1) {
-        throw conflict('LAST_ADMIN_PROTECTED', 'Admin aktif terakhir tidak dapat diturunkan.');
+      if (isUniqueViolation(error)) {
+        throw conflict('LOGIN_ID_TAKEN', 'NIM/NIP/NIDN atau ID login sudah digunakan.');
       }
+      throw error;
     }
+  }
 
-    await repo.updateUser(client, userId, input);
-
-    if (input.role && input.role !== target.role) {
-      if (input.role !== 'STUDENT') {
-        await repo.deactivateEnrollments(client, userId);
-      }
-      if (input.role !== 'LECTURER') {
-        await repo.removeTeachingAssignments(client, userId);
-      }
-      await ensureRoleAssignment(client, userId, input.role);
-      await revokeAllSessions(client, userId);
-    }
-
-    await writeAudit(client, {
-      actorId,
-      action: 'ACCOUNT_UPDATED',
-      entity: 'USER',
-      entityId: userId,
-      metadata: { fields: Object.keys(input), role: input.role ?? null },
-    });
-
-    return getAdminUser(client, userId);
-  });
+  throw conflict(
+    'ADMIN_ID_ALLOCATION_CONFLICT',
+    'ID Admin otomatis bentrok. Ulangi permintaan.',
+  );
 }
 
 export async function resetPassword(
@@ -220,14 +375,19 @@ export async function resetPassword(
 
 export async function deactivateUser(userId: string, actorId: string): Promise<void> {
   await withTransaction(async (client) => {
-    const target = await repo.findAdminUserById(client, userId);
+    // Same lock order as updateUser: active Admin set first, target row after.
+    await repo.lockActiveAdmins(client);
+    const target = await repo.findAdminUserByIdForUpdate(client, userId);
     if (!target) throw notFound('USER_NOT_FOUND', 'Akun tidak ditemukan.');
 
     if (target.id === actorId) {
       throw conflict('LAST_ADMIN_PROTECTED', 'Tidak dapat menonaktifkan akun sendiri.');
     }
 
-    if (target.role === 'ADMIN') {
+    if (target.role === 'ADMIN' && target.status === 'ACTIVE') {
+      // Serialise with demotions: read the active Admin set under lock before
+      // deciding, otherwise two concurrent deactivations could each observe
+      // two active Admins and together remove both.
       const admins = await repo.countActiveAdmins(client);
       if (admins <= 1) {
         throw conflict('LAST_ADMIN_PROTECTED', 'Admin aktif terakhir tidak dapat dinonaktifkan.');

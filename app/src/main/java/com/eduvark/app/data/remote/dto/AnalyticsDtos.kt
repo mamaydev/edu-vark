@@ -28,7 +28,13 @@ data class StudentFeedbackDto(
     val studentId: String,
     val fullName: String,
     val loginId: String,
-    val vark: String,
+    /**
+     * Kategori asal yang relevan untuk baris ini (bukan VARK login terakhir).
+     * `null` berarti mahasiswa belum memiliki nilai feedback pada topik/cakupan ini.
+     */
+    val vark: String? = null,
+    /** Semua kategori asal yang memiliki nilai feedback tersimpan pada topik ini. */
+    val originCategories: List<String> = emptyList(),
     val feedback: StudentFeedbackValuesDto,
 )
 

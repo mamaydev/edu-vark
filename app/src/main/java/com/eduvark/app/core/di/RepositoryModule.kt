@@ -8,6 +8,8 @@ import com.eduvark.app.data.repository.CaseRepositoryImpl
 import com.eduvark.app.data.repository.FeedbackRepositoryImpl
 import com.eduvark.app.data.repository.HealthRepositoryImpl
 import com.eduvark.app.data.repository.TopicRepositoryImpl
+import com.eduvark.app.core.files.AndroidMaterialFileStore
+import com.eduvark.app.core.files.HttpMaterialContentSource
 import com.eduvark.app.domain.repository.AdminRepository
 import com.eduvark.app.domain.repository.AnalyticsRepository
 import com.eduvark.app.domain.repository.AssessmentRepository
@@ -15,6 +17,8 @@ import com.eduvark.app.domain.repository.AuthRepository
 import com.eduvark.app.domain.repository.CaseRepository
 import com.eduvark.app.domain.repository.FeedbackRepository
 import com.eduvark.app.domain.repository.HealthRepository
+import com.eduvark.app.domain.repository.MaterialContentSource
+import com.eduvark.app.domain.repository.MaterialFileStore
 import com.eduvark.app.domain.repository.TopicRepository
 import dagger.Binds
 import dagger.Module
@@ -36,6 +40,14 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindTopicRepository(impl: TopicRepositoryImpl): TopicRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMaterialFileStore(impl: AndroidMaterialFileStore): MaterialFileStore
+
+    @Binds
+    @Singleton
+    abstract fun bindMaterialContentSource(impl: HttpMaterialContentSource): MaterialContentSource
 
     @Binds
     @Singleton

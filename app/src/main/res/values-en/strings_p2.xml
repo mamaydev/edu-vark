@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paket 2 (FR-007/FR-014/FR-015): opening materials through the fixed address. -->
+    <string name="p2_material_open_error_title">Material cannot be opened</string>
+    <string name="p2_material_open_session_expired">Your session has ended. Please sign in again.</string>
+    <string name="p2_material_open_forbidden">This material is no longer available or you do not have permission to open it.</string>
+    <string name="p2_material_open_network">Cannot reach the server. Check your connection and try again.</string>
+    <string name="p2_material_open_generic">Something went wrong while opening the material. Try again.</string>
+</resources>

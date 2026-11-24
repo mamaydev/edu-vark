@@ -2,11 +2,15 @@ package com.eduvark.app.presentation.student.cases
 
 import androidx.lifecycle.SavedStateHandle
 import com.eduvark.app.domain.model.SubmissionStatus
+import com.eduvark.app.domain.usecase.DownloadMaterialContentUseCase
+import com.eduvark.app.domain.usecase.GetMaterialLinkTargetUseCase
 import com.eduvark.app.domain.usecase.GetMaterialsUseCase
 import com.eduvark.app.domain.usecase.GetStudentCaseUseCase
 import com.eduvark.app.domain.usecase.GetTopicUseCase
 import com.eduvark.app.domain.usecase.SubmitCaseUseCase
 import com.eduvark.app.testutil.FakeCaseRepository
+import com.eduvark.app.testutil.FakeMaterialContentSource
+import com.eduvark.app.testutil.FakeMaterialFileStore
 import com.eduvark.app.testutil.FakeTopicRepository
 import com.eduvark.app.testutil.sampleMaterial
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +50,11 @@ class StudentCaseViewModelTest {
         getTopicUseCase = GetTopicUseCase(topicRepository),
         getMaterialsUseCase = GetMaterialsUseCase(topicRepository),
         submitCaseUseCase = SubmitCaseUseCase(repository),
+        downloadMaterialContentUseCase = DownloadMaterialContentUseCase(
+            FakeMaterialContentSource(topicRepository),
+        ),
+        getMaterialLinkTargetUseCase = GetMaterialLinkTargetUseCase(topicRepository),
+        materialFileStore = FakeMaterialFileStore(),
     )
 
     @Test
@@ -93,5 +102,18 @@ class StudentCaseViewModelTest {
         advanceUntilIdle()
 
         assertEquals("Jawaban harus 1–10.000 karakter.", viewModel.state.value.submitError)
+    }
+
+    @Test
+    fun `submit sends text normalized with the shared C1-04 rule`() = runTest {
+        val repository = FakeCaseRepository()
+        val viewModel = createViewModel(repository)
+        advanceUntilIdle()
+
+        // U+FEFF dan U+00A0 hanya dibuang oleh padanan ECMAScript trim.
+        viewModel.submit("\uFEFF  Jawaban final.\u00A0 ")
+        advanceUntilIdle()
+
+        assertEquals(listOf("Jawaban final."), repository.submittedTexts)
     }
 }

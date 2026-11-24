@@ -34,10 +34,11 @@ class AdminCreateUserViewModel @Inject constructor(
         role: UserRole,
         temporaryPassword: String,
     ) {
-        if (loginId.trim().isEmpty() || fullName.trim().isEmpty()) {
-            _state.update { it.copy(error = "NIM/NIP/NIDN dan nama wajib diisi.") }
+        if (fullName.trim().isEmpty()) {
+            _state.update { it.copy(error = "Nama wajib diisi.") }
             return
         }
+        // Admins never provide an identity: the server allocates it (FR-036).
         if (role != UserRole.ADMIN && !LoginIdRules.isAcademicId(loginId)) {
             _state.update { it.copy(error = LoginIdRules.ACADEMIC_ID_MESSAGE) }
             return
@@ -52,7 +53,7 @@ class AdminCreateUserViewModel @Inject constructor(
             _state.update { it.copy(isSaving = true, error = null) }
             try {
                 createAdminUserUseCase(
-                    loginId = loginId.trim(),
+                    loginId = if (role == UserRole.ADMIN) null else loginId.trim(),
                     fullName = fullName.trim(),
                     role = role,
                     temporaryPassword = temporaryPassword,

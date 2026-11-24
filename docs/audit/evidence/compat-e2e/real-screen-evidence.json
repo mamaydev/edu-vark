@@ -1,0 +1,167 @@
+{
+  "generatedAt": "2026-11-24T13:54:52.394Z",
+  "environment": {
+    "emulator": "Pixel_10_Pro_XL, API 37, emulator-5554",
+    "hostReach": "adb reverse tcp:3001/3002 + base URL debug http://127.0.0.1:<port>/api/v1/",
+    "oldApk": "b7b6cd6 worktree /tmp/eduvark-oldapp2, app-debug.apk 15.096.273 B",
+    "newApk": "working tree fix/eduvark-functional-audit-2026, app-debug.apk 15.637.636 B",
+    "newBackend": "PORT=3001, DB eduvark_test_rollout_new (migrasi 001+002+003, fixtures restore), LOCAL_STORAGE_DIR=/tmp/eduvark-restore-storage",
+    "oldBackend": "PORT=3002, worktree b7b6cd6, DB eduvark_test_rollout_old (hanya 001, fixtures restore)",
+    "fixture": {
+      "class": "dd760d1b-a128-42d9-9e64-16a37faf7ba5",
+      "lecturer": "1990010001",
+      "students": [
+        "2025000001",
+        "2025000002"
+      ],
+      "admin": "01401400001 (baru) / admin (lama)",
+      "topic": "a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "material": "81e9de87-7ea2-480c-b8f2-e68a2742749b",
+      "materialFile": "51-byte stub PDF (sha256 904636248025ad20fb9c6bd8b700179a2a42edb5df3636e926c7e09055ee3f75)"
+    },
+    "caveat": "Untuk menguji jalur FILE pada klien lama (yang hanya membuka materi non-Kinesthetic), kolom vark_type materi fixture diubah menjadi VISUAL pada kedua DB uji. Ini perubahan data uji, bukan perubahan kode."
+  },
+  "combinations": {
+    "old-apk__new-backend": {
+      "verdict": "FAIL (tidak kompatibel penuh)",
+      "realScreen": [
+        {
+          "test": "Login Admin numerik 01401400001 + password",
+          "client": "APK lama (b7b6cd6)",
+          "steps": "Isi NIM/NIDN 01401400001 (field menerima 11 digit tanpa filter), isi password, tekan Masuk",
+          "observedUI": "Setelah Masuk: layar \"RUANG ADMINISTRASI ... 4 akun ... User 01401400001 • Admin ... Beranda admin\". Tidak ada layar session-status/password-change di antara login dan beranda (alur APK lama: login -> VARK bila wajib -> beranda).",
+          "server": "POST /auth/login 200 (644 B); GET /auth/me 200 (186 B); GET /admin/users?page=1&pageSize=100 200 (1668 B)",
+          "status": "PASS",
+          "evidence": [
+            "screens/old-new-01-login.png",
+            "screens/old-new-02-filled.xml",
+            "screens/old-new-06-after-submit.png",
+            "screens/old-new-06-after-submit.xml",
+            "screens/old-new-03-after-login.png",
+            "screens/old-new-03-after-login.xml",
+            "server-request-evidence.json"
+          ]
+        },
+        {
+          "test": "FILE: buka materi (download/open)",
+          "client": "APK lama x backend baru",
+          "steps": "Login mahasiswa 2025000001, pilih sesi Visual, buka Topik -> materi \"Materi PDF Restore\", ketuk kartu materi",
+          "observedUI": "Layar materi tampil (judul, \"Putar video\", \"0 KB\"); setelah kartu diketuk layar TIDAK berubah, tidak ada pesan, tidak ada intent/activity baru. Tidak ada request GET /materials/:id/content.",
+          "server": "GET /topics/:id/materials 200 (388 B; signedUrl null, url null, hanya contentUrl relativf); setelah tap tidak ada request /content",
+          "status": "FAIL",
+          "rootCause": "APK lama memakai signedUrl ?: url untuk membuka materi; backend baru mengirim keduanya null (hanya contentUrl), sehingga tap menjadi no-op tanpa umpan balik.",
+          "evidence": [
+            "screens/old-new-16-after-file-tap.png",
+            "screens/old-new-16-after-file-tap.xml",
+            "server-request-evidence.json"
+          ]
+        },
+        {
+          "test": "Analitik dosen",
+          "client": "APK lama x backend baru",
+          "steps": "Login dosen 1990010001, tab Analitik, pilih topik",
+          "observedUI": "\"Tidak dapat dimuat\" + \"Terjadi kesalahan. Coba lagi.\" (kegagalan parsing serialisasi karena DTO lama `vark: String` non-null vs respons baru `vark: null`).",
+          "server": "GET /lecturer/analytics/topics/:id 200 (2051 B, memuat vark:null)",
+          "status": "FAIL",
+          "evidence": [
+            "screens/old-new-19-analytics-detail.png",
+            "screens/old-new-19-analytics-detail.xml",
+            "new-backend-analytics-vark-null.json"
+          ]
+        }
+      ]
+    },
+    "new-apk__new-backend": {
+      "verdict": "PASS",
+      "realScreen": [
+        {
+          "test": "Login Admin numerik 01401400001",
+          "client": "APK baru",
+          "steps": "Isi NIM/NIDN 01401400001 + password, Masuk",
+          "observedUI": "Layar \"RUANG ADMINISTRASI ... 4 akun ... Beranda admin\"",
+          "server": "POST /auth/login 200 (644 B); GET /auth/me 200; GET /admin/users 200 (1668 B)",
+          "status": "PASS",
+          "evidence": [
+            "screens/new-new-10-admin.png",
+            "screens/new-new-10-admin.xml",
+            "server-request-evidence.json"
+          ]
+        },
+        {
+          "test": "FILE: download & open",
+          "client": "APK baru x backend baru",
+          "steps": "Login mahasiswa 2025000001, sesi Visual, buka Topik -> materi, ketuk kartu materi",
+          "observedUI": "Aplikasi mengunduh materi (cache/materials/<id>/Materi PDF Restore.pdf, 51 B) lalu mengirim intent VIEW content://com.eduvark.app.debug.fileprovider/... (application/pdf) ke Google PDF Viewer. PDF Viewer menolak fixture karena file uji hanya stub 51-byte (\"Parse Document failed err=3\"), bukan karena kegagalan unduh.",
+          "server": "GET /materials/:id/content 200 (51 B)",
+          "status": "PASS",
+          "evidence": [
+            "screens/new-new-06-after-material-tap.png",
+            "screens/new-new-06-after-material-tap.xml"
+          ],
+          "statusDetail": "PASS (unduh + serah-terima buka); render PDF: NOT RUN — fixture stub, bukan bukti aplikasi gagal"
+        },
+        {
+          "test": "Analitik dosen",
+          "client": "APK baru x backend baru",
+          "steps": "Login dosen 1990010001, tab Analitik, pilih topik",
+          "observedUI": "Layar analitik render: \"ANALITIK KELAS ... Nilai Kinesthetic 92,0 / 100 ... Rerata 1 kiriman yang sudah dinilai. 1 nilai final tersimpan\"",
+          "server": "GET /lecturer/analytics/topics/:id 200 (2051 B)",
+          "status": "PASS",
+          "evidence": [
+            "screens/new-new-09-analytics-detail.png",
+            "screens/new-new-09-analytics-detail.xml"
+          ]
+        }
+      ]
+    },
+    "new-apk__old-backend": {
+      "verdict": "FAIL (tidak kompatibel; sebagian degradasi terkendali)",
+      "realScreen": [
+        {
+          "test": "Login Admin numerik 01401400001",
+          "client": "APK baru x backend lama",
+          "steps": "Isi 01401400001 + password, Masuk",
+          "observedUI": "Pesan \"NIM/NIP/NIDN atau password tidak valid.\" (login gagal)",
+          "server": "POST /auth/login 401 (156 B)",
+          "status": "FAIL",
+          "evidence": [
+            "screens/new-old-01-admin-login.png",
+            "screens/new-old-01-admin-login.xml"
+          ]
+        },
+        {
+          "test": "FILE: buka materi (/content tidak ada di backend lama)",
+          "client": "APK baru x backend lama",
+          "steps": "Login mahasiswa 2025000001, sesi Visual, buka Topik -> materi, ketuk kartu materi",
+          "observedUI": "Pesan terkendali \"Materi tidak dapat dibuka — Materi ini tidak tersedia lagi atau Anda tidak memiliki izin untuk membukanya.\"; aplikasi tidak crash",
+          "server": "GET /topics/:id/materials 200 (502 B; signedUrl lama terisi); GET /materials/:id/content 404 (138 B, ROUTE_NOT_FOUND)",
+          "status": "PASS",
+          "evidence": [
+            "screens/new-old-05-after-file-tap.png",
+            "screens/new-old-05-after-file-tap.xml",
+            "old-backend-content-endpoint-404.json"
+          ],
+          "statusDetail": "PASS (degradasi terkendali) — fitur FILE tetap tidak tersedia"
+        },
+        {
+          "test": "Analitik dosen",
+          "client": "APK baru x backend lama",
+          "steps": "Login dosen 1990010001, tab Analitik, pilih topik",
+          "observedUI": "Layar analitik render: \"Nilai Kinesthetic — / 100\", \"Belum ada kiriman yang dinilai.\", \"0 nilai final tersimpan\", definisi agregasi dari backend lama tampil. Tidak crash.",
+          "server": "GET /lecturer/analytics/topics/:id 200 (639 B; bentuk payload lama, tanpa definitions; kinesthetic.assessedCount=0 untuk sesi Visual ini)",
+          "status": "PASS",
+          "evidence": [
+            "screens/new-old-07-analytics-detail.png",
+            "screens/new-old-07-analytics-detail.xml"
+          ],
+          "statusDetail": "PASS (render); data Kinesthetic berbeda dari backend baru — perlu dicatat sebagai perbedaan data, bukan kegagalan klien"
+        }
+      ]
+    },
+    "old-apk__old-backend": {
+      "verdict": "NOT RUN",
+      "note": "Kombinasi baseline tidak dijalankan ulang pada remediation ini (bukan pasangan yang relevan untuk cutover; APK lama dibangun dari commit yang sama dengan backend lama). Tidak diklaim PASS."
+    }
+  },
+  "statusNormalization": "Kolom status memakai kosakata PASS/FAIL/NOT RUN/NEEDS VERIFICATION; kualifikasi dipindah ke statusDetail."
+}

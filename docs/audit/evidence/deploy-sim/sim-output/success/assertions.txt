@@ -1,0 +1,3 @@
+PASS  sanity: deploy succeeds when smoke passes (actual=0)
+PASS  state.result (actual=success)
+PASS  BACKEND_TAG updated on success (actual=d3aed78abcfe)

@@ -48,7 +48,7 @@ class LoginViewModelTest {
 
         viewModel.submit("", "")
 
-        assertEquals("NIM/NIP/NIDN dan password wajib diisi.", viewModel.state.value.error)
+        assertEquals("NIM/NIDN dan password wajib diisi.", viewModel.state.value.error)
     }
 
     @Test
@@ -71,23 +71,41 @@ class LoginViewModelTest {
         assertEquals("NIM/NIP/NIDN atau password tidak valid.", viewModel.state.value.error)
     }
     @Test
-    fun `rejects non academic identifiers before calling the API`() {
+    fun `rejects non numeric identifiers before calling the API`() {
         val viewModel = LoginViewModel(LoginUseCase(FakeAuthRepository()))
 
         viewModel.submit("stu1", "StudentPass123")
 
-        assertEquals(
-            "NIM/NIP/NIDN harus 10–11 digit, atau gunakan username admin.",
-            viewModel.state.value.error,
-        )
+        assertEquals("NIM/NIDN harus berupa 10–11 digit angka.", viewModel.state.value.error)
         assertNull(viewModel.state.value.success)
     }
 
     @Test
-    fun `accepts the admin username`() = runTest {
+    fun `rejects identifiers outside 10 to 11 digits`() {
+        for (invalid in listOf("202500000", "202500000012")) {
+            val viewModel = LoginViewModel(LoginUseCase(FakeAuthRepository()))
+
+            viewModel.submit(invalid, "StudentPass123")
+
+            assertEquals("NIM/NIDN harus berupa 10–11 digit angka.", viewModel.state.value.error)
+        }
+    }
+
+    @Test
+    fun `rejects the retired admin username`() {
         val viewModel = LoginViewModel(LoginUseCase(FakeAuthRepository()))
 
         viewModel.submit("admin", "AdminPass1234")
+
+        assertEquals("NIM/NIDN harus berupa 10–11 digit angka.", viewModel.state.value.error)
+        assertNull(viewModel.state.value.success)
+    }
+
+    @Test
+    fun `accepts the admin login id pattern`() = runTest {
+        val viewModel = LoginViewModel(LoginUseCase(FakeAuthRepository()))
+
+        viewModel.submit("01401400001", "AdminPass1234")
         advanceUntilIdle()
 
         assertEquals(

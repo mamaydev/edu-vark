@@ -6,8 +6,13 @@ export const upsertCaseSchema = z.object({
   deadlineAt: z.coerce.date(),
 });
 
+// C1-04: panjang jawaban dihitung dalam Unicode code point setelah trim.
+// Batas panjang TIDAK ditegakkan di zod (batas `max` zod menghitung unit
+// UTF-16 sehingga emoji dihitung dobel), melainkan di cases.service setelah
+// trim memakai `[...trimmed].length` — sumber kebenaran yang sama dengan
+// PostgreSQL `char_length` dan counter Android.
 export const submitCaseSchema = z.object({
-  answerText: z.string().min(1).max(10000),
+  answerText: z.string(),
 });
 
 export const caseUuidSchema = z.string().uuid();

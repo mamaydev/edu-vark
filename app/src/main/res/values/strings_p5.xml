@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paket 5: FR-009/016/017/043/047 -->
+    <string name="p5_case_supporting_empty">materi belum tersedia, harap hubungi dosen terlebih dahulu</string>
+    <string name="p5_case_materials_error">Materi pendukung gagal dimuat. Periksa koneksi lalu coba lagi.</string>
+    <string name="p5_case_materials_retry">Muat ulang materi</string>
+    <string name="p5_case_answer_too_long">Jawaban maksimal 10.000 karakter.</string>
+
+    <string name="p5_assess_error_score_integer">Nilai harus berupa bilangan bulat 0–100.</string>
+    <string name="p5_assess_error_comment_length">Komentar maksimal 1.000 karakter.</string>
+
+    <string name="p5_topic_editor_edit_helper">Judul dan deskripsi dapat diperbarui kapan saja. Perubahan berlaku pada topik ini.</string>
+</resources>

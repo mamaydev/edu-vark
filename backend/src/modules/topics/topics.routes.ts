@@ -45,6 +45,7 @@ publicTopicsRouter.get(
   '/topics',
   authenticate,
   requireRole('STUDENT', 'LECTURER'),
+  requirePasswordChanged,
   requireVark,
   listTopicsHandler,
 );
@@ -53,6 +54,7 @@ publicTopicsRouter.get(
   '/topics/:id',
   authenticate,
   requireRole('STUDENT', 'LECTURER'),
+  requirePasswordChanged,
   requireVark,
   getTopicHandler,
 );
@@ -61,6 +63,7 @@ publicTopicsRouter.get(
   '/topics/:id/materials',
   authenticate,
   requireRole('STUDENT', 'LECTURER'),
+  requirePasswordChanged,
   requireVark,
   listTopicMaterialsHandler,
 );

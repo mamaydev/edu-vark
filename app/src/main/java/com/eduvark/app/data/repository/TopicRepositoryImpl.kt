@@ -7,6 +7,8 @@ import com.eduvark.app.data.remote.dto.LinkMaterialRequest
 import com.eduvark.app.data.remote.dto.MaterialDto
 import com.eduvark.app.data.remote.dto.ReorderTopicsRequest
 import com.eduvark.app.data.remote.dto.TopicDto
+import com.eduvark.app.data.remote.dto.UpdateTopicRequest
+import com.eduvark.app.data.remote.toAppFailureOrNull
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.MaterialKind
@@ -18,6 +20,9 @@ import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.domain.repository.TopicRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -27,6 +32,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 class TopicRepositoryImpl @Inject constructor(
     private val api: EduVarkApi,
     private val executor: ApiExecutor,
+    private val json: Json,
 ) : TopicRepository {
 
     override suspend fun getStudentDashboard(): StudentDashboard {
@@ -40,9 +46,34 @@ class TopicRepositoryImpl @Inject constructor(
         )
     }
 
+    /**
+     * FR-017: backend memakai pagination (default 20, maksimum 100 per halaman).
+     * Dosen wajib melihat seluruh topik agar urutan yang dikirim saat reorder
+     * memuat semua topik aktif (`TOPIC_ORDER_INCOMPLETE` bila tidak), dan
+     * mahasiswa harus melihat urutan yang sama. Jadi ambil semua halaman
+     * berurutan memakai `meta.total` sebagai batas.
+     */
     override suspend fun listTopics(): List<Topic> {
-        val response = executor.execute { api.listTopics() }
-        return response.data.orEmpty().map { it.toDomain() }
+        val topics = mutableListOf<Topic>()
+        var page = 1
+        var total: Int? = null
+        while (page <= MAX_TOPIC_PAGES && (total == null || topics.size < total)) {
+            val response = executor.execute {
+                api.listTopics(page = page, pageSize = TOPIC_PAGE_SIZE)
+            }
+            val data = response.data.orEmpty()
+            if (data.isEmpty()) break
+            topics.addAll(data.map { it.toDomain() })
+            val reportedTotal = response.meta?.total
+            if (reportedTotal == null) {
+                // Server tanpa metadata: halaman pertama dianggap satu-satunya.
+                break
+            }
+            total = reportedTotal
+            if (topics.size >= reportedTotal) break
+            page += 1
+        }
+        return topics
     }
 
     override suspend fun getTopic(topicId: String): Topic {
@@ -67,9 +98,38 @@ class TopicRepositoryImpl @Inject constructor(
         return response.data.orEmpty().map { it.toDomain() }
     }
 
+    override suspend fun downloadMaterialContent(materialId: String): ByteArray {
+        return executor.execute { api.downloadMaterialContent(materialId).bytes() }
+    }
+
+    override suspend fun getMaterialLinkTarget(materialId: String): String {
+        val response = executor.execute { api.getMaterialLinkTarget(materialId) }
+        return response.data?.url?.takeIf { it.isNotBlank() } ?: throw AppFailure.Unknown
+    }
+
     override suspend fun createTopic(title: String, description: String?): Topic {
         val response = executor.execute {
             api.createTopic(CreateTopicRequest(title = title, description = description))
+        }
+        val data = response.data ?: throw AppFailure.Unknown
+        return data.toDomain()
+    }
+
+    override suspend fun updateTopic(
+        topicId: String,
+        title: String?,
+        description: String?,
+    ): Topic {
+        val response = executor.execute {
+            api.updateTopic(
+                topicId = topicId,
+                request = UpdateTopicRequest(
+                    title = title,
+                    // JsonNull (bukan null Kotlin) agar JSON memuat "description": null
+                    // dan dosen dapat mengosongkan deskripsi secara eksplisit.
+                    description = description?.let { JsonPrimitive(it) } ?: JsonNull,
+                ),
+            )
         }
         val data = response.data ?: throw AppFailure.Unknown
         return data.toDomain()
@@ -88,11 +148,20 @@ class TopicRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteTopic(topicId: String) {
-        executor.execute { api.deleteTopic(topicId) }
+        // Retrofit tidak melempar HttpException untuk Response<Unit>; non-2xx harus
+        // diperiksa eksplisit agar penolakan (mis. TOPIC_HAS_ACADEMIC_DATA) tidak
+        // tampak sukses di UI (FR-009 / perlindungan arsip).
+        val response = executor.execute { api.deleteTopic(topicId) }
+        response.toAppFailureOrNull(json)?.let { throw it }
     }
 
     override suspend fun reorderTopics(topicIds: List<String>) {
-        executor.execute { api.reorderTopics(ReorderTopicsRequest(topicIds)) }
+        // Sama seperti deleteTopic: kegagalan reorder tidak boleh ditelan diam-diam,
+        // karena UI melakukan reorder optimistis dan harus memulihkan urutan server.
+        val response = executor.execute {
+            api.reorderTopics(ReorderTopicsRequest(topicIds))
+        }
+        response.toAppFailureOrNull(json)?.let { throw it }
     }
 
     override suspend fun createLinkMaterial(
@@ -170,6 +239,13 @@ class TopicRepositoryImpl @Inject constructor(
             signedUrl = signedUrl,
             expiresAt = expiresAt,
             uploadedAt = uploadedAt,
+            contentUrl = contentUrl,
+            linkTargetUrl = linkTargetUrl,
         )
+    }
+
+    private companion object {
+        const val TOPIC_PAGE_SIZE = 100
+        const val MAX_TOPIC_PAGES = 100
     }
 }

@@ -110,6 +110,15 @@ export async function getSubmissionDetail(
       if (row.student_id !== userId) {
         throw forbidden('SUBMISSION_FORBIDDEN', 'Submission ini bukan milik Anda.');
       }
+      // DEC-009/FR-028: enrollment LEFT mencabut akses mahasiswa ke jawaban dan
+      // nilainya. Data tetap tersimpan dan dapat dibaca dosen berwenang, serta
+      // pulih setelah enrollment diaktifkan kembali.
+      if (row.enrollment_status !== 'ACTIVE') {
+        throw forbidden(
+          'ENROLLMENT_INACTIVE',
+          'Akses jawaban dan nilai memerlukan enrollment aktif pada kelas ini.',
+        );
+      }
     } else if (role === 'LECTURER') {
       const allowed = await repo.isLecturerForClass(
         client,

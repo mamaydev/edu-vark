@@ -5,7 +5,7 @@
     <string name="lec_topic_screen_title_delete">Hapus topik</string>
     <string name="lec_topic_screen_title_editor">Detail topik</string>
     <string name="lec_topic_screen_title_list">Topik pembelajaran</string>
-    <string name="lec_topic_eyebrow_class">Kelas A • IBD</string>
+    <string name="lec_topic_eyebrow_class">Matakuliah IBD</string>
     <string name="lec_topic_headline">Susun perjalanan\nbelajar kelas.</string>
     <string name="lec_topic_count_summary">%1$d terbit · %2$d draf</string>
     <string name="lec_topic_create">+ Buat topik</string>
@@ -27,10 +27,6 @@
     <string name="lec_topic_status_draft">Draf</string>
     <string name="lec_topic_link_edit">Edit detail</string>
     <string name="lec_topic_link_materials">Kelola materi</string>
-    <string name="lec_topic_letter_visual">V</string>
-    <string name="lec_topic_letter_aural">A</string>
-    <string name="lec_topic_letter_read_write">R</string>
-    <string name="lec_topic_letter_kinesthetic">K</string>
     <string name="lec_topic_availability_none">—</string>
     <string name="lec_topic_availability_dot">"  •  "</string>
     <string name="lec_topic_editor_eyebrow">Editor topik</string>
@@ -82,6 +78,7 @@
     <string name="lec_material_delete_cancel">Batal</string>
     <string name="lec_material_action_delete">Hapus</string>
     <string name="lec_material_chip">TOPIK %1$s • %2$s</string>
+    <string name="lec_material_header_chip">TOPIK %1$s %2$s</string>
     <string name="lec_material_header_body">Kelola setiap format secara independen.</string>
     <string name="lec_material_notice">Mahasiswa hanya melihat kategori yang dipilih pada sesi aktif.</string>
     <string name="lec_material_none_case">Belum ada studi kasus</string>
@@ -110,12 +107,8 @@
     <string name="lec_material_form_link_label">Alternatif tautan</string>
     <string name="lec_material_form_link_placeholder">https://…</string>
     <string name="lec_material_form_link_helper_required">Tautan wajib memakai HTTPS agar dapat dibuka mahasiswa.</string>
-    <string name="lec_material_form_link_helper">Gunakan tipe Tautan untuk menyimpan materi berupa URL.</string>
-    <string name="lec_material_form_notice">Jenis file dan ukuran divalidasi saat unggah. Batas ukuran media masih menunggu keputusan teknis.</string>
     <string name="lec_material_form_save_link">Simpan tautan materi</string>
     <string name="lec_material_form_save_file">Unggah &amp; simpan materi</string>
-    <string name="lec_material_form_meta_category">Kategori: %1$s</string>
-    <string name="lec_material_form_meta_uploaded">Tanggal unggah dicatat otomatis.</string>
     <string name="lec_material_file_pick">Pilih file materi</string>
     <string name="lec_material_file_hint">Ketuk untuk memilih berkas dari perangkat.</string>
     <string name="lec_material_file_change">Ganti file</string>

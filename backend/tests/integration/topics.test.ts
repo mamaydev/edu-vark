@@ -5,9 +5,12 @@ import { getPool } from '../../src/db/client';
 import { resetLoginThrottle } from '../../src/lib/login-throttle';
 import {
   closeDb,
+  createAdmin,
   createClass,
   createUser,
   resetDb,
+  TEST_ADMIN_LOGIN_ID,
+  TEST_ADMIN_PASSWORD,
 } from '../helpers/db';
 import {
   createCaseWithSubmission,
@@ -87,11 +90,7 @@ describeDb('topics and materials integration', () => {
       role: 'STUDENT',
     });
     await createEnrollment(classId, studentId);
-    await createUser({
-      loginId: 'admin',
-      password: 'AdminPass1234',
-      role: 'ADMIN',
-    });
+    await createAdmin();
   });
 
   afterAll(async () => {
@@ -266,7 +265,7 @@ describeDb('topics and materials integration', () => {
     expect(ids).toEqual([third.id, first.id, second.id]);
   });
 
-  it('uploads a valid PDF and exposes a signed URL to students', async () => {
+  it('uploads a valid PDF and exposes the fixed EduVARK content address', async () => {
     const lecturer = await loginLecturer();
     const topic = await createTopic(lecturer.accessToken, 'Topik PDF');
     await publishTopic(lecturer.accessToken, topic.id);
@@ -281,7 +280,12 @@ describeDb('topics and materials integration', () => {
       .expect(201);
 
     expect(uploaded.body.data.kind).toBe('FILE');
-    expect(uploaded.body.data.signedUrl).toContain('https://signed.example/');
+    // C1-02: URL bertanda tangan berhenti diterbitkan; alamat tetap dipakai.
+    expect(uploaded.body.data.signedUrl).toBeNull();
+    expect(uploaded.body.data.expiresAt).toBeNull();
+    expect(uploaded.body.data.contentUrl).toBe(
+      '/api/v1/materials/' + uploaded.body.data.id + '/content',
+    );
 
     const student = await loginStudent('2025000001', 'VISUAL');
     const materials = await request(app)
@@ -290,7 +294,10 @@ describeDb('topics and materials integration', () => {
       .expect(200);
 
     expect(materials.body.data).toHaveLength(1);
-    expect(materials.body.data[0].signedUrl).toContain('https://signed.example/');
+    expect(materials.body.data[0].signedUrl).toBeNull();
+    expect(materials.body.data[0].contentUrl).toBe(
+      '/api/v1/materials/' + materials.body.data[0].id + '/content',
+    );
   });
 
   it('trims material titles and rejects blank or oversized titles', async () => {
@@ -448,8 +455,10 @@ describeDb('topics and materials integration', () => {
       .expect(201);
 
     const materialId = uploaded.body.data.id as string;
-    const oldSignedUrl = uploaded.body.data.signedUrl as string;
-    expect(oldSignedUrl).toContain('https://signed.example/');
+    expect(uploaded.body.data.signedUrl).toBeNull();
+    expect(uploaded.body.data.contentUrl).toBe(
+      '/api/v1/materials/' + materialId + '/content',
+    );
 
     const student = await loginStudent('2025000001', 'VISUAL');
     await request(app)
@@ -515,7 +524,7 @@ describeDb('topics and materials integration', () => {
       .expect(403);
     expect(studentCreate.body.error.code).toBe('FORBIDDEN');
 
-    const admin = await loginAs(app, 'admin', 'AdminPass1234');
+    const admin = await loginAs(app, TEST_ADMIN_LOGIN_ID, TEST_ADMIN_PASSWORD);
     const adminCreate = await request(app)
       .post('/api/v1/lecturer/topics')
       .set('Authorization', bearer(admin.accessToken))

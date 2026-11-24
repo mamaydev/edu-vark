@@ -20,10 +20,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eduvark.app.BuildConfig
+import com.eduvark.app.core.common.LoginIdRules
 import com.eduvark.app.ui.components.EduField
 import com.eduvark.app.ui.components.PasswordField
 import com.eduvark.app.ui.components.EduScreen
 import com.eduvark.app.ui.components.Eyebrow
+import com.eduvark.app.ui.components.FieldHelper
 import com.eduvark.app.ui.components.FieldLabel
 import com.eduvark.app.ui.components.HeroCard
 import com.eduvark.app.ui.components.NoticeCard
@@ -75,35 +77,24 @@ fun LoginScreen(
                 )
                 Spacer(Modifier.height(dimen(R.dimen.space_12)))
                 Text(text = stringResource(R.string.auth_hero_title), style = EduTheme.type.heroTitle)
-                Spacer(Modifier.height(dimen(R.dimen.space_14)))
-                Text(
-                    text = stringResource(R.string.auth_hero_subtitle),
-                    style = EduTheme.type.bodySmall.copy(
-                        color = EduTheme.colors.onBrand.copy(alpha = 0.9f),
-                    ),
-                )
             }
 
             Spacer(Modifier.height(dimen(R.dimen.space_28)))
             Eyebrow(stringResource(R.string.auth_welcome_eyebrow))
             Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(text = stringResource(R.string.auth_title), style = EduTheme.type.display)
-            Spacer(Modifier.height(dimen(R.dimen.space_12)))
-            Text(
-                text = stringResource(R.string.auth_subtitle),
-                style = EduTheme.type.body,
-            )
 
             Spacer(Modifier.height(dimen(R.dimen.space_24)))
             Column {
                 FieldLabel(stringResource(R.string.auth_login_id_label))
                 EduField(
                     value = loginId,
-                    onValueChange = { loginId = it },
+                    onValueChange = { loginId = LoginIdRules.filterDigits(it) },
                     placeholder = stringResource(R.string.auth_login_id_placeholder),
                     enabled = !state.isLoading,
-                    keyboardType = KeyboardType.Text,
+                    keyboardType = KeyboardType.Number,
                 )
+                FieldHelper(text = stringResource(R.string.p3_login_helper_digits))
             }
 
             Spacer(Modifier.height(dimen(R.dimen.space_16)))
@@ -132,15 +123,17 @@ fun LoginScreen(
                     stringResource(R.string.auth_submit)
                 },
                 onClick = { viewModel.submit(loginId, password) },
+                enabled = LoginIdRules.canSubmit(loginId),
                 loading = state.isLoading,
                 showArrow = !state.isLoading,
             )
-
-            Spacer(Modifier.height(dimen(R.dimen.space_18)))
-            Text(
-                text = stringResource(R.string.auth_login_hint),
-                style = EduTheme.type.bodySmall,
-            )
+            if (!LoginIdRules.canSubmit(loginId)) {
+                Spacer(Modifier.height(dimen(R.dimen.space_8)))
+                FieldHelper(
+                    text = stringResource(R.string.p3_login_submit_hint),
+                    isError = false,
+                )
+            }
 
             if (BuildConfig.DEBUG) {
                 Spacer(Modifier.height(dimen(R.dimen.space_14)))

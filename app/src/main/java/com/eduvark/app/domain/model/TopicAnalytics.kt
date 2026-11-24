@@ -15,10 +15,18 @@ data class StudentFeedback(
     val studentId: String,
     val fullName: String,
     val loginId: String,
-    val vark: VarkType,
+    /**
+     * Kategori asal nilai yang relevan untuk baris ini (bukan VARK login
+     * terakhir). `null` = belum memberi feedback, berbeda dari nilai 0%.
+     */
+    val vark: VarkType?,
+    /** Semua kategori asal yang memiliki nilai feedback tersimpan pada topik. */
+    val originCategories: List<VarkType>,
     val feedback: Map<VarkType, Int?>,
 ) {
     fun valueFor(category: VarkType): Int? = feedback[category]
+
+    fun respondedIn(category: VarkType): Boolean = originCategories.contains(category)
 }
 
 data class TopicAnalytics(

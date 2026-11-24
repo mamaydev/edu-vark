@@ -49,6 +49,21 @@ class FakeTopicRepository(
     var lastReorder: List<String>? = null
     var failStudentTopic = false
     var failLecturerTopic = false
+    /** Kegagalan yang disimulasikan pada reorder (mis. TOPIC_ORDER_INCOMPLETE). */
+    var reorderFailure: AppFailure? = null
+    /** Kegagalan yang disimulasikan pada hapus (mis. TOPIC_HAS_ACADEMIC_DATA). */
+    var deleteFailure: AppFailure? = null
+
+    /** Isi yang dikembalikan untuk unduhan materi FILE. */
+    var downloadedContent: ByteArray = "%PDF-1.7 isi materi".toByteArray()
+    /** Kegagalan yang disimulasikan pada unduhan berkas. */
+    var downloadFailure: AppFailure? = null
+    /** Tujuan tautan eksternal yang lolos pemeriksaan izin backend. */
+    var linkTargetUrl: String = "https://example.com/materi-aman"
+    /** Kegagalan yang disimulasikan pada permintaan link-target. */
+    var linkTargetFailure: AppFailure? = null
+    var downloadedMaterialIds: MutableList<String> = mutableListOf()
+    var linkTargetMaterialIds: MutableList<String> = mutableListOf()
 
     override suspend fun getStudentDashboard(): StudentDashboard {
         failure?.let { throw it }
@@ -86,10 +101,46 @@ class FakeTopicRepository(
         return materials
     }
 
+    override suspend fun downloadMaterialContent(materialId: String): ByteArray {
+        downloadedMaterialIds += materialId
+        downloadFailure?.let { throw it }
+        failure?.let { throw it }
+        return downloadedContent
+    }
+
+    override suspend fun getMaterialLinkTarget(materialId: String): String {
+        linkTargetMaterialIds += materialId
+        linkTargetFailure?.let { throw it }
+        failure?.let { throw it }
+        return linkTargetUrl
+    }
+
     override suspend fun createTopic(title: String, description: String?): Topic {
         val topic = sampleTopic(id = "topic-" + (topics.size + 1), title = title)
         topics = topics + topic
         return topic
+    }
+
+    override suspend fun updateTopic(
+        topicId: String,
+        title: String?,
+        description: String?,
+    ): Topic {
+        failure?.let { throw it }
+        // Backend sekarang membedakan "field dihilangkan" (tidak berubah) dari
+        // "description: null" (dikosongkan). Android selalu mengirim null eksplisit
+        // untuk deskripsi kosong, jadi fake ini mengosongkan description.
+        topics = topics.map {
+            if (it.id == topicId) {
+                it.copy(
+                    title = title ?: it.title,
+                    description = description,
+                )
+            } else {
+                it
+            }
+        }
+        return topics.first { it.id == topicId }
     }
 
     override suspend fun publishTopic(topicId: String): Topic {
@@ -107,11 +158,13 @@ class FakeTopicRepository(
     }
 
     override suspend fun deleteTopic(topicId: String) {
+        deleteFailure?.let { throw it }
         topics = topics.filterNot { it.id == topicId }
     }
 
     override suspend fun reorderTopics(topicIds: List<String>) {
         lastReorder = topicIds
+        reorderFailure?.let { throw it }
         val byId = topics.associateBy { it.id }
         topics = topicIds.mapNotNull { byId[it] }
     }

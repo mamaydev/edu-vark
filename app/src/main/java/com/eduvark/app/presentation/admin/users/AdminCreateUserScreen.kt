@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eduvark.app.core.common.LoginIdRules
 import com.eduvark.app.domain.model.AdminAccountStatus
 import com.eduvark.app.domain.model.UserRole
 import com.eduvark.app.ui.components.EduCard
@@ -118,21 +119,29 @@ fun AdminCreateUserScreen(
                 )
 
                 Spacer(Modifier.height(dimen(R.dimen.space_16)))
-                FieldLabel(stringResource(R.string.admin_login_id_label))
-                EduField(
-                    value = loginId,
-                    onValueChange = {
-                        loginId = it
-                        localError = null
-                    },
-                    placeholder = stringResource(R.string.admin_login_id_placeholder),
-                    error = true,
-                    enabled = !state.isSaving,
-                )
-                FieldHelper(
-                    text = stringResource(R.string.admin_duplicate_helper),
-                    isError = true,
-                )
+                if (role != UserRole.ADMIN) {
+                    FieldLabel(stringResource(R.string.p3_admin_login_id_label))
+                    EduField(
+                        value = loginId,
+                        onValueChange = {
+                            loginId = LoginIdRules.filterDigits(it)
+                            localError = null
+                        },
+                        placeholder = stringResource(R.string.p3_admin_login_id_placeholder),
+                        error = true,
+                        enabled = !state.isSaving,
+                        keyboardType = KeyboardType.Number,
+                    )
+                    FieldHelper(
+                        text = stringResource(R.string.admin_duplicate_helper),
+                        isError = true,
+                    )
+                } else {
+                    NoticeCard(
+                        text = stringResource(R.string.p3_admin_auto_id_note),
+                        tone = TintTone.Primary,
+                    )
+                }
 
                 Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 FieldLabel(stringResource(R.string.admin_field_role))
@@ -192,23 +201,25 @@ fun AdminCreateUserScreen(
                 )
 
                 Spacer(Modifier.height(dimen(R.dimen.space_16)))
-                FieldLabel(stringResource(R.string.admin_login_id_label))
-                EduField(
-                    value = loginId,
-                    onValueChange = {
-                        loginId = it
-                        localError = null
-                    },
-                    placeholder = stringResource(R.string.admin_login_id_placeholder),
-                    enabled = !state.isSaving,
-                )
-                FieldHelper(
-                    text = if (role == UserRole.ADMIN) {
-                        stringResource(R.string.admin_login_helper_admin)
-                    } else {
-                        stringResource(R.string.admin_login_helper_default)
-                    },
-                )
+                if (role != UserRole.ADMIN) {
+                    FieldLabel(stringResource(R.string.p3_admin_login_id_label))
+                    EduField(
+                        value = loginId,
+                        onValueChange = {
+                            loginId = LoginIdRules.filterDigits(it)
+                            localError = null
+                        },
+                        placeholder = stringResource(R.string.p3_admin_login_id_placeholder),
+                        enabled = !state.isSaving,
+                        keyboardType = KeyboardType.Number,
+                    )
+                    FieldHelper(text = stringResource(R.string.p3_admin_login_helper_digits))
+                } else {
+                    NoticeCard(
+                        text = stringResource(R.string.p3_admin_auto_id_note),
+                        tone = TintTone.Primary,
+                    )
+                }
 
                 Spacer(Modifier.height(dimen(R.dimen.space_16)))
                 FieldLabel(stringResource(R.string.admin_initial_password_label))

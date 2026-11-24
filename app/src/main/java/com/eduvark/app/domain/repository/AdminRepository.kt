@@ -18,7 +18,7 @@ interface AdminRepository {
     suspend fun getUser(userId: String): AdminUser
 
     suspend fun createUser(
-        loginId: String,
+        loginId: String?,
         fullName: String,
         role: UserRole,
         temporaryPassword: String,
@@ -28,6 +28,7 @@ interface AdminRepository {
         userId: String,
         fullName: String?,
         role: UserRole?,
+        loginId: String? = null,
     ): AdminUser
 
     suspend fun resetPassword(userId: String, temporaryPassword: String)

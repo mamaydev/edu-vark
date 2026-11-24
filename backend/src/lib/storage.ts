@@ -1,9 +1,11 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { createReadStream } from 'node:fs';
+import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -213,6 +215,140 @@ export async function readLocalObject(
     if (code === 'ENOENT') {
       throw new AppError('MATERIAL_NOT_FOUND', 404, 'Materi tidak ditemukan.');
     }
+    throw storageFailure(error);
+  }
+}
+
+/**
+ * Metadata for a private stored object. Dipakai oleh endpoint unduh tetap
+ * (`GET /api/v1/materials/:id/content`) untuk menghitung ETag, panjang isi,
+ * serta validasi `Range`/`If-Range` sebelum objek dibaca.
+ */
+export interface ObjectInfo {
+  key: string;
+  size: number;
+  contentType: string;
+  etag: string;
+  lastModified: string | null;
+}
+
+export interface ObjectByteRange {
+  start: number;
+  end: number;
+}
+
+function mimeForKey(key: string): string {
+  return LOCAL_MIME[path.extname(key).toLowerCase()] ?? 'application/octet-stream';
+}
+
+function normalizeEtag(value: string | undefined): string {
+  if (!value) return '';
+  return value.startsWith('"') ? value : '"' + value + '"';
+}
+
+function isStorageNotFound(error: unknown): boolean {
+  const code = (error as NodeJS.ErrnoException).code;
+  if (code === 'ENOENT' || code === 'ENOTDIR' || code === 'NotFound' || code === 'NoSuchKey') {
+    return true;
+  }
+  const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+  return status === 404;
+}
+
+/**
+ * Baca metadata objek privat tanpa mengirim isi. Objek yang tidak ada
+ * dilaporkan sebagai MATERIAL_NOT_FOUND agar route tidak membocorkan
+ * perbedaan antara "materi tidak berhak" dan "objek hilang".
+ */
+export async function getObjectInfo(key: string): Promise<ObjectInfo> {
+  if (isLocalStorage()) {
+    try {
+      const filePath = localPath(key);
+      const info = await stat(filePath);
+      if (!info.isFile()) {
+        throw new AppError('MATERIAL_NOT_FOUND', 404, 'Materi tidak ditemukan.');
+      }
+      const etag =
+        '"' +
+        createHash('sha256')
+          .update(key + ':' + info.size + ':' + info.mtimeMs)
+          .digest('hex')
+          .slice(0, 24) +
+        '"';
+      return {
+        key,
+        size: info.size,
+        contentType: mimeForKey(key),
+        etag,
+        lastModified: info.mtime.toUTCString(),
+      };
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      if (isStorageNotFound(error)) {
+        throw new AppError('MATERIAL_NOT_FOUND', 404, 'Materi tidak ditemukan.');
+      }
+      throw storageFailure(error);
+    }
+  }
+
+  try {
+    const cfg = config();
+    const head = await cfg.client.send(
+      new HeadObjectCommand({ Bucket: cfg.bucket, Key: key }),
+    );
+    return {
+      key,
+      size: Number(head.ContentLength ?? 0),
+      contentType: head.ContentType ?? mimeForKey(key),
+      etag: normalizeEtag(head.ETag),
+      lastModified: head.LastModified ? head.LastModified.toUTCString() : null,
+    };
+  } catch (error) {
+    if (isStorageNotFound(error)) {
+      throw new AppError('MATERIAL_NOT_FOUND', 404, 'Materi tidak ditemukan.');
+    }
+    throw storageFailure(error);
+  }
+}
+
+/**
+ * Ambil isi objek privat sebagai stream (R2 GetObject) atau stream berkas
+ * lokal pada mode pengembangan. `range` sudah divalidasi pemanggil.
+ */
+export async function getObjectBody(
+  key: string,
+  range: ObjectByteRange | null,
+): Promise<NodeJS.ReadableStream | Buffer> {
+  if (isLocalStorage()) {
+    try {
+      localPath(key);
+      return range
+        ? createReadStream(localPath(key), { start: range.start, end: range.end })
+        : createReadStream(localPath(key));
+    } catch (error) {
+      throw storageFailure(error);
+    }
+  }
+
+  try {
+    const cfg = config();
+    const response = await cfg.client.send(
+      new GetObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+        Range: range ? 'bytes=' + range.start + '-' + range.end : undefined,
+      }),
+    );
+    const body = response.Body as unknown as NodeJS.ReadableStream | undefined;
+    if (!body) {
+      throw new AppError(
+        'STORAGE_UNAVAILABLE',
+        502,
+        'Penyimpanan materi sedang tidak tersedia.',
+      );
+    }
+    return body;
+  } catch (error) {
     throw storageFailure(error);
   }
 }

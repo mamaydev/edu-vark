@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-11-24T13:55:43.821Z",
+  "purpose": "Menguji efek rollback image backend ke b7b6cd6 TANPA restore database (DB sudah termigrasi 001+002+003). Ini bagian dari satu rencana rollback di ROLLOUT-RUNBOOK.md.",
+  "setup": "node dist/server.js dari worktree b7b6cd6 (image lama), DATABASE_URL=eduvark_test_rollout_new (skema baru, sudah dimigrasi 003), PORT=3003, LOCAL_STORAGE_DIR=/tmp/eduvark-restore-storage.",
+  "results": {
+    "health": "200",
+    "migrationRunner": "Server lama berhasil boot pada skema baru (runner migrasi lama hanya mengenal 001 yang sudah tercatat diterapkan; objek baru 002/003 diabaikan karena tidak dipakai kode lama).",
+    "adminNumericLogin": "POST /auth/login loginId=01401400001 -> HTTP 200 (token ADMIN diterbitkan). Artinya setelah rollback image tanpa restore DB, Admin tetap dapat login memakai ID numerik baru.",
+    "adminLegacyLogin": "POST /auth/login loginId=admin -> HTTP 401 INVALID_CREDENTIALS (username legacy tidak lagi ada di DB; sesuai aturan baru).",
+    "studentFlow": "Login 2025000001 -> 200; POST /auth/vark VISUAL -> 200; GET /topics/:id/materials -> 200 dengan bentuk lama: signedUrl terisi, contentUrl tidak ada; GET /materials/:id/content -> 404 (rute tidak ada di image lama).",
+    "lecturerAnalytics": "GET /lecturer/analytics/topics/:id -> 200 bentuk lama (tanpa definitions; aggregation \"mean of latest feedback per student-topic-category\"; kinesthetic.assessedCount=0 pada sesi Visual)."
+  },
+  "implications": [
+    "Rollback image saja TIDAK mengembalikan perilaku lama untuk Admin legacy: login \"admin\" tetap 401 karena data identitas sudah dimigrasi (butuh restore DB bila ingin persis perilaku lama).",
+    "Rollback image saja membuat APK baru kehilangan FILE (/content 404 -> pesan \"Materi tidak dapat dibuka\") dan tetap dapat menampilkan analitik bentuk lama.",
+    "APK lama setelah rollback image: login Admin numerik tetap 200 (ID numerik ada di DB) tetapi FILE memakai signedUrl lama sehingga dapat dibuka kembali; analitik APK lama tetap gagal terhadap payload baru? — pada skema baru, data vark siswa dapat null sehingga DTO lama tetap berisiko; status perlu diverifikasi ulang bila rollback dipakai.",
+    "Karena migrasi 003 bersifat aditif + perubahan identitas Admin, rollback penuh yang aman = image lama + restore backup DB pra-003 (bukan hanya image)."
+  ],
+  "evidenceFiles": [
+    "/tmp/roll-numeric.json",
+    "/tmp/roll-legacy.json",
+    "/tmp/roll-materials.json",
+    "/tmp/roll-analytics.json",
+    "logs/rollback-oldimage-newdb.log"
+  ]
+}

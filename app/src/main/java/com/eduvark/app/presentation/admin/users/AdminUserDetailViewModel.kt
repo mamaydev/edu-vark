@@ -3,6 +3,7 @@ package com.eduvark.app.presentation.admin.users
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eduvark.app.core.common.LoginIdRules
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.AdminUser
 import com.eduvark.app.domain.model.EnrollmentStatus
@@ -66,21 +67,38 @@ class AdminUserDetailViewModel @Inject constructor(
         }
     }
 
-    fun updateProfile(fullName: String, role: UserRole) {
+    fun updateProfile(fullName: String, role: UserRole, newLoginId: String = "") {
         if (fullName.trim().isEmpty()) {
             _state.update { it.copy(actionError = "Nama wajib diisi.") }
             return
         }
+        val currentRole = _state.value.user?.role
+        val crossesAdminBoundary =
+            (currentRole == UserRole.ADMIN) != (role == UserRole.ADMIN)
+
+        // Admin → academic needs an explicit target NIM/NIDN; academic → Admin
+        // and admin → admin use the server-issued identity (FR-034).
+        val targetLoginId: String? = when {
+            !crossesAdminBoundary -> null
+            role == UserRole.ADMIN -> null
+            else -> newLoginId.trim().takeIf { LoginIdRules.isAcademicId(it) }
+        }
+        if (currentRole == UserRole.ADMIN && role != UserRole.ADMIN && targetLoginId == null) {
+            _state.update { it.copy(actionError = LoginIdRules.ACADEMIC_ID_MESSAGE) }
+            return
+        }
+
         perform {
             val updated = updateAdminUserUseCase(
                 userId,
                 fullName.trim(),
                 role,
+                targetLoginId,
             )
             _state.update {
                 it.copy(
                     user = updated,
-                    actionMessage = "Profil diperbarui. Perubahan role mencabut sesi pengguna.",
+                    actionMessage = "Profil diperbarui. Perubahan role/identitas mencabut sesi pengguna.",
                     actionError = null,
                 )
             }

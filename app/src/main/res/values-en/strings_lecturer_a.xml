@@ -5,7 +5,7 @@
     <string name="lec_topic_screen_title_delete">Delete topic</string>
     <string name="lec_topic_screen_title_editor">Topic details</string>
     <string name="lec_topic_screen_title_list">Learning topics</string>
-    <string name="lec_topic_eyebrow_class">Class A • IBD</string>
+    <string name="lec_topic_eyebrow_class">IBD Course</string>
     <string name="lec_topic_headline">Chart the class\nlearning journey.</string>
     <string name="lec_topic_count_summary">%1$d published · %2$d drafts</string>
     <string name="lec_topic_create">+ Create topic</string>
@@ -27,10 +27,6 @@
     <string name="lec_topic_status_draft">Draft</string>
     <string name="lec_topic_link_edit">Edit details</string>
     <string name="lec_topic_link_materials">Manage materials</string>
-    <string name="lec_topic_letter_visual">V</string>
-    <string name="lec_topic_letter_aural">A</string>
-    <string name="lec_topic_letter_read_write">R</string>
-    <string name="lec_topic_letter_kinesthetic">K</string>
     <string name="lec_topic_availability_none">—</string>
     <string name="lec_topic_availability_dot">"  •  "</string>
     <string name="lec_topic_editor_eyebrow">Topic editor</string>
@@ -82,6 +78,7 @@
     <string name="lec_material_delete_cancel">Cancel</string>
     <string name="lec_material_action_delete">Delete</string>
     <string name="lec_material_chip">TOPIC %1$s • %2$s</string>
+    <string name="lec_material_header_chip">TOPIC %1$s %2$s</string>
     <string name="lec_material_header_body">Manage each format independently.</string>
     <string name="lec_material_notice">Students only see the categories selected in the active session.</string>
     <string name="lec_material_none_case">No case study yet</string>
@@ -110,12 +107,8 @@
     <string name="lec_material_form_link_label">Alternative link</string>
     <string name="lec_material_form_link_placeholder">https://…</string>
     <string name="lec_material_form_link_helper_required">The link must use HTTPS so students can open it.</string>
-    <string name="lec_material_form_link_helper">Use the Link type to store a URL-based material.</string>
-    <string name="lec_material_form_notice">File type and size are validated on upload. The media size limit is still awaiting a technical decision.</string>
     <string name="lec_material_form_save_link">Save material link</string>
     <string name="lec_material_form_save_file">Upload &amp; save material</string>
-    <string name="lec_material_form_meta_category">Category: %1$s</string>
-    <string name="lec_material_form_meta_uploaded">The upload date is recorded automatically.</string>
     <string name="lec_material_file_pick">Choose a material file</string>
     <string name="lec_material_file_hint">Tap to pick a file from the device.</string>
     <string name="lec_material_file_change">Change file</string>

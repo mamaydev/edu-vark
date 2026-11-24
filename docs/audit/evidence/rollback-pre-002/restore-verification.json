@@ -1,0 +1,127 @@
+{
+  "generatedAt": "2026-11-24T14:15:42.016Z",
+  "stage": "restore snapshot pra-002 ke DB bersih (skenario A & B)",
+  "snapshot": {
+    "file": "baseline/pre-002-snapshot.dump",
+    "sha256": "5aedcca25b15c25742d5110484ed8a351cc8388d43789a74c2eb2983e066414c",
+    "sizeBytes": 46741
+  },
+  "restoreCommand": "createdb eduvark_rb_pre002_restored; pg_restore --no-owner --no-privileges -d eduvark_rb_pre002_restored baseline/pre-002-snapshot.dump",
+  "restoredImmediately": {
+    "schemaMigrations": [
+      "001_init.sql"
+    ],
+    "users": 4,
+    "enrollments": 2,
+    "topics": 1,
+    "materials": 1,
+    "submissions": 1,
+    "assessments": 1,
+    "classes": 1,
+    "caseStudies": 1,
+    "teachingAssignments": 1,
+    "auth_sessions": 18,
+    "audit_logs": 30,
+    "adminLoginId": "admin"
+  },
+  "oldBackendOnRestored": {
+    "backend": "image lama b7b6cd6 PORT=3995",
+    "health": 200,
+    "legacyAdminLogin": 200,
+    "numericAdminLogin": 401,
+    "materialList": 200,
+    "materialContract": "bentuk lama: signedUrl terisi",
+    "signedUrlDownload": {
+      "status": 200,
+      "bytes": 51,
+      "sha256": "904636248025ad20fb9c6bd8b700179a2a42edb5df3636e926c7e09055ee3f75"
+    },
+    "contentEndpoint": 404,
+    "analytics": 200
+  },
+  "structureEqualsBaseline": {
+    "users": "IDENTICAL",
+    "classes": "IDENTICAL",
+    "enrollments": "IDENTICAL",
+    "topics": "IDENTICAL",
+    "caseStudies": "IDENTICAL",
+    "materials": "IDENTICAL",
+    "submissions": "IDENTICAL",
+    "assessments": "IDENTICAL",
+    "teachingAssignments": "IDENTICAL",
+    "overall": true,
+    "evidence": "baseline-structure.json == restored-structure.json"
+  },
+  "analyticsEqualsBaseline": {
+    "equal": true,
+    "payload": {
+      "data": {
+        "topicId": "a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+        "category": null,
+        "studentId": null,
+        "respondentCount": 0,
+        "mean": null,
+        "histogram": [
+          {
+            "bucket": "0-20",
+            "count": 0
+          },
+          {
+            "bucket": "21-40",
+            "count": 0
+          },
+          {
+            "bucket": "41-60",
+            "count": 0
+          },
+          {
+            "bucket": "61-80",
+            "count": 0
+          },
+          {
+            "bucket": "81-100",
+            "count": 0
+          }
+        ],
+        "notRespondedCount": 1,
+        "aggregation": "mean of latest feedback per student-topic-category",
+        "kinesthetic": {
+          "assessedCount": 0,
+          "meanScore": null,
+          "notSubmittedCount": 1
+        },
+        "students": [
+          {
+            "studentId": "f3da579a-6940-4927-b1dd-65bfb2d16b32",
+            "fullName": "Mahasiswa Restore",
+            "loginId": "2025000001",
+            "vark": "VISUAL",
+            "feedback": {
+              "VISUAL": null,
+              "AURAL": null,
+              "READ_WRITE": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "lostWritesAbsent": {
+    "checked": true,
+    "allAbsent": true,
+    "ids": [
+      "b24377dd-1528-4279-bf02-1ab1c5ed7db3",
+      "4de21a9c-1bd0-403c-a02a-70955343a3d0",
+      "284f3e09-74b8-40bf-ab0a-ce6467eb163f",
+      "ec7e9b09-804c-47c9-8ddf-146c595a0b12",
+      "f4482b6e-3225-4108-8c66-c36205e1cdd0",
+      "03a6a3f8-aa9a-4fbd-be21-36195f4842a8"
+    ]
+  },
+  "adminSessionStateOnRestore": {
+    "snapshotAdminSessionsTotal": 2,
+    "snapshotAdminSessionsActive": 0,
+    "note": "snapshot pra-002 memuat sesi Admin lama non-aktif; setelah restore status sesi kembali ke kondisi snapshot (revokasi 002 hilang). Di fixture ini 0 sesi aktif, tetapi secara umum token yang valid saat snapshot dapat aktif kembali setelah restore."
+  },
+  "rollbackConclusion": "Rollback utuh = image lama + restore snapshot pra-002. Image lama pada DB pasca-003 saja TIDAK cukup (lihat compat-e2e/rollback-image-without-db-restore.json). Setelah restore, pasangan APK lama + backend lama berfungsi penuh (login legacy admin, materi via signedUrl, Analytics bentuk lama)."
+}

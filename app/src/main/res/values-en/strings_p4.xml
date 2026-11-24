@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Package 4 — lecturer analytics: feedback origin categories, 0% vs missing, separate Kinesthetic -->
+    <string name="p4_analytics_respondent_count">Respondents: %1$d</string>
+    <string name="p4_analytics_not_responded_count">Not responded: %1$d</string>
+    <string name="p4_analytics_aggregation_definition">Aggregation definition: %1$s</string>
+    <string name="p4_analytics_origin_categories">Source categories: %1$s</string>
+    <string name="p4_analytics_no_origin_categories">No feedback yet</string>
+    <string name="p4_analytics_origin_value">%1$s %2$d%%</string>
+    <string name="p4_analytics_origin_value_empty">%1$s not filled yet</string>
+    <string name="p4_analytics_zero_vs_null_note">0% counts as a response; not responding (—) is not 0%.</string>
+    <string name="p4_analytics_kinesthetic_final_count">%1$d stored final scores</string>
+    <string name="p4_analytics_kinesthetic_compat_count">API compatibility field: %1$d not submitted</string>
+</resources>

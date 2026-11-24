@@ -1,17 +1,14 @@
 name: Deploy homelab
 
-# CD is automatic on `main`, but only *after* the CI workflow for that commit
-# succeeded: the trigger is `workflow_run`, not `push`. A red build therefore
-# never reaches the server, and there is no race where deploy starts before CI
-# finishes.
+# Manual release only. The previous `workflow_run` trigger auto-deployed after
+# a successful CI run on `main`; that is intentionally removed while the release
+# readiness gate is NO-GO. A human must now dispatch one of the controlled modes.
 #
-# `workflow_dispatch` stays available for the controlled modes (verify /
-# dry-run) and for redeploying an older commit.
+# The dispatch still validates that the requested commit is an ancestor of
+# `main`, has a successful CI run on `main`, and that the job runs from
+# `refs/heads/main` on the self-hosted runner. Automatic CI on pushes is
+# unaffected.
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
     inputs:
       sha:
@@ -39,10 +36,8 @@ concurrency:
 jobs:
   validate:
     name: Validate release candidate
-    # A failed CI run still triggers `workflow_run`; refuse it here.
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+    # Only workflow_dispatch can reach this workflow now.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
@@ -55,27 +50,17 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const manual = context.eventName === 'workflow_dispatch';
-            const mode = manual ? String(context.payload.inputs?.mode || 'verify') : 'deploy';
+            const mode = String(context.payload.inputs?.mode || 'verify');
 
-            let sha;
-            if (manual) {
-              const raw = String(context.payload.inputs?.sha || '').trim().toLowerCase();
-              if (!/^[0-9a-f]{7,40}$/.test(raw)) {
-                core.setFailed('Input must be a 7-40 character lowercase hex commit SHA');
-                return;
-              }
-              sha = raw;
-              if (raw.length < 40) {
-                const commit = await github.rest.repos.getCommit({ owner, repo, ref: raw });
-                sha = commit.data.sha;
-              }
-            } else {
-              sha = context.payload.workflow_run.head_sha;
-              if (context.payload.workflow_run.head_branch !== 'main') {
-                core.setFailed(`CI run is for ${context.payload.workflow_run.head_branch}, not main`);
-                return;
-              }
+            const raw = String(context.payload.inputs?.sha || '').trim().toLowerCase();
+            if (!/^[0-9a-f]{7,40}$/.test(raw)) {
+              core.setFailed('Input must be a 7-40 character lowercase hex commit SHA');
+              return;
+            }
+            let sha = raw;
+            if (raw.length < 40) {
+              const commit = await github.rest.repos.getCommit({ owner, repo, ref: raw });
+              sha = commit.data.sha;
             }
             core.info(`Resolved commit: ${sha} (mode: ${mode})`);
 

@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-11-24T13:54:43.554Z",
+  "method": "Membandingkan parameter expires pada signedUrl backend lama dengan expiresAt yang dikembalikan pada respons list materi; TTL dihitung local (emulator adb reverse).",
+  "evidence": {
+    "oldBackendMaterialList": "/tmp/r-old-materials.json (GET /api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials, HTTP 200)",
+    "signedUrl": "http://10.0.2.2:3000/api/v1/material-files?key=materials%2F0bd48328-1d96-424d-b3c9-39b5f0c95714.pdf&expires=1795528021&signature=[REDACTED]",
+    "expiresParamEpoch": 1795528021,
+    "expiresParamIso": "2026-11-24T13:47:01.000Z",
+    "expiresAtField": "2026-11-24T13:47:01.651Z",
+    "computedTtlSeconds": 299.349
+  },
+  "codeReference": {
+    "oldBackend": "backend/src/config/env.ts: R2_SIGNED_URL_TTL_SECONDS default 300 (5 menit)",
+    "newBackend": "list materi mengembalikan contentUrl relatif + signedUrl null + expiresAt null; akses file melalui GET /materials/:id/content dengan Authorization Bearer, bukan URL bertanda tangan."
+  },
+  "productionTtl": "NEEDS VERIFICATION — nilai R2_SIGNED_URL_TTL_SECONDS pada deployment produksi/R2 belum diverifikasi; rumus window penerbitan URL lama = timestamp penerbitan terakhir + TTL maksimum yang TERVERIFIKASI. Gunakan nilai produksi hasil verifikasi Owner, jangan nilai local 300s sebagai asumsi produksi.",
+  "windowRule": "Setelah cutover, URL lama masih dapat disajikan sampai (penerbitan terakhir + TTL terverifikasi). Verifikasi akhir: URL lama tidak lagi mengembalikan konten (HTTP 404/403) sebelum dokumentasi dinyatakan selesai.",
+  "sanitization": {
+    "redactedAt": "2026-11-24T21:14:35+07:00",
+    "redactedFields": [
+      "evidence.signedUrl — nilai parameter signature diganti [REDACTED]"
+    ],
+    "preserved": [
+      "method",
+      "HTTP status (200 pada oldBackendMaterialList)",
+      "expiresParamEpoch / expiresParamIso / expiresAtField",
+      "computedTtlSeconds",
+      "productionTtl / windowRule (tetap NEEDS VERIFICATION)"
+    ],
+    "note": "Hanya signature mentah yang diredaksi. Parameter key/expires dan perhitungan TTL dipertahankan agar assertion tetap dapat diaudit. Signature lama tidak dapat dipakai ulang untuk mengunduh berkas."
+  }
+}

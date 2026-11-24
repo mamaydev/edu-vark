@@ -113,6 +113,22 @@ export async function findAdminUserById(
   return result.rows[0] ?? null;
 }
 
+/**
+ * Read the target row under a row lock. Mutation decisions (role transition,
+ * last-Admin protection, ID boundary) must be made from this locked snapshot,
+ * never from an earlier unlocked read.
+ */
+export async function findAdminUserByIdForUpdate(
+  client: PoolClient,
+  userId: string,
+): Promise<AdminUserRow | null> {
+  const result = await client.query<AdminUserRow>(
+    `${USER_SELECT} WHERE u.id = $1 FOR UPDATE OF u`,
+    [userId],
+  );
+  return result.rows[0] ?? null;
+}
+
 export async function insertUser(
   client: PoolClient,
   input: {
@@ -138,17 +154,18 @@ export async function insertUser(
 export async function updateUser(
   client: PoolClient,
   userId: string,
-  input: { fullName?: string; role?: UserRole },
+  input: { fullName?: string; role?: UserRole; loginId?: string },
 ): Promise<void> {
   await client.query(
     `
       UPDATE users
       SET full_name = COALESCE($2, full_name),
           role = COALESCE($3, role),
+          login_id = COALESCE($4, login_id),
           updated_at = now()
       WHERE id = $1
     `,
-    [userId, input.fullName ?? null, input.role ?? null],
+    [userId, input.fullName ?? null, input.role ?? null, input.loginId ?? null],
   );
 }
 
@@ -183,6 +200,24 @@ export async function countActiveAdmins(client: PoolClient): Promise<number> {
     "SELECT count(*)::text AS count FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'",
   );
   return Number(result.rows[0]?.count ?? '0');
+}
+
+/**
+ * Lock every active Admin row so concurrent demotions/deactivations cannot
+ * both observe "more than one active Admin" and remove the last one.
+ */
+export async function lockActiveAdmins(client: PoolClient): Promise<void> {
+  await client.query(
+    "SELECT id FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE' ORDER BY id FOR UPDATE",
+  );
+}
+
+export async function isLoginIdTaken(client: PoolClient, loginId: string): Promise<boolean> {
+  const result = await client.query<{ taken: boolean }>(
+    'SELECT EXISTS (SELECT 1 FROM users WHERE login_id = $1) AS taken',
+    [loginId],
+  );
+  return result.rows[0]?.taken === true;
 }
 
 export async function findActiveClassId(client: PoolClient): Promise<string | null> {

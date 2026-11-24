@@ -1,0 +1,74 @@
+{
+  "capturedAt": "2026-11-24T14:21:00.983612+00:00",
+  "source": {
+    "gitHead": "b7b6cd6d2be19c1f0aa93f2b95454049984250d5",
+    "branch": "fix/eduvark-functional-audit-2026",
+    "workingTreeDirty": true
+  },
+  "backend": {
+    "packageVersion": "0.1.0",
+    "distAppSha256": "385be32e50f97d4068eedda4a6fa5a4250080825f65b21edfdcb32904d574156",
+    "distServerSha256": "347de5a5c290b2f060408f46092b3045f684eb0a38fd46971732466a56d945d6",
+    "distClientCompatibilitySha256": "d269c5597399ebca148be8aca1d146ac9a343a4c5a79b1554907dc6f456a2100",
+    "liveBaseUrl": "http://127.0.0.1:3001/api/v1",
+    "guardEnv": "CLIENT_COMPATIBILITY_ENFORCE=1; CLIENT_MIN_VERSION=2",
+    "schemaMigrations": [
+      {
+        "id": "001_init.sql",
+        "checksum": "7a2c6e239e6f0311d002dae3372a714083a2ec0a61d9a540e4b1a8d8145198dc",
+        "appliedAt": "2026-11-24 13:41:17.204155+00"
+      },
+      {
+        "id": "002_admin_login_ids.sql",
+        "checksum": "d779f7c8b84c94f2a49656fc10925c56c92d3cf94c18ad3f1e10fc1ea7596858",
+        "appliedAt": "2026-11-24 13:41:17.243174+00"
+      },
+      {
+        "id": "003_admin_session_revoke_and_range.sql",
+        "checksum": "dbe825dec1f3cb5de36c0683d204c8779342101cf51442df2cf2bf4f44ec4800",
+        "appliedAt": "2026-11-24 13:41:17.248647+00"
+      }
+    ]
+  },
+  "apk": {
+    "baseline": {
+      "path": "/tmp/eduvark-oldapp2/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "9b5756a08f7479e727155d17e3554fb279bdc1321cbd3e69edba4f29eaf6a113",
+      "versionCode": 1,
+      "versionName": "1.0.0",
+      "clientVersionHeader": "tidak dikirim (perilaku baseline)"
+    },
+    "candidate": {
+      "path": "app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "fa20e4635762824c194cf832a70c368355d31b4b4919796a7a2956d5b25091ed",
+      "versionCode": 2,
+      "versionName": "1.1.0",
+      "clientVersionHeader": "X-EduVARK-Client-Version: 2"
+    }
+  },
+  "emulator": {
+    "device": "emulator-5554",
+    "avd": "Pixel_10_Pro_XL",
+    "apiLevel": 37,
+    "baseUrl": "http://127.0.0.1:3000/api/v1/ via adb reverse",
+    "screenshots": [
+      "candidate-apk-analytics.png",
+      "candidate-apk-material-open.png",
+      "candidate-apk-materials.png",
+      "old-apk-active-session-before-switch.png",
+      "old-apk-active-session-before-switch.xml",
+      "old-apk-active-session-blocked-426.png",
+      "old-apk-active-session-blocked-426.xml",
+      "old-apk-blocked-426.png"
+    ]
+  },
+  "signedUrlWindow": {
+    "oldIssuanceObserved": true,
+    "lastIssuanceEvidence": "docs/audit/evidence/compat-e2e/old-signed-url-ttl.json (signature sudah diredaksi)",
+    "observedLocalTtlSeconds": 299.349,
+    "configuredDefaultTtlSeconds": 300,
+    "candidateIssuesSignedUrl": false,
+    "postExpiryEndpointStatus": 403,
+    "productionTtl": "NEEDS VERIFICATION"
+  }
+}

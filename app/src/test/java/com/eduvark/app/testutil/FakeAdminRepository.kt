@@ -44,6 +44,8 @@ class FakeAdminRepository(
     var lastStatus: AdminAccountStatus? = null
     var lastResetPassword: String? = null
     var lastDeactivated: String? = null
+    var lastCreatedLoginId: String? = null
+    var lastUpdatedLoginId: String? = null
 
     override suspend fun listUsers(
         query: String?,
@@ -65,13 +67,18 @@ class FakeAdminRepository(
     }
 
     override suspend fun createUser(
-        loginId: String,
+        loginId: String?,
         fullName: String,
         role: UserRole,
         temporaryPassword: String,
     ): AdminUser {
         failure?.let { throw it }
-        user = sampleAdminUser(loginId = loginId, fullName = fullName, role = role)
+        lastCreatedLoginId = loginId
+        user = sampleAdminUser(
+            loginId = loginId ?: "01401400001",
+            fullName = fullName,
+            role = role,
+        )
         return user
     }
 
@@ -79,11 +86,14 @@ class FakeAdminRepository(
         userId: String,
         fullName: String?,
         role: UserRole?,
+        loginId: String?,
     ): AdminUser {
         failure?.let { throw it }
+        lastUpdatedLoginId = loginId
         user = user.copy(
             fullName = fullName ?: user.fullName,
             role = role ?: user.role,
+            loginId = loginId ?: if (role == UserRole.ADMIN) "01401400002" else user.loginId,
         )
         return user
     }

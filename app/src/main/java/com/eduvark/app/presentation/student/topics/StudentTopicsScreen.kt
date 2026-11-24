@@ -31,7 +31,6 @@ import com.eduvark.app.ui.components.FieldLabel
 import com.eduvark.app.ui.components.NoticeCard
 import com.eduvark.app.ui.components.PrimaryButton
 import com.eduvark.app.ui.components.ScrollColumn
-import com.eduvark.app.ui.components.TintBar
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.TopicCard
 import com.eduvark.app.ui.theme.EduVarkTheme
@@ -78,7 +77,6 @@ fun StudentTopicsScreen(
             }
 
             state.topics.isEmpty() -> EmptyTopics(
-                activeVark = activeVark,
                 onReload = viewModel::load,
                 modifier = Modifier.padding(padding),
             )
@@ -104,16 +102,6 @@ fun StudentTopicsScreen(
                     text = stringResource(R.string.st_topic_summary, state.topics.size),
                     style = EduTheme.type.body,
                 )
-                Spacer(Modifier.height(dimen(R.dimen.space_16)))
-                TintBar(
-                    text = if (activeVark != null) {
-                        stringResource(R.string.st_topic_vark_locked, varkLabel)
-                    } else {
-                        stringResource(R.string.st_topic_vark_unset)
-                    },
-                    tone = TintTone.Primary,
-                )
-
                 Spacer(Modifier.height(dimen(R.dimen.space_20)))
                 FieldLabel(stringResource(R.string.st_topic_search_label))
                 EduField(
@@ -178,7 +166,6 @@ fun StudentTopicsScreen(
 
 @Composable
 private fun EmptyTopics(
-    activeVark: VarkType?,
     onReload: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -216,14 +203,6 @@ private fun EmptyTopics(
             }
         }
 
-        Spacer(Modifier.height(dimen(R.dimen.space_16)))
-        TintBar(
-            text = if (activeVark != null) {
-                stringResource(R.string.st_topic_empty_vark_locked, activeVark.label)
-            } else {
-                stringResource(R.string.st_topic_vark_unset)
-            },
-        )
         Spacer(Modifier.height(dimen(R.dimen.space_18)))
         PrimaryButton(text = stringResource(R.string.st_topic_reload), onClick = onReload)
     }

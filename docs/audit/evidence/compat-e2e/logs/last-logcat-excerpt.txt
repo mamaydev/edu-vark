@@ -1,0 +1,60 @@
+11-24 20:49:53.313 D/EduVARK-HTTP(11317): --> GET http://127.0.0.1:3002/api/v1/health
+11-24 20:49:53.489 D/EduVARK-HTTP(11317): <-- 200 OK http://127.0.0.1:3002/api/v1/health (111ms, 91-byte body)
+11-24 20:50:03.404 D/EduVARK-HTTP(11317): --> POST http://127.0.0.1:3002/api/v1/auth/login (53-byte body)
+11-24 20:50:03.429 D/EduVARK-HTTP(11317): <-- 401 Unauthorized http://127.0.0.1:3002/api/v1/auth/login (25ms, 156-byte body)
+11-24 20:50:17.554 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/health
+11-24 20:50:17.604 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/health (49ms, 91-byte body)
+11-24 20:50:27.290 D/EduVARK-HTTP(11786): --> POST http://127.0.0.1:3002/api/v1/auth/login (52-byte body)
+11-24 20:50:27.348 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/auth/login (57ms, 648-byte body)
+11-24 20:50:39.375 D/EduVARK-HTTP(11786): --> POST http://127.0.0.1:3002/api/v1/auth/vark (17-byte body)
+11-24 20:50:39.403 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/auth/vark (27ms, 46-byte body)
+11-24 20:50:39.559 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/auth/me
+11-24 20:50:39.581 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/auth/me (22ms, 192-byte body)
+11-24 20:50:39.589 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/topics?page=1&pageSize=100
+11-24 20:50:39.590 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/student/dashboard
+11-24 20:50:39.612 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/student/dashboard (22ms, 75-byte body)
+11-24 20:50:39.630 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/topics?page=1&pageSize=100 (41ms, 316-byte body)
+11-24 20:50:49.560 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/topics?page=1&pageSize=100
+11-24 20:50:49.605 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/topics?page=1&pageSize=100 (44ms, 316-byte body)
+11-24 20:50:49.624 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/auth/me
+11-24 20:50:49.640 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/auth/me (15ms, 192-byte body)
+11-24 20:50:52.644 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7
+11-24 20:50:52.668 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7 (23ms, 271-byte body)
+11-24 20:50:52.731 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials
+11-24 20:50:52.759 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials (27ms, 502-byte body)
+11-24 20:50:52.792 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/auth/me
+11-24 20:50:52.808 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/auth/me (15ms, 192-byte body)
+11-24 20:50:52.976 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/feedback
+11-24 20:50:53.001 D/EduVARK-HTTP(11786): <-- 200 OK http://127.0.0.1:3002/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/feedback (24ms, 40-byte body)
+11-24 20:51:00.610 D/EduVARK-HTTP(11786): --> GET http://127.0.0.1:3002/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content
+11-24 20:51:00.618 D/EduVARK-HTTP(11786): <-- 404 Not Found http://127.0.0.1:3002/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content (7ms, 138-byte body)
+11-24 20:51:13.905 D/EduVARK-HTTP(12531): --> GET http://127.0.0.1:3002/api/v1/health
+11-24 20:51:14.024 D/EduVARK-HTTP(12531): <-- 200 OK http://127.0.0.1:3002/api/v1/health (118ms, 91-byte body)
+11-24 20:51:24.007 D/EduVARK-HTTP(12531): --> POST http://127.0.0.1:3002/api/v1/auth/login (52-byte body)
+11-24 20:51:24.067 D/EduVARK-HTTP(12531): <-- 200 OK http://127.0.0.1:3002/api/v1/auth/login (59ms, 647-byte body)
+11-24 20:51:24.279 D/EduVARK-HTTP(12531): --> GET http://127.0.0.1:3002/api/v1/auth/me
+11-24 20:51:24.305 D/EduVARK-HTTP(12531): <-- 200 OK http://127.0.0.1:3002/api/v1/auth/me (25ms, 185-byte body)
+11-24 20:51:24.379 D/EduVARK-HTTP(12531): --> GET http://127.0.0.1:3002/api/v1/topics?page=1&pageSize=100
+11-24 20:51:24.426 D/EduVARK-HTTP(12531): <-- 200 OK http://127.0.0.1:3002/api/v1/topics?page=1&pageSize=100 (41ms, 317-byte body)
+11-24 20:51:29.096 D/EduVARK-HTTP(12531): --> GET http://127.0.0.1:3002/api/v1/topics?page=1&pageSize=100
+11-24 20:51:29.124 D/EduVARK-HTTP(12531): <-- 200 OK http://127.0.0.1:3002/api/v1/topics?page=1&pageSize=100 (28ms, 317-byte body)
+11-24 20:51:29.162 D/EduVARK-HTTP(12531): --> GET http://127.0.0.1:3002/api/v1/lecturer/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/case
+11-24 20:51:29.177 D/EduVARK-HTTP(12531): <-- 200 OK http://127.0.0.1:3002/api/v1/lecturer/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/case (14ms, 386-byte body)
+11-24 20:51:34.232 D/EduVARK-HTTP(12531): --> GET http://127.0.0.1:3002/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7
+11-24 20:51:34.287 D/EduVARK-HTTP(12531): <-- 200 OK http://127.0.0.1:3002/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7 (53ms, 639-byte body)
+11-24 20:52:26.251 D/EduVARK-HTTP(13401): --> GET http://10.0.2.2:3000/api/v1/health
+11-24 20:52:26.276 D/EduVARK-HTTP(13401): <-- HTTP FAILED: java.net.ConnectException: Failed to connect to /10.0.2.2:3000
+11-24 20:52:34.532 D/EduVARK-HTTP(13401): --> POST http://10.0.2.2:3000/api/v1/auth/login (52-byte body)
+11-24 20:52:34.536 D/EduVARK-HTTP(13401): <-- HTTP FAILED: java.net.ConnectException: Failed to connect to /10.0.2.2:3000
+11-24 20:52:53.875 D/EduVARK-HTTP(13792): --> GET http://127.0.0.1:4199/api/v1/health
+11-24 20:52:54.053 D/EduVARK-HTTP(13792): <-- 401 Unauthorized http://127.0.0.1:4199/api/v1/health (178ms, unknown-length body)
+11-24 20:53:06.412 D/EduVARK-HTTP(13792): --> POST http://127.0.0.1:4199/api/v1/auth/login (52-byte body)
+11-24 20:53:06.423 D/EduVARK-HTTP(13792): <-- 401 Unauthorized http://127.0.0.1:4199/api/v1/auth/login (10ms, unknown-length body)
+11-24 20:53:15.677 D/EduVARK-HTTP(14149): --> GET http://10.0.2.2:3000/api/v1/health
+11-24 20:53:15.708 D/EduVARK-HTTP(14149): <-- HTTP FAILED: java.net.ConnectException: Failed to connect to /10.0.2.2:3000
+11-24 20:53:24.242 D/EduVARK-HTTP(14149): --> POST http://10.0.2.2:3000/api/v1/auth/login (52-byte body)
+11-24 20:53:24.248 D/EduVARK-HTTP(14149): <-- HTTP FAILED: java.net.ConnectException: Failed to connect to /10.0.2.2:3000
+11-24 20:53:42.173 D/EduVARK-HTTP(14552): --> GET http://127.0.0.1:4199/api/v1/health
+11-24 20:53:42.303 D/EduVARK-HTTP(14552): <-- 401 Unauthorized http://127.0.0.1:4199/api/v1/health (128ms, unknown-length body)
+11-24 20:53:51.196 D/EduVARK-HTTP(14552): --> POST http://127.0.0.1:4199/api/v1/auth/login (52-byte body)
+11-24 20:53:51.205 D/EduVARK-HTTP(14552): <-- 401 Unauthorized http://127.0.0.1:4199/api/v1/auth/login (8ms, unknown-length body)

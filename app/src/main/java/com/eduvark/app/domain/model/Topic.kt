@@ -43,6 +43,10 @@ data class Material(
     val signedUrl: String?,
     val expiresAt: String?,
     val uploadedAt: String?,
+    /** Alamat unduh tetap EduVARK untuk materi FILE (C1-02). */
+    val contentUrl: String? = null,
+    /** Alamat pembukaan tautan eksternal melalui EduVARK untuk materi LINK. */
+    val linkTargetUrl: String? = null,
 )
 
 data class UploadPayload(

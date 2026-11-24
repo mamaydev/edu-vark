@@ -27,6 +27,9 @@ class FakeCaseRepository(
     var failure: AppFailure? = null,
 ) : CaseRepository {
 
+    /** Teks yang benar-benar dikirim ke usecase (untuk memeriksa normalisasi). */
+    val submittedTexts: MutableList<String> = mutableListOf()
+
     override suspend fun getStudentCase(topicId: String): CaseStudy {
         failure?.let { throw it }
         return caseStudy ?: throw AppFailure.Unknown
@@ -34,6 +37,7 @@ class FakeCaseRepository(
 
     override suspend fun submitCase(topicId: String, answerText: String): SubmissionResult {
         failure?.let { throw it }
+        submittedTexts += answerText
         val current = caseStudy ?: throw AppFailure.Unknown
         caseStudy = current.copy(
             status = SubmissionStatus.MENUNGGU_PENILAIAN,

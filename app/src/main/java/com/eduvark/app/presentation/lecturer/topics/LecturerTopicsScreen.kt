@@ -27,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -177,7 +176,8 @@ fun LecturerTopicsScreen(
                 isSaving = state.isSaving,
                 actionError = state.actionError,
                 onSave = { title, description, published ->
-                    if (editingTopic == null) {
+                    val currentTopic = editingTopic
+                    if (currentTopic == null) {
                         pendingPublish = if (published) {
                             PendingPublish(title, state.topics.map { it.id }.toSet())
                         } else {
@@ -185,7 +185,14 @@ fun LecturerTopicsScreen(
                         }
                         viewModel.create(title, description)
                     } else {
-                        viewModel.setPublished(editingTopic.id, published)
+                        // FR-009 / DEC-002: simpan judul + deskripsi pada topik
+                        // yang sama (PATCH), bukan hanya status publikasi.
+                        viewModel.updateTopic(
+                            topicId = currentTopic.id,
+                            title = title,
+                            description = description,
+                            published = published,
+                        )
                     }
                     editorOpen = false
                     editingTopicId = null
@@ -480,8 +487,6 @@ private fun LecturerTopicCard(
             tone = if (published) TintTone.Teal else TintTone.Amber,
         )
         Spacer(Modifier.height(dimen(R.dimen.space_12)))
-        AvailabilityRow(available = topic.materialAvailable)
-        Spacer(Modifier.height(dimen(R.dimen.space_12)))
         Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_16))) {
             TextLink(
                 text = stringResource(R.string.lec_topic_link_edit),
@@ -492,50 +497,6 @@ private fun LecturerTopicCard(
                 text = stringResource(R.string.lec_topic_link_materials),
                 onClick = onMaterials,
                 color = EduTheme.colors.lavender,
-            )
-        }
-    }
-}
-
-/**
- * "V ✓  A ✓  R ✓  K —" availability row. The API only exposes one availability flag for
- * the V/A/R media, while Kinesthetic runs through the case study editor, so K stays empty.
- */
-@Composable
-private fun AvailabilityRow(available: Boolean) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_18)),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AvailabilityMark(letter = stringResource(R.string.lec_topic_letter_visual), available = available)
-        AvailabilityMark(letter = stringResource(R.string.lec_topic_letter_aural), available = available)
-        AvailabilityMark(letter = stringResource(R.string.lec_topic_letter_read_write), available = available)
-        AvailabilityMark(letter = stringResource(R.string.lec_topic_letter_kinesthetic), available = false)
-    }
-}
-
-@Composable
-private fun AvailabilityMark(letter: String, available: Boolean) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = letter,
-            style = EduTheme.type.bodySmall.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = EduTheme.colors.muted,
-            ),
-        )
-        Spacer(Modifier.size(dimen(R.dimen.space_4)))
-        if (available) {
-            Icon(
-                imageVector = EduIcons.Check,
-                contentDescription = null,
-                tint = EduTheme.colors.muted,
-                modifier = Modifier.size(dimen(R.dimen.size_13)),
-            )
-        } else {
-            Text(
-                text = stringResource(R.string.lec_topic_availability_none),
-                style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.mutedSoft),
             )
         }
     }
@@ -585,7 +546,7 @@ private fun TopicEditorState(
                 localError = null
             },
             placeholder = stringResource(R.string.lec_topic_editor_title_placeholder),
-            enabled = isCreate && !isSaving,
+            enabled = !isSaving,
             error = localError != null,
         )
         if (localError != null) {
@@ -598,13 +559,13 @@ private fun TopicEditorState(
             value = description,
             onValueChange = { description = it },
             placeholder = stringResource(R.string.lec_topic_editor_desc_placeholder),
-            enabled = isCreate && !isSaving,
+            enabled = !isSaving,
             singleLine = false,
             minHeight = dimen(R.dimen.dimen_96),
         )
         if (!isCreate) {
             FieldHelper(
-                text = stringResource(R.string.lec_topic_editor_desc_locked),
+                text = stringResource(R.string.p5_topic_editor_edit_helper),
             )
         }
         Spacer(Modifier.height(dimen(R.dimen.space_16)))
@@ -704,7 +665,7 @@ private fun TopicEditorState(
             enabled = !isSaving,
             loading = isSaving,
             onClick = {
-                if (isCreate && title.trim().isEmpty()) {
+                if (title.trim().isEmpty()) {
                     localError = titleRequiredError
                 } else {
                     onSave(title.trim(), description.trim(), published)

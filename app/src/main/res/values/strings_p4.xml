@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paket 4 — analitik dosen: kategori asal feedback, 0% vs belum feedback, Kinesthetic terpisah -->
+    <string name="p4_analytics_respondent_count">Responden: %1$d</string>
+    <string name="p4_analytics_not_responded_count">Belum merespons: %1$d</string>
+    <string name="p4_analytics_aggregation_definition">Definisi agregasi: %1$s</string>
+    <string name="p4_analytics_origin_categories">Kategori asal: %1$s</string>
+    <string name="p4_analytics_no_origin_categories">Belum ada feedback</string>
+    <string name="p4_analytics_origin_value">%1$s %2$d%%</string>
+    <string name="p4_analytics_origin_value_empty">%1$s belum diisi</string>
+    <string name="p4_analytics_zero_vs_null_note">0% dihitung sebagai respons; belum merespons (—) bukan 0%.</string>
+    <string name="p4_analytics_kinesthetic_final_count">%1$d nilai final tersimpan</string>
+    <string name="p4_analytics_kinesthetic_compat_count">Field kompatibilitas API: %1$d belum mengirim</string>
+</resources>

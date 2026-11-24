@@ -14,6 +14,9 @@ materialFilesRouter.get('/material-files', async (req, res, next) => {
       throw new AppError('SIGNED_URL_INVALID', 403, 'Tautan materi tidak valid.');
     }
     const file = await readLocalObject(key, expires, signature);
+    // Tautan transisi C1-02 tetap tidak boleh di-cache klien/proxy.
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Vary', 'Authorization');
     res.type(file.mime).send(file.buffer);
   } catch (error) {
     next(error);

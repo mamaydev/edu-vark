@@ -1,5 +1,6 @@
 package com.eduvark.app.presentation.student.materials
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -40,6 +41,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.MaterialKind
+import com.eduvark.app.domain.model.MaterialOpenEvent
+import com.eduvark.app.domain.model.MaterialOpenFailure
 import com.eduvark.app.domain.model.VarkType
 import com.eduvark.app.ui.components.ArrowTitle
 import com.eduvark.app.ui.components.CardEyebrow
@@ -72,12 +75,44 @@ import com.eduvark.app.ui.theme.dimenSp
 fun StudentMaterialsScreen(
     onBack: () -> Unit,
     onOpenTopics: () -> Unit,
+    onSessionExpired: () -> Unit,
     modifier: Modifier = Modifier,
     bottomBar: (@Composable () -> Unit)? = null,
     viewModel: StudentMaterialsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    LaunchedEffect(state.sessionExpired) {
+        if (state.sessionExpired) {
+            viewModel.onSessionExpiredHandled()
+            onSessionExpired()
+        }
+    }
+
+    // FR-015: berkas dibuka dari hasil unduhan terautentikasi; tautan eksternal
+    // dibuka di browser tanpa header Authorization.
+    LaunchedEffect(state.openEvent) {
+        val event = state.openEvent ?: return@LaunchedEffect
+        try {
+            when (event) {
+                is MaterialOpenEvent.OpenFile -> context.startActivity(
+                    Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(Uri.parse(event.contentUri), event.mime)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    },
+                )
+
+                is MaterialOpenEvent.OpenExternal -> context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse(event.url)),
+                )
+            }
+        } catch (error: ActivityNotFoundException) {
+            viewModel.onOpenDispatchFailed()
+        } finally {
+            viewModel.onOpenEventConsumed()
+        }
+    }
 
     var draft by remember { mutableStateOf<Float?>(null) }
     var saved by rememberSaveable { mutableStateOf(false) }
@@ -101,12 +136,7 @@ fun StudentMaterialsScreen(
         else -> stringResource(R.string.st_material_title_with_vark, varkTitle(vark))
     }
 
-    val open: (Material) -> Unit = { material ->
-        val url = material.signedUrl ?: material.url
-        if (!url.isNullOrBlank()) {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-        }
-    }
+    val open: (Material) -> Unit = viewModel::openMaterial
 
     EduScreen(
         title = title,
@@ -144,6 +174,14 @@ fun StudentMaterialsScreen(
             )
 
             else -> ScrollColumn(modifier = Modifier.padding(padding), spacing = dimen(R.dimen.space_0)) {
+                state.openFailure?.let { failure ->
+                    NoticeCard(
+                        title = stringResource(R.string.p2_material_open_error_title),
+                        text = stringResource(materialOpenFailureText(failure)),
+                        tone = TintTone.Danger,
+                    )
+                    Spacer(Modifier.height(dimen(R.dimen.space_12)))
+                }
                 TintBar(
                     text = stringResource(
                         R.string.st_material_topic_bar,

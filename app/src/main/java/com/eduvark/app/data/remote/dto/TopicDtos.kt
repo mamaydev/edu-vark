@@ -1,6 +1,7 @@
 package com.eduvark.app.data.remote.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class TopicDto(
@@ -47,6 +48,19 @@ data class MaterialDto(
     val signedUrl: String? = null,
     val expiresAt: String? = null,
     val uploadedAt: String? = null,
+    val contentUrl: String? = null,
+    val linkTargetUrl: String? = null,
+)
+
+@Serializable
+data class MaterialLinkTargetDto(
+    val url: String? = null,
+)
+
+@Serializable
+data class MaterialLinkTargetResponse(
+    val data: MaterialLinkTargetDto? = null,
+    val error: ApiErrorDto? = null,
 )
 
 @Serializable
@@ -80,10 +94,20 @@ data class CreateTopicRequest(
     val description: String? = null,
 )
 
+/**
+ * Body `PATCH /lecturer/topics/{id}`.
+ *
+ * [description] sengaja bertipe [JsonElement] sebelum diserialisasi: aplikasi memakai
+ * `Json { explicitNulls = false }` sehingga field nullable Kotlin bernilai null akan
+ * DIHILANGKAN dari JSON, dan dosen tidak akan bisa mengosongkan deskripsi (backend
+ * membedakan field dihilangkan vs `null`). Dengan mengirim `JsonNull` sebagai nilai
+ * non-null, JSON tetap memuat `"description": null` sehingga backend menyimpan NULL.
+ * Nilai teks dikirim sebagai `JsonPrimitive`. `null` (Kotlin) berarti field dihilangkan.
+ */
 @Serializable
 data class UpdateTopicRequest(
     val title: String? = null,
-    val description: String? = null,
+    val description: JsonElement? = null,
 )
 
 @Serializable

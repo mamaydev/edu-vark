@@ -52,12 +52,20 @@ class AnalyticsRepositoryImpl @Inject constructor(
                 notSubmittedCount = kinesthetic.notSubmittedCount,
             ),
             students = students.map { row ->
-                val vark = VarkType.fromWire(row.vark) ?: throw AppFailure.Unknown
+                // `vark` adalah kategori asal nilai tersimpan yang relevan;
+                // null berarti belum memberi feedback (bukan nilai 0%).
+                val vark = row.vark?.let { wire ->
+                    VarkType.fromWire(wire) ?: throw AppFailure.Unknown
+                }
+                val originCategories = row.originCategories.map { wire ->
+                    VarkType.fromWire(wire) ?: throw AppFailure.Unknown
+                }
                 StudentFeedback(
                     studentId = row.studentId,
                     fullName = row.fullName,
                     loginId = row.loginId,
                     vark = vark,
+                    originCategories = originCategories,
                     feedback = mapOf(
                         VarkType.VISUAL to row.feedback.visual,
                         VarkType.AURAL to row.feedback.aural,

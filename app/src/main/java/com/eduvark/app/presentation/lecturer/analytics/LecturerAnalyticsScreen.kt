@@ -44,25 +44,14 @@ import com.eduvark.app.ui.theme.EduTheme
 import com.eduvark.app.R
 import com.eduvark.app.ui.theme.dimen
 
-private val FEEDBACK_CATEGORIES = listOf(
-    VarkType.VISUAL,
-    VarkType.AURAL,
-    VarkType.READ_WRITE,
-)
-
-private const val FILTER_ALL = "ALL"
-
-private data class CategoryStat(
-    val category: VarkType,
-    val respondents: Int,
-    val mean: Double?,
-)
-
 /**
  * Analitik pemahaman kelas (mockups 29, 30 and 31).
  *
- * Per-category means are derived from the student feedback rows in the state, so the
- * three V/A/R bars stay independent of the Kinesthetic score card.
+ * Feed per kategori dihitung dari nilai feedback tersimpan pada kategori asal
+ * masing-masing, bukan dari satu label VARK mahasiswa. Nilai 0% tetap dihitung
+ * sebagai respons; mahasiswa tanpa feedback (`null`) ditampilkan "belum
+ * merespons". Metrik Kinesthetic berasal dari endpoint yang sama tetapi
+ * ditampilkan terpisah dari feedback subjektif V/A/R.
  */
 @Composable
 fun LecturerAnalyticsScreen(
@@ -73,18 +62,9 @@ fun LecturerAnalyticsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var feedbackOpen by rememberSaveable { mutableStateOf(false) }
-    var categoryFilter by rememberSaveable { mutableStateOf(FILTER_ALL) }
 
-    val students = state.allStudents
-    val stats = FEEDBACK_CATEGORIES.map { category ->
-        val values = students.mapNotNull { it.valueFor(category) }
-        CategoryStat(
-            category = category,
-            respondents = values.size,
-            mean = if (values.isEmpty()) null else values.average(),
-        )
-    }
-    val hasFeedback = stats.any { it.respondents > 0 }
+    val stats = state.categoryStats
+    val hasFeedback = state.hasFeedback
     val kinesthetic = state.analytics?.kinesthetic
 
     EduScreen(
@@ -123,13 +103,18 @@ fun LecturerAnalyticsScreen(
             }
 
             feedbackOpen -> FeedbackList(
-                students = students,
-                categoryFilter = categoryFilter,
-                onCategoryChange = { categoryFilter = it },
+                students = state.visibleStudents,
+                totalStudents = state.totalStudentCount,
+                selectedCategory = state.selectedCategory,
+                respondentCount = state.respondentCount,
+                aggregation = state.aggregationDefinition,
+                onCategoryChange = viewModel::selectCategory,
                 modifier = Modifier.padding(padding),
             )
 
             !hasFeedback -> EmptyAnalytics(
+                respondentCount = state.respondentCount,
+                aggregation = state.aggregationDefinition,
                 kinestheticMean = kinesthetic?.meanScore,
                 assessedCount = kinesthetic?.assessedCount ?: 0,
                 onPickTopic = onBack,
@@ -138,6 +123,8 @@ fun LecturerAnalyticsScreen(
 
             else -> AnalyticsMain(
                 stats = stats,
+                respondentCount = state.respondentCount,
+                aggregation = state.aggregationDefinition,
                 kinestheticMean = kinesthetic?.meanScore,
                 assessedCount = kinesthetic?.assessedCount ?: 0,
                 onOpenFeedback = { feedbackOpen = true },
@@ -149,7 +136,9 @@ fun LecturerAnalyticsScreen(
 
 @Composable
 private fun AnalyticsMain(
-    stats: List<CategoryStat>,
+    stats: List<LecturerCategoryStat>,
+    respondentCount: Int,
+    aggregation: String?,
     kinestheticMean: Double?,
     assessedCount: Int,
     onOpenFeedback: () -> Unit,
@@ -236,7 +225,21 @@ private fun AnalyticsMain(
             }
             Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = stringResource(R.string.lec_analytics_feedback_note),
+                text = stringResource(R.string.p4_analytics_respondent_count, respondentCount),
+                style = EduTheme.type.bodySmall.copy(fontWeight = FontWeight.Bold),
+            )
+            if (aggregation != null) {
+                Spacer(Modifier.height(dimen(R.dimen.space_6)))
+                Text(
+                    text = stringResource(
+                        R.string.p4_analytics_aggregation_definition,
+                        aggregation,
+                    ),
+                    style = EduTheme.type.bodySmall,
+                )
+            }
+            Text(
+                text = stringResource(R.string.p4_analytics_zero_vs_null_note),
                 style = EduTheme.type.bodySmall,
             )
             Spacer(Modifier.height(dimen(R.dimen.space_12)))
@@ -258,6 +261,8 @@ private fun AnalyticsMain(
 
 @Composable
 private fun EmptyAnalytics(
+    respondentCount: Int,
+    aggregation: String?,
     kinestheticMean: Double?,
     assessedCount: Int,
     onPickTopic: () -> Unit,
@@ -296,7 +301,7 @@ private fun EmptyAnalytics(
             )
             Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = stringResource(R.string.lec_analytics_respondents_count, 0),
+                text = stringResource(R.string.lec_analytics_respondents_count, respondentCount),
                 style = EduTheme.type.cardTitle,
             )
             Spacer(Modifier.height(dimen(R.dimen.space_6)))
@@ -304,6 +309,15 @@ private fun EmptyAnalytics(
                 text = stringResource(R.string.lec_analytics_no_feedback_message),
                 style = EduTheme.type.bodySmall,
             )
+            if (aggregation != null) {
+                Text(
+                    text = stringResource(
+                        R.string.p4_analytics_aggregation_definition,
+                        aggregation,
+                    ),
+                    style = EduTheme.type.bodySmall,
+                )
+            }
         }
 
         Spacer(Modifier.height(dimen(R.dimen.space_16)))
@@ -360,6 +374,10 @@ private fun KinestheticCard(
             },
             style = EduTheme.type.bodySmall,
         )
+        Text(
+            text = stringResource(R.string.p4_analytics_kinesthetic_final_count, assessedCount),
+            style = EduTheme.type.bodySmall,
+        )
         if (!compact) {
             Text(
                 text = stringResource(R.string.lec_analytics_not_combined),
@@ -372,21 +390,13 @@ private fun KinestheticCard(
 @Composable
 private fun FeedbackList(
     students: List<StudentFeedback>,
-    categoryFilter: String,
-    onCategoryChange: (String) -> Unit,
+    totalStudents: Int,
+    selectedCategory: VarkType?,
+    respondentCount: Int,
+    aggregation: String?,
+    onCategoryChange: (VarkType?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val selected = VarkType.fromWire(categoryFilter)
-    val visible = if (selected == null) students else students.filter { it.vark == selected }
-    val respondents = visible.count { student ->
-        val value = if (selected == null) {
-            student.valueFor(student.vark)
-        } else {
-            student.valueFor(selected)
-        }
-        value != null
-    }
-
     ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
         Eyebrow(stringResource(R.string.lec_analytics_feedback_eyebrow))
         Spacer(Modifier.height(dimen(R.dimen.space_10)))
@@ -396,7 +406,7 @@ private fun FeedbackList(
         )
         Spacer(Modifier.height(dimen(R.dimen.space_10)))
         Text(
-            text = stringResource(R.string.lec_analytics_students_count, students.size),
+            text = stringResource(R.string.lec_analytics_students_count, totalStudents),
             style = EduTheme.type.body,
         )
         Spacer(Modifier.height(dimen(R.dimen.space_18)))
@@ -407,19 +417,19 @@ private fun FeedbackList(
         val auralLabel = stringResource(R.string.lec_analytics_vark_aural)
         val readWriteLabel = stringResource(R.string.lec_analytics_vark_read_write)
         EduDropdown(
-            value = if (selected == null) {
+            value = if (selectedCategory == null) {
                 allCategoryLabel
             } else {
-                stringResource(subjectLabel(selected))
+                stringResource(subjectLabel(selectedCategory))
             },
             options = listOf(allCategoryLabel, visualLabel, auralLabel, readWriteLabel),
             onSelect = { label ->
                 onCategoryChange(
                     when (label) {
-                        visualLabel -> VarkType.VISUAL.wireValue
-                        auralLabel -> VarkType.AURAL.wireValue
-                        readWriteLabel -> VarkType.READ_WRITE.wireValue
-                        else -> FILTER_ALL
+                        visualLabel -> VarkType.VISUAL
+                        auralLabel -> VarkType.AURAL
+                        readWriteLabel -> VarkType.READ_WRITE
+                        else -> null
                     },
                 )
             },
@@ -433,7 +443,7 @@ private fun FeedbackList(
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = stringResource(R.string.lec_analytics_respondents_count, respondents),
+                text = stringResource(R.string.lec_analytics_respondents_count, respondentCount),
                 style = EduTheme.type.numeral.copy(color = EduTheme.colors.lavender),
             )
             Spacer(Modifier.height(dimen(R.dimen.space_8)))
@@ -441,43 +451,93 @@ private fun FeedbackList(
                 text = stringResource(R.string.lec_analytics_respondent_note),
                 style = EduTheme.type.bodySmall,
             )
+            if (aggregation != null) {
+                Text(
+                    text = stringResource(
+                        R.string.p4_analytics_aggregation_definition,
+                        aggregation,
+                    ),
+                    style = EduTheme.type.bodySmall,
+                )
+            }
+            Text(
+                text = stringResource(R.string.p4_analytics_zero_vs_null_note),
+                style = EduTheme.type.bodySmall,
+            )
         }
         Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-        if (visible.isEmpty()) {
+        if (students.isEmpty()) {
             NoticeCard(
                 text = stringResource(R.string.lec_analytics_no_students_notice),
                 tone = TintTone.Neutral,
             )
         } else {
-            for (student in visible) {
-                val value = if (selected == null) {
-                    student.valueFor(student.vark)
-                } else {
-                    student.valueFor(selected)
-                }
+            for (student in students) {
                 EduCard(modifier = Modifier.fillMaxWidth()) {
                     Text(text = student.fullName, style = EduTheme.type.cardTitle)
                     Spacer(Modifier.height(dimen(R.dimen.space_6)))
+                    val originLabels = mutableListOf<String>()
+                    for (category in student.originCategories) {
+                        originLabels += stringResource(subjectLabel(category))
+                    }
+                    val originLabel = if (originLabels.isEmpty()) {
+                        stringResource(R.string.p4_analytics_no_origin_categories)
+                    } else {
+                        originLabels.joinToString(", ")
+                    }
                     Text(
                         text = stringResource(
                             R.string.lec_analytics_student_meta,
                             student.loginId,
-                            stringResource(subjectLabel(student.vark)),
+                            originLabel,
                         ),
                         style = EduTheme.type.bodySmall,
                     )
                     Spacer(Modifier.height(dimen(R.dimen.space_10)))
-                    if (value == null) {
-                        Text(
-                            text = stringResource(R.string.lec_analytics_no_respond),
-                            style = EduTheme.type.headline.copy(color = EduTheme.colors.muted),
-                        )
+                    if (selectedCategory == null) {
+                        if (student.originCategories.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.lec_analytics_no_respond),
+                                style = EduTheme.type.headline.copy(color = EduTheme.colors.muted),
+                            )
+                        } else {
+                            for (category in student.originCategories) {
+                                val value = student.valueFor(category)
+                                Text(
+                                    text = if (value == null) {
+                                        stringResource(
+                                            R.string.p4_analytics_origin_value_empty,
+                                            stringResource(subjectLabel(category)),
+                                        )
+                                    } else {
+                                        stringResource(
+                                            R.string.p4_analytics_origin_value,
+                                            stringResource(subjectLabel(category)),
+                                            value,
+                                        )
+                                    },
+                                    style = EduTheme.type.numeral.copy(
+                                        color = EduTheme.colors.lavender,
+                                    ),
+                                )
+                            }
+                        }
                     } else {
-                        Text(
-                            text = stringResource(R.string.lec_analytics_percent, value),
-                            style = EduTheme.type.numeral.copy(color = EduTheme.colors.lavender),
-                        )
+                        val value = student.valueFor(selectedCategory)
+                        if (value == null) {
+                            Text(
+                                text = stringResource(R.string.lec_analytics_no_respond),
+                                style = EduTheme.type.headline.copy(color = EduTheme.colors.muted),
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(R.string.lec_analytics_percent, value),
+                                style = EduTheme.type.numeral.copy(
+                                    color = EduTheme.colors.lavender,
+                                ),
+                            )
+                        }
                     }
                 }
                 Spacer(Modifier.height(dimen(R.dimen.space_12)))

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eduvark.app.core.common.LoginIdRules
 import com.eduvark.app.domain.model.AdminAccountStatus
 import com.eduvark.app.domain.model.AdminUser
 import com.eduvark.app.domain.model.EnrollmentStatus
@@ -57,6 +58,7 @@ fun AdminUserDetailScreen(
     val user = state.user
     var fullName by rememberSaveable { mutableStateOf("") }
     var role by remember { mutableStateOf(UserRole.STUDENT) }
+    var targetLoginId by rememberSaveable { mutableStateOf("") }
     var confirmingDeactivate by rememberSaveable { mutableStateOf(false) }
     var enrollmentConfirmOpen by rememberSaveable { mutableStateOf(false) }
     var resetOpen by rememberSaveable { mutableStateOf(false) }
@@ -65,10 +67,13 @@ fun AdminUserDetailScreen(
         user?.let {
             fullName = it.fullName
             role = it.role
+            targetLoginId = ""
         }
     }
 
     val inactive = user?.status == AdminAccountStatus.INACTIVE
+    val crossingToAcademic = user?.role == UserRole.ADMIN && role != UserRole.ADMIN
+    val crossingToAdmin = user != null && user.role != UserRole.ADMIN && role == UserRole.ADMIN
     val confirming = confirmingDeactivate && user != null && !inactive
     val roleLabels = UserRole.entries.map { it.label }
     val statusLabels = AdminAccountStatus.entries.map { it.label }
@@ -174,6 +179,24 @@ fun AdminUserDetailScreen(
                         },
                         enabled = !state.isSaving,
                     )
+                    if (crossingToAcademic) {
+                        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                        FieldLabel(stringResource(R.string.p3_admin_target_login_label))
+                        EduField(
+                            value = targetLoginId,
+                            onValueChange = { targetLoginId = LoginIdRules.filterDigits(it) },
+                            placeholder = stringResource(R.string.p3_admin_target_login_label),
+                            enabled = !state.isSaving,
+                            keyboardType = KeyboardType.Number,
+                        )
+                        FieldHelper(stringResource(R.string.p3_admin_target_login_helper))
+                    } else if (crossingToAdmin) {
+                        Spacer(Modifier.height(dimen(R.dimen.space_16)))
+                        NoticeCard(
+                            text = stringResource(R.string.p3_admin_role_change_auto_note),
+                            tone = TintTone.Teal,
+                        )
+                    }
 
                     Spacer(Modifier.height(dimen(R.dimen.space_16)))
                     FieldLabel(stringResource(R.string.admin_field_status))
@@ -213,7 +236,7 @@ fun AdminUserDetailScreen(
                     Spacer(Modifier.height(dimen(R.dimen.space_20)))
                     PrimaryButton(
                         text = stringResource(R.string.admin_save_changes),
-                        onClick = { viewModel.updateProfile(fullName, role) },
+                        onClick = { viewModel.updateProfile(fullName, role, targetLoginId) },
                         enabled = !state.isSaving,
                         loading = state.isSaving,
                     )

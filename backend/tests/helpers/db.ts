@@ -2,6 +2,15 @@ import { closePool, getPool } from '../../src/db/client';
 import { hashPassword } from '../../src/lib/password';
 import type { UserRole } from '../../src/types/auth';
 
+/**
+ * Canonical Admin identity for integration tests. Admin identities are
+ * system-issued (`014014` + five digits) and the legacy `admin` username is
+ * rejected by login, so every package must create its Admin fixture with
+ * this identifier.
+ */
+export const TEST_ADMIN_LOGIN_ID = '01401400001';
+export const TEST_ADMIN_PASSWORD = 'AdminPass1234';
+
 function assertTestDatabase(): void {
   const url = process.env.DATABASE_URL;
   if (!url) {
@@ -92,6 +101,17 @@ export async function createUser(input: {
   const id = result.rows[0]?.id;
   if (!id) throw new Error('Failed to create user');
   return id;
+}
+
+export async function createAdmin(
+  input: { loginId?: string; password?: string; fullName?: string } = {},
+): Promise<string> {
+  return createUser({
+    loginId: input.loginId ?? TEST_ADMIN_LOGIN_ID,
+    password: input.password ?? TEST_ADMIN_PASSWORD,
+    role: 'ADMIN',
+    fullName: input.fullName,
+  });
 }
 
 export async function activeSessionCount(userId: string): Promise<number> {

@@ -25,10 +25,8 @@
     <!-- Login -->
     <string name="auth_hero_eyebrow">EDUVARK</string>
     <string name="auth_hero_title">Satu kelas.\nBanyak cara\nmemahami.</string>
-    <string name="auth_hero_subtitle">Implementasi Basis Data\nSemester Ganjil 2026/2027</string>
     <string name="auth_welcome_eyebrow">Selamat datang</string>
     <string name="auth_title">Masuk untuk belajar</string>
-    <string name="auth_subtitle">Gunakan akun yang diberikan oleh admin.</string>
     <string name="auth_login_id_label">NIM/NIDN</string>
     <string name="auth_login_id_placeholder">NIM / NIDN</string>
     <string name="auth_password_label">Kata sandi</string>
@@ -36,7 +34,6 @@
     <string name="auth_password_leading">kata sandi</string>
     <string name="auth_submit">Masuk</string>
     <string name="auth_submit_loading">Memproses…</string>
-    <string name="auth_login_hint">Mahasiswa dan dosen masuk dengan NIM/NIDN. Admin masuk dengan username admin.</string>
 
     <!-- Inactive account -->
     <string name="auth_inactive_status_title">Status akun</string>
@@ -87,21 +84,12 @@
     <string name="account_headline_student">Akun belajarmu</string>
     <string name="account_headline_lecturer">Akun mengajarmu</string>
     <string name="account_headline_admin">Akun admin</string>
-    <string name="account_subtitle_student">Implementasi Basis Data · Semester Ganjil 2026/2027</string>
-    <string name="account_subtitle_lecturer">Dosen pengampu IBD · Semester Ganjil 2026/2027</string>
+    <string name="account_subtitle_student">Implementasi Basis Data</string>
     <string name="account_subtitle_admin">Ruang administrasi EduVARK</string>
     <string name="account_active_status">%1$s • Akun aktif</string>
     <string name="account_session_eyebrow_vark">FORMAT SESI AKTIF</string>
-    <string name="account_session_eyebrow_access">HAK AKSES</string>
     <string name="account_session_title_student">%1$s • Terkunci</string>
-    <string name="account_session_title_lecturer">Dosen • Tanpa VARK</string>
-    <string name="account_session_title_admin">Admin • Manajemen akun</string>
     <string name="account_session_body_student">Untuk mengganti format, keluar lalu masuk kembali. Feedback kategori lain tetap tersimpan.</string>
-    <string name="account_session_body_lecturer">Staf tidak memilih format belajar. VARK hanya berlaku untuk sesi mahasiswa.</string>
-    <string name="account_session_body_admin">Admin hanya membuat, melihat, memperbarui, dan menonaktifkan akun.</string>
-    <string name="account_notice_student">Ruang belajar: satu kelas IBD untuk satu semester.</string>
-    <string name="account_notice_lecturer">Kelas yang diampu: satu kelas IBD dalam satu semester.</string>
-    <string name="account_notice_admin">Materi, feedback, dan penilaian tidak tersedia untuk role admin.</string>
     <string name="account_change_password">Ubah password</string>
     <string name="account_logout">Keluar dari akun</string>
     <string name="account_logout_note">Keluar akan mengakhiri sesi dan pilihan VARK aktif.</string>

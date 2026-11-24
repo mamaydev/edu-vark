@@ -3,13 +3,17 @@ package com.eduvark.app.presentation.student.materials
 import androidx.lifecycle.SavedStateHandle
 import com.eduvark.app.domain.error.AppFailure
 import com.eduvark.app.domain.model.VarkType
+import com.eduvark.app.domain.usecase.DownloadMaterialContentUseCase
 import com.eduvark.app.domain.usecase.GetFeedbackUseCase
+import com.eduvark.app.domain.usecase.GetMaterialLinkTargetUseCase
 import com.eduvark.app.domain.usecase.GetMaterialsUseCase
 import com.eduvark.app.domain.usecase.GetMeUseCase
 import com.eduvark.app.domain.usecase.GetTopicUseCase
 import com.eduvark.app.domain.usecase.SaveFeedbackUseCase
 import com.eduvark.app.testutil.FakeAuthRepository
 import com.eduvark.app.testutil.FakeFeedbackRepository
+import com.eduvark.app.testutil.FakeMaterialContentSource
+import com.eduvark.app.testutil.FakeMaterialFileStore
 import com.eduvark.app.testutil.FakeTopicRepository
 import com.eduvark.app.testutil.sampleMaterial
 import com.eduvark.app.testutil.sampleSession
@@ -46,6 +50,7 @@ class StudentMaterialsViewModelTest {
         topicRepository: FakeTopicRepository = FakeTopicRepository(),
         feedbackRepository: FakeFeedbackRepository = FakeFeedbackRepository(),
         activeVark: VarkType? = null,
+        materialFileStore: FakeMaterialFileStore = FakeMaterialFileStore(),
     ): StudentMaterialsViewModel = StudentMaterialsViewModel(
         savedStateHandle = SavedStateHandle(mapOf("topicId" to "topic-1")),
         getTopicUseCase = GetTopicUseCase(topicRepository),
@@ -55,6 +60,9 @@ class StudentMaterialsViewModelTest {
         ),
         getFeedbackUseCase = GetFeedbackUseCase(feedbackRepository),
         saveFeedbackUseCase = SaveFeedbackUseCase(feedbackRepository),
+        downloadMaterialContentUseCase = DownloadMaterialContentUseCase(FakeMaterialContentSource(topicRepository)),
+        getMaterialLinkTargetUseCase = GetMaterialLinkTargetUseCase(topicRepository),
+        materialFileStore = materialFileStore,
     )
 
     @Test
@@ -91,6 +99,36 @@ class StudentMaterialsViewModelTest {
 
         assertEquals(80, viewModel.state.value.feedback)
         assertEquals(80, feedback.value)
+    }
+
+    @Test
+    fun `loads stored feedback and never creates a record before explicit save`() = runTest {
+        // AT-06: slider harus memakai nilai tersimpan, tanpa menulis feedback baru
+        // saat layar dimuat.
+        val feedback = FakeFeedbackRepository(
+            value = 75,
+            updatedAt = "2026-11-20T09:30:00Z",
+        )
+        val viewModel = createViewModel(
+            topicRepository = FakeTopicRepository(
+                topics = listOf(sampleTopic(id = "topic-1")),
+                materials = listOf(sampleMaterial(topicId = "topic-1")),
+            ),
+            feedbackRepository = feedback,
+            activeVark = VarkType.VISUAL,
+        )
+        advanceUntilIdle()
+
+        assertEquals(75, viewModel.state.value.feedback)
+        assertEquals("2026-11-20T09:30:00Z", viewModel.state.value.feedbackUpdatedAt)
+        assertEquals(0, feedback.saveCalls)
+
+        viewModel.saveFeedback(90)
+        advanceUntilIdle()
+
+        assertEquals(1, feedback.saveCalls)
+        assertEquals(90, viewModel.state.value.feedback)
+        assertEquals("2026-11-20T10:00:00Z", viewModel.state.value.feedbackUpdatedAt)
     }
 
     @Test

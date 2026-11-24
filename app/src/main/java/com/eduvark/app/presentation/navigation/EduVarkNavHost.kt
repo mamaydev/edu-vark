@@ -106,7 +106,6 @@ fun EduVarkApp() {
                 onOpenGrading = { navController.openRoot(Routes.LECTURER_GRADING) },
                 onOpenAnalytics = { navController.openRoot(Routes.LECTURER_ANALYTICS_HUB) },
                 onCreateTopic = { navController.openRoot(Routes.LECTURER_TOPICS) },
-                onCreateUser = { navController.navigate(Routes.ADMIN_CREATE_USER) },
                 onOpenAdminAccounts = { navController.openRoot(Routes.ADMIN_USERS) },
                 onLoggedOut = {
                     navController.navigate(Routes.LOGIN) {
@@ -170,6 +169,12 @@ fun EduVarkApp() {
             StudentMaterialsScreen(
                 onBack = { navController.popBackStack() },
                 onOpenTopics = { navController.openRoot(Routes.STUDENT_TOPICS) },
+                onSessionExpired = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 bottomBar = { StudentShellBar(navController, StudentTab.TOPIK) },
             )
         }
@@ -180,6 +185,12 @@ fun EduVarkApp() {
         ) {
             StudentCaseScreen(
                 onBack = { navController.popBackStack() },
+                onSessionExpired = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 onOpenTopics = { navController.openRoot(Routes.STUDENT_TOPICS) },
                 onOpenHome = { navController.openRoot(Routes.HOME) },
                 bottomBar = { StudentShellBar(navController, StudentTab.TOPIK) },

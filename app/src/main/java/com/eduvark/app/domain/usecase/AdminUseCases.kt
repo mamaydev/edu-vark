@@ -30,7 +30,7 @@ class CreateAdminUserUseCase @Inject constructor(
     private val repository: AdminRepository,
 ) {
     suspend operator fun invoke(
-        loginId: String,
+        loginId: String?,
         fullName: String,
         role: UserRole,
         temporaryPassword: String,
@@ -44,7 +44,8 @@ class UpdateAdminUserUseCase @Inject constructor(
         userId: String,
         fullName: String?,
         role: UserRole?,
-    ): AdminUser = repository.updateUser(userId, fullName, role)
+        loginId: String? = null,
+    ): AdminUser = repository.updateUser(userId, fullName, role, loginId)
 }
 
 class ResetAdminPasswordUseCase @Inject constructor(

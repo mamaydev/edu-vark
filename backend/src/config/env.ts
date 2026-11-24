@@ -31,6 +31,8 @@ const EnvSchema = z
   CORS_ORIGINS: optionalString,
   LOCAL_STORAGE_DIR: optionalString,
   MAX_UPLOAD_BYTES: z.coerce.number().int().positive().max(104857600).default(104857600),
+  CLIENT_COMPATIBILITY_ENFORCE: z.enum(['0', '1']).optional(),
+  CLIENT_MIN_VERSION: z.coerce.number().int().positive().default(2),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   })
   .superRefine((env, ctx) => {

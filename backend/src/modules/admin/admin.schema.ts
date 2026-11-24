@@ -7,17 +7,23 @@ import {
 export const roleSchema = z.enum(['STUDENT', 'LECTURER', 'ADMIN']);
 export const statusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
+/**
+ * Admin identities are system-issued: the caller never supplies one. Academic
+ * accounts (students/lecturers) still require a 10–11 digit NIM/NIDN.
+ */
 export const createUserSchema = z
   .object({
-    loginId: z.string().trim().min(1).max(50),
+    loginId: z.string().trim().max(50).optional(),
     fullName: z.string().trim().min(1).max(150),
     role: roleSchema,
     temporaryPassword: z.string().min(6),
   })
   .superRefine((value, context) => {
-    // Student NIM and lecturer NIP/NIDN are always 10–11 digits. Admin
-    // accounts keep a username because they do not have an academic identity.
-    if (value.role !== 'ADMIN' && !isAcademicLoginId(value.loginId)) {
+    if (value.role === 'ADMIN') {
+      // Any caller-supplied loginId is ignored; the service allocates one.
+      return;
+    }
+    if (!value.loginId || !isAcademicLoginId(value.loginId)) {
       context.addIssue({
         code: 'custom',
         path: ['loginId'],
@@ -30,10 +36,19 @@ export const updateUserSchema = z
   .object({
     fullName: z.string().trim().min(1).max(150).optional(),
     role: roleSchema.optional(),
+    // Required when moving from ADMIN to an academic role; ignored when the
+    // target role is ADMIN because that identity is allocated automatically.
+    loginId: z.string().trim().max(50).optional(),
   })
-  .refine((value) => value.fullName !== undefined || value.role !== undefined, {
-    message: 'Minimal satu field harus diisi.',
-  });
+  .refine(
+    (value) =>
+      value.fullName !== undefined ||
+      value.role !== undefined ||
+      value.loginId !== undefined,
+    {
+      message: 'Minimal satu field harus diisi.',
+    },
+  );
 
 export const resetPasswordSchema = z.object({
   temporaryPassword: z.string().min(6),

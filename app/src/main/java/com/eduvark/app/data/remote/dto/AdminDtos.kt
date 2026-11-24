@@ -35,7 +35,8 @@ data class AdminUserResponse(
 
 @Serializable
 data class CreateAdminUserRequest(
-    val loginId: String,
+    // Admin accounts are allocated server-side (FR-036), so this is omitted for them.
+    val loginId: String? = null,
     val fullName: String,
     val role: String,
     val temporaryPassword: String,
@@ -45,6 +46,9 @@ data class CreateAdminUserRequest(
 data class UpdateAdminUserRequest(
     val fullName: String? = null,
     val role: String? = null,
+    // Required by the server when an Admin becomes a student/lecturer; ignored
+    // when the target role is ADMIN (identity allocated automatically).
+    val loginId: String? = null,
 )
 
 @Serializable

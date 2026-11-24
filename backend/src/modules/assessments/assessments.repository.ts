@@ -23,6 +23,7 @@ export interface SubmissionDetailRow {
   class_id: string;
   student_id: string;
   student_name: string;
+  enrollment_status: 'ACTIVE' | 'LEFT' | null;
   answer_text: string;
   submitted_at: Date;
   assessment_id: string | null;
@@ -150,6 +151,11 @@ export async function findSubmissionDetail(
         t.class_id,
         s.student_id,
         u.full_name AS student_name,
+        (SELECT e.status
+           FROM enrollments e
+          WHERE e.class_id = t.class_id
+            AND e.student_id = s.student_id
+          LIMIT 1) AS enrollment_status,
         s.answer_text,
         s.submitted_at,
         a.id AS assessment_id,

@@ -362,7 +362,7 @@ private fun MaterialsContent(
 
         TintBar(
             text = stringResource(
-                R.string.lec_material_chip,
+                R.string.lec_material_header_chip,
                 topic.sortOrder.toString().padStart(2, '0'),
                 topic.status.label.uppercase(),
             ),
@@ -599,13 +599,9 @@ private fun UploadForm(
             placeholder = stringResource(R.string.lec_material_form_link_placeholder),
             enabled = !isSaving,
         )
-        FieldHelper(
-            text = if (mode == SOURCE_LINK) {
-                stringResource(R.string.lec_material_form_link_helper_required)
-            } else {
-                stringResource(R.string.lec_material_form_link_helper)
-            },
-        )
+        if (mode == SOURCE_LINK) {
+            FieldHelper(text = stringResource(R.string.lec_material_form_link_helper_required))
+        }
 
         if (error != null) {
             Spacer(Modifier.height(dimen(R.dimen.space_12)))
@@ -615,12 +611,6 @@ private fun UploadForm(
             Spacer(Modifier.height(dimen(R.dimen.space_12)))
             NoticeCard(text = actionError, tone = TintTone.Danger)
         }
-
-        Spacer(Modifier.height(dimen(R.dimen.space_16)))
-        NoticeCard(
-            text = stringResource(R.string.lec_material_form_notice),
-            tone = TintTone.Primary,
-        )
 
         Spacer(Modifier.height(dimen(R.dimen.space_20)))
         PrimaryButton(
@@ -633,17 +623,6 @@ private fun UploadForm(
             loading = isSaving,
             onClick = onSubmit,
         )
-        Spacer(Modifier.height(dimen(R.dimen.space_14)))
-        EduCard(modifier = Modifier.fillMaxWidth(), radius = dimen(R.dimen.space_20), padding = dimen(R.dimen.space_18)) {
-            Text(
-                text = stringResource(R.string.lec_material_form_meta_category, categoryLabel(vark)),
-                style = EduTheme.type.bodySmall,
-            )
-            Text(
-                text = stringResource(R.string.lec_material_form_meta_uploaded),
-                style = EduTheme.type.bodySmall,
-            )
-        }
     }
 }
 

@@ -1,0 +1,7 @@
+PASS  cmd_deploy exits 1 on migration failure (actual=1)
+PASS  state.result (actual=failed_migration)
+PASS  no image switch after failed migration
+PASS  BACKEND_TAG unchanged (actual=b7b6cd6d2be1)
+PASS  old service left running
+PASS  backup happened before migration
+PASS  order: backup (line 5) before migration (line 9)

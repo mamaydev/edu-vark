@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paket 2 (FR-007/FR-014/FR-015): pembukaan materi lewat alamat tetap. -->
+    <string name="p2_material_open_error_title">Materi tidak dapat dibuka</string>
+    <string name="p2_material_open_session_expired">Sesi Anda berakhir. Silakan masuk kembali.</string>
+    <string name="p2_material_open_forbidden">Materi ini tidak tersedia lagi atau Anda tidak memiliki izin untuk membukanya.</string>
+    <string name="p2_material_open_network">Tidak dapat terhubung ke server. Periksa koneksi lalu coba lagi.</string>
+    <string name="p2_material_open_generic">Terjadi kesalahan saat membuka materi. Coba lagi.</string>
+</resources>

@@ -36,7 +36,7 @@ class LoginViewModel @Inject constructor(
     fun submit(loginId: String, password: String) {
         val trimmedLoginId = loginId.trim()
         if (trimmedLoginId.isEmpty() || password.isEmpty()) {
-            _state.update { it.copy(error = "NIM/NIP/NIDN dan password wajib diisi.") }
+            _state.update { it.copy(error = "NIM/NIDN dan password wajib diisi.") }
             return
         }
         if (!LoginIdRules.isValidLoginId(trimmedLoginId)) {

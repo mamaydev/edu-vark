@@ -1,0 +1,75 @@
+Printing with useUnmergedTree = 'false'
+Node #219 at (l=0.0, t=0.0, r=1344.0, b=2992.0)px
+ |-Node #220 at (l=0.0, t=0.0, r=1344.0, b=2992.0)px
+   IsContainer = 'true'
+   Shape = 'RectangleShape'
+    |-Node #237 at (l=0.0, t=327.0, r=1344.0, b=2992.0)px
+    | IsTraversalGroup = 'true'
+    | Shape = 'androidx.compose.foundation.VerticalScrollableClipShape@5a3fb88'
+    | VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=0.0, reverseScrolling=false)'
+    | Actions = [ScrollBy, ScrollByOffset]
+    |  |-Node #238 at (l=72.0, t=387.0, r=380.0, b=428.0)px
+    |  | Text = '[ANALITIK KELAS]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #240 at (l=72.0, t=458.0, r=873.0, b=682.0)px
+    |  | Text = '[Belum ada data
+untuk ditampilkan.]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #242 at (l=72.0, t=712.0, r=1272.0, b=838.0)px
+    |  | Text = '[Grafik akan muncul setelah mahasiswa mengirim feedback.]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #244 at (l=72.0, t=892.0, r=174.0, b=941.0)px
+    |  | Text = '[Topik]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #246 at (l=72.0, t=965.0, r=1272.0, b=1121.0)px
+    |  | Shape = 'RoundedCornerShape(topStart = CornerSize(size = 12.0.dp), topEnd = CornerSize(size = 12.0.dp), bottomEnd = CornerSize(size = 12.0.dp), bottomStart = CornerSize(size = 12.0.dp))'
+    |  | Text = '[Topik saat ini]'
+    |  | [Disabled]
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #251 at (l=132.0, t=1229.0, r=1212.0, b=1688.0)px
+    |  | Shape = 'RoundedCornerShape(topStart = CornerSize(size = 20.0.dp), topEnd = CornerSize(size = 20.0.dp), bottomEnd = CornerSize(size = 20.0.dp), bottomStart = CornerSize(size = 20.0.dp))'
+    |  |  |-Node #252 at (l=132.0, t=1229.0, r=359.0, b=1358.0)px
+    |  |  | Text = '[— %]'
+    |  |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |  |-Node #254 at (l=132.0, t=1388.0, r=445.0, b=1452.0)px
+    |  |  | Text = '[0 responden]'
+    |  |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |  |-Node #256 at (l=132.0, t=1470.0, r=965.0, b=1579.0)px
+    |  |  | Text = '[Tidak ada feedback V/A/R pada topik ini.
+Belum merespons tidak dihitung sebagai 0%.]'
+    |  |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |  |-Node #257 at (l=132.0, t=1579.0, r=1212.0, b=1688.0)px
+    |  |    Text = '[Definisi agregasi: Rerata aritmetika feedback terbaru per mahasiswa-topik-kategori.]'
+    |  |    Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #259 at (l=132.0, t=1856.0, r=1212.0, b=2195.0)px
+    |  | Shape = 'RoundedCornerShape(topStart = CornerSize(size = 20.0.dp), topEnd = CornerSize(size = 20.0.dp), bottomEnd = CornerSize(size = 20.0.dp), bottomStart = CornerSize(size = 20.0.dp))'
+    |  |  |-Node #260 at (l=132.0, t=1856.0, r=530.0, b=1920.0)px
+    |  |  | Text = '[Nilai Kinesthetic]'
+    |  |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |  |-Node #262 at (l=132.0, t=1944.0, r=629.0, b=2073.0)px
+    |  |  | Text = '[90,0 / 100]'
+    |  |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |  |-Node #264 at (l=132.0, t=2097.0, r=760.0, b=2146.0)px
+    |  |  | Text = '[Rerata 2 kiriman yang sudah dinilai.]'
+    |  |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |  |-Node #265 at (l=132.0, t=2146.0, r=509.0, b=2195.0)px
+    |  |    Text = '[2 nilai final tersimpan]'
+    |  |    Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #267 at (l=72.0, t=2309.0, r=1272.0, b=2477.0)px
+    |    Focused = 'false'
+    |    Shape = 'RoundedCornerShape(topStart = CornerSize(size = 28.0.dp), topEnd = CornerSize(size = 28.0.dp), bottomEnd = CornerSize(size = 28.0.dp), bottomStart = CornerSize(size = 28.0.dp))'
+    |    Text = '[Pilih topik lain]'
+    |    Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |    MergeDescendants = 'true'
+    |-Node #224 at (l=0.0, t=159.0, r=1344.0, b=327.0)px
+      Shape = 'RectangleShape'
+       |-Node #226 at (l=36.0, t=183.0, r=156.0, b=303.0)px
+       | ContentDescription = '[Kembali]'
+       | Focused = 'false'
+       | Shape = 'RoundedCornerShape(topStart = CornerSize(size = 50.0%), topEnd = CornerSize(size = 50.0%), bottomEnd = CornerSize(size = 50.0%), bottomStart = CornerSize(size = 50.0%))'
+       | Actions = [OnClick, RequestFocus]
+       | MergeDescendants = 'true'
+       |-Node #228 at (l=504.0, t=209.0, r=840.0, b=277.0)px
+         Text = '[Analitik kelas]'
+         Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]

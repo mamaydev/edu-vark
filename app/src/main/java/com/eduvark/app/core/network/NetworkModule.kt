@@ -45,9 +45,11 @@ object NetworkModule {
         json: Json,
         loggingInterceptor: HttpLoggingInterceptor,
         baseUrlInterceptor: BaseUrlInterceptor,
+        clientCompatibilityInterceptor: ClientCompatibilityInterceptor,
     ): RefreshApi {
         val client = OkHttpClient.Builder()
             .addInterceptor(baseUrlInterceptor)
+            .addInterceptor(clientCompatibilityInterceptor)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -69,8 +71,10 @@ object NetworkModule {
         tokenAuthenticator: TokenAuthenticator,
         loggingInterceptor: HttpLoggingInterceptor,
         baseUrlInterceptor: BaseUrlInterceptor,
+        clientCompatibilityInterceptor: ClientCompatibilityInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(baseUrlInterceptor)
+        .addInterceptor(clientCompatibilityInterceptor)
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
         .authenticator(tokenAuthenticator)

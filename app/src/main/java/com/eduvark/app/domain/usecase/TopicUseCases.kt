@@ -4,7 +4,9 @@ import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.Topic
 import com.eduvark.app.domain.model.UploadPayload
 import com.eduvark.app.domain.model.VarkType
+import com.eduvark.app.domain.repository.MaterialContentSource
 import com.eduvark.app.domain.repository.TopicRepository
+import java.io.OutputStream
 import javax.inject.Inject
 
 class GetStudentDashboardUseCase @Inject constructor(
@@ -46,11 +48,36 @@ class GetLecturerMaterialsUseCase @Inject constructor(
         repository.listLecturerMaterials(topicId)
 }
 
+class DownloadMaterialContentUseCase @Inject constructor(
+    private val source: MaterialContentSource,
+) {
+    /** Streaming isi materi ke [target] tanpa menampung seluruh byte di memori. */
+    suspend operator fun invoke(materialId: String, target: OutputStream) =
+        source.stream(materialId, target)
+}
+
+class GetMaterialLinkTargetUseCase @Inject constructor(
+    private val repository: TopicRepository,
+) {
+    suspend operator fun invoke(materialId: String): String =
+        repository.getMaterialLinkTarget(materialId)
+}
+
 class CreateTopicUseCase @Inject constructor(
     private val repository: TopicRepository,
 ) {
     suspend operator fun invoke(title: String, description: String?): Topic =
         repository.createTopic(title, description)
+}
+
+class UpdateTopicUseCase @Inject constructor(
+    private val repository: TopicRepository,
+) {
+    suspend operator fun invoke(
+        topicId: String,
+        title: String?,
+        description: String?,
+    ): Topic = repository.updateTopic(topicId, title, description)
 }
 
 class PublishTopicUseCase @Inject constructor(

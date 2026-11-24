@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,9 +26,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eduvark.app.core.text.P5TextRules
 import com.eduvark.app.domain.model.CaseStudy
 import com.eduvark.app.domain.model.Material
+import com.eduvark.app.domain.model.MaterialOpenEvent
+import com.eduvark.app.domain.model.MaterialOpenFailure
 import com.eduvark.app.domain.model.SubmissionStatus
+import com.eduvark.app.presentation.student.materials.materialOpenFailureText
 import com.eduvark.app.ui.components.ArrowTitle
 import com.eduvark.app.ui.components.CardEyebrow
 import com.eduvark.app.ui.components.EduCard
@@ -58,6 +63,7 @@ import com.eduvark.app.ui.theme.dimenSp
 fun StudentCaseScreen(
     onBack: () -> Unit,
     onOpenTopics: () -> Unit,
+    onSessionExpired: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenHome: () -> Unit = onOpenTopics,
     bottomBar: (@Composable () -> Unit)? = null,
@@ -69,16 +75,39 @@ fun StudentCaseScreen(
     var confirming by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val openMaterial: (Material) -> Unit = { material ->
-        val target = material.signedUrl ?: material.url
-        if (!target.isNullOrBlank()) {
-            try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
-            } catch (_: ActivityNotFoundException) {
-                // No PDF/file viewer installed; the link stays visible for retry.
-            }
+
+    LaunchedEffect(state.sessionExpired) {
+        if (state.sessionExpired) {
+            viewModel.onSessionExpiredHandled()
+            onSessionExpired()
         }
     }
+
+    // FR-015: FILE diunduh lewat alamat tetap terautentikasi; LINK memakai tujuan
+    // yang baru diperiksa izinnya. Tidak ada URL storage langsung di klien.
+    LaunchedEffect(state.openEvent) {
+        val event = state.openEvent ?: return@LaunchedEffect
+        try {
+            when (event) {
+                is MaterialOpenEvent.OpenFile -> context.startActivity(
+                    Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(Uri.parse(event.contentUri), event.mime)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    },
+                )
+
+                is MaterialOpenEvent.OpenExternal -> context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse(event.url)),
+                )
+            }
+        } catch (error: ActivityNotFoundException) {
+            viewModel.onOpenDispatchFailed()
+        } finally {
+            viewModel.onOpenEventConsumed()
+        }
+    }
+
+    val openMaterial: (Material) -> Unit = viewModel::openMaterial
     val status = caseStudy?.status
     val screenTitle = when (status) {
         SubmissionStatus.MENUNGGU_PENILAIAN, SubmissionStatus.TIDAK_MENGUMPULKAN ->
@@ -153,9 +182,14 @@ fun StudentCaseScreen(
                 topicTitle = state.topicTitle.orEmpty(),
                 topicOrder = state.topicOrder,
                 materials = state.materials,
+                materialsFailed = state.materialsFailed,
+                openFailure = state.openFailure,
+                onReloadMaterials = viewModel::reloadMaterials,
                 onOpenMaterial = openMaterial,
                 answer = answer,
-                onAnswerChange = { if (it.length <= 10000) answer = it },
+                // Jangan blokir diam-diam: biarkan pengguna melihat counter
+                // melewati batas, validasi tetap di VM + API (C1-04).
+                onAnswerChange = { answer = it },
                 submitError = state.submitError,
                 onNext = { confirming = true },
                 modifier = Modifier.padding(padding),
@@ -176,6 +210,9 @@ private fun AnswerEditor(
     topicTitle: String,
     topicOrder: Int?,
     materials: List<Material>,
+    materialsFailed: Boolean,
+    openFailure: MaterialOpenFailure?,
+    onReloadMaterials: () -> Unit,
     onOpenMaterial: (Material) -> Unit,
     answer: String,
     onAnswerChange: (String) -> Unit,
@@ -184,6 +221,8 @@ private fun AnswerEditor(
     modifier: Modifier = Modifier,
 ) {
     val topicFallback = stringResource(R.string.st_case_topic_default)
+    val answerLength = P5TextRules.answerLength(answer)
+    val answerTooLong = answerLength > P5TextRules.MAX_ANSWER_CODE_POINTS
     ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
         TintBar(text = topicLabel(topicOrder), uppercase = true)
         Spacer(Modifier.height(dimen(R.dimen.space_18)))
@@ -192,9 +231,59 @@ private fun AnswerEditor(
         DeadlinePanel(caseStudy)
         Spacer(Modifier.height(dimen(R.dimen.space_16)))
 
-        if (materials.isNotEmpty()) {
-            SupportingMaterials(materials = materials, onOpen = onOpenMaterial)
+        if (openFailure != null) {
+            NoticeCard(
+                title = stringResource(R.string.p2_material_open_error_title),
+                text = stringResource(materialOpenFailureText(openFailure)),
+                tone = TintTone.Danger,
+            )
             Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        }
+
+        when {
+            // C1-03: error muat materi != materi belum tersedia.
+            materialsFailed -> {
+                EduCard(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.st_case_supporting_title),
+                        style = EduTheme.type.cardTitle,
+                    )
+                    Spacer(Modifier.height(dimen(R.dimen.space_6)))
+                    NoticeCard(
+                        text = stringResource(R.string.p5_case_materials_error),
+                        tone = TintTone.Danger,
+                    )
+                    Spacer(Modifier.height(dimen(R.dimen.space_8)))
+                    TextLink(
+                        text = stringResource(R.string.p5_case_materials_retry),
+                        onClick = onReloadMaterials,
+                        color = EduTheme.colors.lavenderDim,
+                    )
+                }
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+            }
+
+            // FR-016: materi pendukung kosong tetap menampilkan studi kasus,
+            // dengan pesan persis sesuai SRS.
+            materials.isEmpty() -> {
+                EduCard(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.st_case_supporting_title),
+                        style = EduTheme.type.cardTitle,
+                    )
+                    Spacer(Modifier.height(dimen(R.dimen.space_6)))
+                    Text(
+                        text = stringResource(R.string.p5_case_supporting_empty),
+                        style = EduTheme.type.body,
+                    )
+                }
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+            }
+
+            else -> {
+                SupportingMaterials(materials = materials, onOpen = onOpenMaterial)
+                Spacer(Modifier.height(dimen(R.dimen.space_16)))
+            }
         }
 
         EduCard(modifier = Modifier.fillMaxWidth()) {
@@ -224,9 +313,16 @@ private fun AnswerEditor(
             )
             Spacer(Modifier.height(dimen(R.dimen.space_8)))
             Text(
-                text = stringResource(R.string.st_case_answer_counter, answer.length),
+                text = stringResource(R.string.st_case_answer_counter, answerLength),
                 style = EduTheme.type.meta,
             )
+            if (answerTooLong) {
+                Spacer(Modifier.height(dimen(R.dimen.space_6)))
+                Text(
+                    text = stringResource(R.string.p5_case_answer_too_long),
+                    style = EduTheme.type.meta.copy(color = EduTheme.colors.dangerMuted),
+                )
+            }
         }
 
         if (submitError != null) {
@@ -243,7 +339,7 @@ private fun AnswerEditor(
         PrimaryButton(
             text = stringResource(R.string.st_case_submit),
             onClick = onNext,
-            enabled = answer.trim().isNotEmpty(),
+            enabled = answerLength in 1..P5TextRules.MAX_ANSWER_CODE_POINTS,
         )
         Spacer(Modifier.height(dimen(R.dimen.space_12)))
         Text(text = stringResource(R.string.st_case_answer_hint), style = EduTheme.type.bodySmall)
@@ -339,7 +435,7 @@ private fun ConfirmSubmission(
             Text(text = topicTitle.ifBlank { topicFallback }, style = EduTheme.type.headline)
             Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = stringResource(R.string.st_case_confirm_ready, answer.trim().length),
+                text = stringResource(R.string.st_case_confirm_ready, P5TextRules.answerLength(answer)),
                 style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.lime, fontWeight = FontWeight.Bold),
             )
             Spacer(Modifier.height(dimen(R.dimen.space_8)))
@@ -436,7 +532,7 @@ private fun WaitingCase(
             )
             Spacer(Modifier.height(dimen(R.dimen.space_10)))
             Text(
-                text = stringResource(R.string.st_case_waiting_answer_meta, caseStudy.answer?.length ?: 0),
+                text = stringResource(R.string.st_case_waiting_answer_meta, P5TextRules.answerLength(caseStudy.answer.orEmpty())),
                 style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.lime),
             )
             if (!caseStudy.answer.isNullOrBlank()) {

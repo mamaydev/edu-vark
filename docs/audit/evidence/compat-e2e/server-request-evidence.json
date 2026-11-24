@@ -1,0 +1,1520 @@
+{
+  "generatedAt": "2026-11-24T13:54:36.626Z",
+  "note": "Potongan entri log pino backend yang benar-benar diterima server saat pengujian real-screen di emulator. Tidak menyertakan token. Semua request berasal dari emulator via adb reverse 127.0.0.1.",
+  "newBackendOldApk": [
+    {
+      "time": "2026-11-24T13:41:45.852Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "644",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "53"
+    },
+    {
+      "time": "2026-11-24T13:41:45.864Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 401,
+      "responseBytes": "156",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "47"
+    },
+    {
+      "time": "2026-11-24T13:41:45.903Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:41:50.477Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:41:50.574Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:41:50.638Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 428,
+      "responseBytes": "138",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:41:50.662Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 428,
+      "responseBytes": "138",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:41:50.717Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "2051",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:01.385Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:42:01.513Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:42:01.631Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "393",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:01.671Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 200,
+      "responseBytes": "51",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:01.722Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "2051",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:04.679Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:42:04.767Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "2051",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:04.792Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "2051",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:43:06.489Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "644",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "53"
+    },
+    {
+      "time": "2026-11-24T13:43:06.754Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "186",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:43:06.834Z",
+      "method": "GET",
+      "url": "/api/v1/admin/users?page=1&pageSize=100",
+      "status": 200,
+      "responseBytes": "1668",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:43:29.938Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:43:57.571Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "197",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:44:08.386Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "197",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:44:17.693Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "393",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:44:58.102Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:45:04.355Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "192",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:45:17.287Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "192",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:45:26.271Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 404,
+      "responseBytes": "178",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:45:26.327Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "192",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:45:42.442Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "192",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:45:44.476Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "388",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:45:44.618Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "192",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:46:26.142Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:46:26.546Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "185",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:47:02.269Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "2051",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:47:34.315Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:47:46.969Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "192",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:47:58.225Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "192",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:48:07.591Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "388",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:48:07.677Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "192",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:48:16.342Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 200,
+      "responseBytes": "51",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:48:48.411Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:48:48.616Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "185",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:49:04.662Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "2051",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:49:28.020Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "644",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "53"
+    },
+    {
+      "time": "2026-11-24T13:49:28.216Z",
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "responseBytes": "186",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:49:28.256Z",
+      "method": "GET",
+      "url": "/api/v1/admin/users?page=1&pageSize=100",
+      "status": 200,
+      "responseBytes": "1668",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    }
+  ],
+  "newBackendNewApk": [
+    {
+      "time": "2026-11-24T13:41:45.852Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "644",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "53"
+    },
+    {
+      "time": "2026-11-24T13:41:45.864Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 401,
+      "responseBytes": "156",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "47"
+    },
+    {
+      "time": "2026-11-24T13:41:45.903Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:41:50.477Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:41:50.574Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:41:50.638Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 428,
+      "responseBytes": "138",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:41:50.662Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 428,
+      "responseBytes": "138",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:01.385Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:42:01.513Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:42:01.631Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "393",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:01.671Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 200,
+      "responseBytes": "51",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:04.679Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:43:06.489Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "644",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "53"
+    },
+    {
+      "time": "2026-11-24T13:43:29.938Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:44:17.693Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "393",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:44:58.102Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:45:26.271Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 404,
+      "responseBytes": "178",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:45:44.476Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "388",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:46:26.142Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:47:34.315Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:48:07.591Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "388",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:48:16.342Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 200,
+      "responseBytes": "51",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:48:48.411Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:49:28.020Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "644",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "53"
+    }
+  ],
+  "oldBackendNewApk": [
+    {
+      "time": "2026-11-24T13:41:45.984Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "635",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "47"
+    },
+    {
+      "time": "2026-11-24T13:41:45.998Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 401,
+      "responseBytes": "156",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "53"
+    },
+    {
+      "time": "2026-11-24T13:41:50.528Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:41:50.619Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:41:50.676Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 404,
+      "responseBytes": "138",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:41:50.760Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "459",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:01.457Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:42:01.569Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:42:01.652Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "507",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:01.690Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 404,
+      "responseBytes": "138",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:01.783Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "457",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:04.735Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:42:04.815Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "457",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:42:04.843Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "457",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:50:03.352Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 401,
+      "responseBytes": "156",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "53"
+    },
+    {
+      "time": "2026-11-24T13:50:27.268Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "648",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:50:52.676Z",
+      "method": "GET",
+      "url": "/api/v1/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7/materials",
+      "status": 200,
+      "responseBytes": "502",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:51:00.541Z",
+      "method": "GET",
+      "url": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+      "status": 404,
+      "responseBytes": "138",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:51:23.989Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:51:34.208Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "639",
+      "userAgent": "okhttp/4.12.0",
+      "requestHeaders": [
+        "accept-encoding",
+        "authorization",
+        "connection",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    },
+    {
+      "time": "2026-11-24T13:51:51.660Z",
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "responseBytes": "647",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": false,
+      "contentLength": "52"
+    },
+    {
+      "time": "2026-11-24T13:51:51.690Z",
+      "method": "GET",
+      "url": "/api/v1/lecturer/analytics/topics/a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+      "status": 200,
+      "responseBytes": "639",
+      "userAgent": "curl/8.7.1",
+      "requestHeaders": [
+        "accept",
+        "authorization",
+        "host",
+        "user-agent"
+      ],
+      "authorizationPresent": true
+    }
+  ]
+}

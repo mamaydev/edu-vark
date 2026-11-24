@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eduvark.app.core.text.P5TextRules
 import com.eduvark.app.domain.model.SubmissionDetail
 import com.eduvark.app.domain.model.SubmissionStatus
 import com.eduvark.app.ui.components.CardEyebrow
@@ -67,6 +68,7 @@ fun LecturerGradeScreen(
     var comment by rememberSaveable { mutableStateOf("") }
     var confirming by rememberSaveable { mutableStateOf(false) }
     var validationError by rememberSaveable { mutableStateOf<String?>(null) }
+    var commentError by rememberSaveable { mutableStateOf<String?>(null) }
     var answerExpanded by rememberSaveable { mutableStateOf(false) }
     var lockedAnswerOpen by rememberSaveable { mutableStateOf(false) }
 
@@ -74,7 +76,8 @@ fun LecturerGradeScreen(
         if (locked) confirming = false
     }
 
-    val scoreRangeError = stringResource(R.string.lec_assess_error_score_range)
+    val scoreError = stringResource(R.string.p5_assess_error_score_integer)
+    val commentErrorText = stringResource(R.string.p5_assess_error_comment_length)
     val screenTitle = when {
         locked -> stringResource(R.string.lec_assess_title_locked)
         confirming -> stringResource(R.string.lec_assess_title_confirm)
@@ -122,14 +125,19 @@ fun LecturerGradeScreen(
 
             confirming -> ConfirmGrade(
                 detail = detail,
-                score = scoreText.toIntOrNull() ?: 0,
+                score = P5TextRules.parseScore(scoreText) ?: 0,
                 comment = comment,
                 isSaving = state.isSaving,
                 saveError = state.saveError,
                 onConfirm = {
-                    val score = scoreText.toIntOrNull()
-                    if (score == null || score !in 0..100) {
-                        validationError = scoreRangeError
+                    // Validasi ulang sebelum menyimpan; nilai tidak pernah
+                    // dibulatkan/dipotong diam-diam (FR-043).
+                    val score = P5TextRules.parseScore(scoreText)
+                    if (score == null) {
+                        validationError = scoreError
+                        confirming = false
+                    } else if (!P5TextRules.isCommentLengthValid(comment)) {
+                        commentError = commentErrorText
                         confirming = false
                     } else {
                         viewModel.save(score, comment)
@@ -143,22 +151,29 @@ fun LecturerGradeScreen(
                 detail = detail,
                 scoreText = scoreText,
                 onScoreChange = { value ->
-                    scoreText = value.filter { it.isDigit() }.take(3)
+                    scoreText = value
                     validationError = null
                 },
                 comment = comment,
-                onCommentChange = { comment = it.take(1000) },
+                onCommentChange = { value ->
+                    comment = value
+                    commentError = null
+                },
                 answerExpanded = answerExpanded,
                 onToggleAnswer = { answerExpanded = !answerExpanded },
                 validationError = validationError,
+                commentError = commentError,
                 saveError = state.saveError,
                 isSaving = state.isSaving,
                 onReview = {
-                    val score = scoreText.toIntOrNull()
-                    if (score == null || score !in 0..100) {
-                        validationError = scoreRangeError
+                    val score = P5TextRules.parseScore(scoreText)
+                    validationError = if (score == null) scoreError else null
+                    commentError = if (P5TextRules.isCommentLengthValid(comment)) {
+                        null
                     } else {
-                        validationError = null
+                        commentErrorText
+                    }
+                    if (score != null && commentError == null) {
                         confirming = true
                     }
                 },
@@ -178,6 +193,7 @@ private fun GradeForm(
     answerExpanded: Boolean,
     onToggleAnswer: () -> Unit,
     validationError: String?,
+    commentError: String?,
     saveError: String?,
     isSaving: Boolean,
     onReview: () -> Unit,
@@ -254,7 +270,16 @@ private fun GradeForm(
             minHeight = dimen(R.dimen.dimen_120),
             enabled = !isSaving,
         )
-        FieldHelper(text = stringResource(R.string.lec_assess_comment_counter, comment.length))
+        FieldHelper(
+            text = stringResource(
+                R.string.lec_assess_comment_counter,
+                P5TextRules.commentLength(comment),
+            ),
+            isError = commentError != null,
+        )
+        if (commentError != null) {
+            FieldHelper(text = commentError, isError = true)
+        }
 
         if (saveError != null) {
             Spacer(Modifier.height(dimen(R.dimen.space_12)))

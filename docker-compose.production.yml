@@ -7,6 +7,9 @@ services:
       - ./backend/.env.production
     environment:
       NODE_ENV: production
+      # Guard rilis: APK baseline (tanpa header versi) ditolak 426.
+      CLIENT_COMPATIBILITY_ENFORCE: "1"
+      CLIENT_MIN_VERSION: "2"
       PORT: 3000
     ports:
       - "${API_PORT:-3000}:3000"

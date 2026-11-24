@@ -1,0 +1,12 @@
+PASS  cmd_deploy exits 1 when smoke fails (actual=1)
+PASS  state.result (actual=failed_smoke)
+PASS  auto-rollback restored BACKEND_TAG (actual=b7b6cd6d2be1)
+PASS  rollback attempted
+PASS  rollback image healthy
+PASS  two image switches (new then rollback) (actual=2)
+PASS  first switch uses new image d3aed78abcfe
+PASS  rollback switch uses previous image b7b6cd6d2be1
+PASS  rollback performed no database restore (actual=0)
+PASS  no volume teardown
+PASS  public health failure only warns
+PASS  public health probed 10x while edge closed (actual=10)

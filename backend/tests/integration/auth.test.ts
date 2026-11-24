@@ -9,9 +9,12 @@ import { resetPasswordChangeThrottle } from '../../src/lib/password-change-throt
 import {
   activeSessionCount,
   closeDb,
+  createAdmin,
   createClass,
   createUser,
   resetDb,
+  TEST_ADMIN_LOGIN_ID,
+  TEST_ADMIN_PASSWORD,
 } from '../helpers/db';
 
 const app = createApp();
@@ -99,14 +102,10 @@ describeDb('auth integration', () => {
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
-    await createUser({
-      loginId: 'admin',
-      password: 'AdminPass1234',
-      role: 'ADMIN',
-    });
+    await createAdmin();
 
     const lecturer = await loginOk('1990010001', 'LecturerPass123');
-    const admin = await loginOk('admin', 'AdminPass1234');
+    const admin = await loginOk(TEST_ADMIN_LOGIN_ID, TEST_ADMIN_PASSWORD);
     expect(lecturer.varkRequired).toBe(false);
     expect(admin.varkRequired).toBe(false);
 
@@ -236,13 +235,9 @@ describeDb('auth integration', () => {
   });
 
   it('rejects VARK selection for staff', async () => {
-    await createUser({
-      loginId: 'admin',
-      password: 'AdminPass1234',
-      role: 'ADMIN',
-    });
+    await createAdmin();
 
-    const data = await loginOk('admin', 'AdminPass1234');
+    const data = await loginOk(TEST_ADMIN_LOGIN_ID, TEST_ADMIN_PASSWORD);
 
     const response = await request(app)
       .post('/api/v1/auth/vark')

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Login identifier (FR-001/036) -->
+    <string name="p3_login_helper_digits">Hanya angka 0–9, maksimal 11 digit.</string>
+    <string name="p3_login_submit_hint">Masukkan NIM/NIDN 10–11 digit untuk melanjutkan.</string>
+
+    <!-- Admin account identity (FR-034/036) -->
+    <string name="p3_admin_login_id_label">NIM/NIDN</string>
+    <string name="p3_admin_login_id_placeholder">NIM / NIDN</string>
+    <string name="p3_admin_login_helper_digits">NIM/NIDN wajib 10–11 digit angka (0–9).</string>
+    <string name="p3_admin_auto_id_note">ID Admin dibuat otomatis oleh sistem: 11 digit angka berawalan 014014.</string>
+    <string name="p3_admin_target_login_label">NIM/NIDN tujuan</string>
+    <string name="p3_admin_target_login_helper">Wajib 10–11 digit angka dan belum dipakai akun lain.</string>
+    <string name="p3_admin_role_change_auto_note">Perubahan role ke Admin memakai ID otomatis dari sistem.</string>
+</resources>

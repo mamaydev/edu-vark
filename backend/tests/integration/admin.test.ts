@@ -3,10 +3,12 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { resetLoginThrottle } from '../../src/lib/login-throttle';
 import {
+  createAdmin,
   closeDb,
   createClass,
-  createUser,
   resetDb,
+  TEST_ADMIN_LOGIN_ID,
+  TEST_ADMIN_PASSWORD,
 } from '../helpers/db';
 
 const app = createApp();
@@ -29,12 +31,8 @@ function bearer(token: string): string {
 }
 
 async function adminLogin(): Promise<{ token: string; userId: string }> {
-  const userId = await createUser({
-    loginId: 'admin',
-    password: 'AdminPass1234',
-    role: 'ADMIN',
-  });
-  const data = await login('admin', 'AdminPass1234');
+  const userId = await createAdmin();
+  const data = await login(TEST_ADMIN_LOGIN_ID, TEST_ADMIN_PASSWORD);
   return { token: data.accessToken, userId };
 }
 
@@ -254,14 +252,10 @@ describeDb('admin integration', () => {
 
   it('refuses to create a student without an active class', async () => {
     await resetDb();
-    const adminId = await createUser({
-      loginId: 'admin2',
-      password: 'AdminPass1234',
-      role: 'ADMIN',
-    });
+    const adminId = await createAdmin();
     expect(adminId).toBeTruthy();
 
-    const admin = await login('admin2', 'AdminPass1234');
+    const admin = await login(TEST_ADMIN_LOGIN_ID, TEST_ADMIN_PASSWORD);
 
     const response = await request(app)
       .post('/api/v1/admin/users')

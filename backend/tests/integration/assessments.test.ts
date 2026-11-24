@@ -3,7 +3,15 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { getPool } from '../../src/db/client';
 import { resetLoginThrottle } from '../../src/lib/login-throttle';
-import { closeDb, createClass, createUser, resetDb } from '../helpers/db';
+import {
+  TEST_ADMIN_LOGIN_ID,
+  TEST_ADMIN_PASSWORD,
+  closeDb,
+  createAdmin,
+  createClass,
+  createUser,
+  resetDb,
+} from '../helpers/db';
 import {
   createEnrollment,
   createTeachingAssignment,
@@ -82,11 +90,7 @@ describeDb('assessment integration', () => {
       password: 'LecturerPass123',
       role: 'LECTURER',
     });
-    await createUser({
-      loginId: 'admin',
-      password: 'AdminPass1234',
-      role: 'ADMIN',
-    });
+    await createAdmin();
     await createTeachingAssignment(classId, lecturerId);
     await createStudent('2025000001');
     await createStudent('2025000002');
@@ -326,7 +330,7 @@ describeDb('assessment integration', () => {
       .expect(403);
     expect(studentGrade.body.error.code).toBe('FORBIDDEN');
 
-    const admin = await loginAs(app, 'admin', 'AdminPass1234');
+    const admin = await loginAs(app, TEST_ADMIN_LOGIN_ID, TEST_ADMIN_PASSWORD);
     const adminRead = await request(app)
       .get('/api/v1/submissions/' + submissionId)
       .set('Authorization', bearer(admin.accessToken))

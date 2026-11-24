@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Login identifier (FR-001/036) -->
+    <string name="p3_login_helper_digits">Digits 0–9 only, up to 11 digits.</string>
+    <string name="p3_login_submit_hint">Enter a 10–11 digit NIM/NIDN to continue.</string>
+
+    <!-- Admin account identity (FR-034/036) -->
+    <string name="p3_admin_login_id_label">NIM/NIDN</string>
+    <string name="p3_admin_login_id_placeholder">NIM / NIDN</string>
+    <string name="p3_admin_login_helper_digits">NIM/NIDN must be 10–11 digits (0–9).</string>
+    <string name="p3_admin_auto_id_note">Admin IDs are issued automatically: 11 digits starting with 014014.</string>
+    <string name="p3_admin_target_login_label">Target NIM/NIDN</string>
+    <string name="p3_admin_target_login_helper">Required, 10–11 digits, and not used by another account.</string>
+    <string name="p3_admin_role_change_auto_note">Changing the role to Admin uses a system-issued ID.</string>
+</resources>

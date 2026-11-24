@@ -1,0 +1,95 @@
+{
+  "generatedAt": "2026-11-24T13:54:43.551Z",
+  "purpose": "Membuktikan apakah client lama (b7b6cd6) dan client baru dapat dibedakan backend dari request yang dikirim, untuk menilai kelayakan minimum-version gate.",
+  "artifacts": {
+    "oldApk": {
+      "path": "/tmp/eduvark-oldapp2/app/build/outputs/apk/debug/app-debug.apk",
+      "versionCode": 1,
+      "versionName": "1.0.0",
+      "package": "com.eduvark.app.debug",
+      "sizeBytes": 15096273,
+      "sha256": "9b5756a08f7479e727155d17e3554fb279bdc1321cbd3e69edba4f29eaf6a113"
+    },
+    "newApk": {
+      "path": "app/build/outputs/apk/debug/app-debug.apk",
+      "versionCode": 1,
+      "versionName": "1.0.0",
+      "package": "com.eduvark.app.debug",
+      "sizeBytes": 15637636,
+      "sha256": "164912fa239f9862f071d6436140a9b0323a06fd90fb6cf1c1e2d56f70f3f59f"
+    },
+    "captureTool": "node /tmp/header-capture.js pada 127.0.0.1:4199, adb reverse tcp:4199; setiap APK diarahkan ke http://127.0.0.1:4199/api/v1/ dan melakukan satu percobaan login."
+  },
+  "observedIdenticalHeaderSet": [
+    "host",
+    "connection",
+    "accept-encoding",
+    "user-agent",
+    "content-type",
+    "content-length"
+  ],
+  "userAgentBothApks": "okhttp/4.12.0",
+  "appVersionHeaderSent": false,
+  "loginRequestBodyOldApk": "{\"loginId\":\"2025000001\",\"password\":\"[REDACTED]\"}",
+  "loginRequestBodyNewApk": "{\"loginId\":\"2025000001\",\"password\":\"[REDACTED]\"}",
+  "oldApkCapturedRequests": [
+    {
+      "request": "GET /api/v1/health",
+      "headers": {
+        "host": "127.0.0.1:4199",
+        "connection": "Keep-Alive",
+        "accept-encoding": "gzip",
+        "user-agent": "okhttp/4.12.0"
+      },
+      "body": ""
+    },
+    {
+      "request": "POST /api/v1/auth/login",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "content-length": "52",
+        "host": "127.0.0.1:4199",
+        "connection": "Keep-Alive",
+        "accept-encoding": "gzip",
+        "user-agent": "okhttp/4.12.0"
+      },
+      "body": "{\"loginId\":\"2025000001\",\"password\":\"[REDACTED]\"}"
+    }
+  ],
+  "newApkCapturedRequests": [
+    {
+      "request": "GET /api/v1/health",
+      "headers": {
+        "host": "127.0.0.1:4199",
+        "connection": "Keep-Alive",
+        "accept-encoding": "gzip",
+        "user-agent": "okhttp/4.12.0"
+      },
+      "body": ""
+    },
+    {
+      "request": "POST /api/v1/auth/login",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "content-length": "52",
+        "host": "127.0.0.1:4199",
+        "connection": "Keep-Alive",
+        "accept-encoding": "gzip",
+        "user-agent": "okhttp/4.12.0"
+      },
+      "body": "{\"loginId\":\"2025000001\",\"password\":\"[REDACTED]\"}"
+    }
+  ],
+  "backendGateCheck": {
+    "source": "backend/src",
+    "middlewareFiles": [
+      "auth.ts",
+      "error-handler.ts",
+      "not-found.ts",
+      "request-id.ts"
+    ],
+    "versionGateCode": null,
+    "grep": "tidak ditemukan penanganan client-version/min-version/User-Agent sebagai gate; satu-satunya \"version\" adalah label rute v1 pada routes.ts/health."
+  },
+  "conclusion": "versionCode kedua APK sama (1) dan APK hanya berbeda pada artefak APK (hash/ukuran) yang tidak dikirim ke backend; header permintaan kedua klien identik (UA okhttp/4.12.0) dan tidak ada header versi aplikasi. Backend tidak memiliki kode gate versi. Karena itu client lama dan baru TIDAK dapat dibedakan oleh backend dari request, sehingga minimum-version gate berbasis versionCode/header TIDAK RELIABLE dan tidak boleh diklaim sebagai kontrol cutover. Wajib coordinated maintenance: blokir trafik client lama sebelum switch backend, verifikasi pasangan APK/API yang kompatibel, lalu buka kembali."
+}

@@ -31,6 +31,7 @@ class FakeAuthRepository(
     var selectVarkResult: VarkType = VarkType.VISUAL,
     var selectVarkFailure: AppFailure? = null,
     var changePasswordFailure: AppFailure? = null,
+    var logoutFailure: AppFailure? = null,
 ) : AuthRepository {
 
     override suspend fun login(loginId: String, password: String): AuthSession {
@@ -38,7 +39,12 @@ class FakeAuthRepository(
         return loginResult
     }
 
-    override suspend fun logout() = Unit
+    var logoutCalls = 0
+
+    override suspend fun logout() {
+        logoutCalls += 1
+        logoutFailure?.let { throw it }
+    }
 
     override suspend fun me(): UserProfile = loginResult.user
 

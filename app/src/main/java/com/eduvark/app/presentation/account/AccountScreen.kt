@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eduvark.app.BuildConfig
-import com.eduvark.app.domain.model.UserProfile
 import com.eduvark.app.domain.model.UserRole
 import com.eduvark.app.ui.components.AdminBottomBar
 import com.eduvark.app.ui.components.AdminTab
@@ -118,8 +117,19 @@ fun AccountScreen(
                 Eyebrow(user.role.label)
                 Spacer(Modifier.height(dimen(R.dimen.space_10)))
                 Text(text = accountHeadline(user.role), style = EduTheme.type.display)
-                Spacer(Modifier.height(dimen(R.dimen.space_10)))
-                Text(text = accountSubtitle(user.role), style = EduTheme.type.body)
+                if (user.role != UserRole.LECTURER) {
+                    Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                    Text(
+                        text = stringResource(
+                            if (user.role == UserRole.STUDENT) {
+                                R.string.account_subtitle_student
+                            } else {
+                                R.string.account_subtitle_admin
+                            },
+                        ),
+                        style = EduTheme.type.body,
+                    )
+                }
                 Spacer(Modifier.height(dimen(R.dimen.space_22)))
 
                 EduCard(modifier = Modifier.fillMaxWidth()) {
@@ -134,33 +144,35 @@ fun AccountScreen(
                         contentColor = EduTheme.colors.lime,
                     )
                 }
-
                 Spacer(Modifier.height(dimen(R.dimen.space_16)))
-                HeroCard(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = if (user.role == UserRole.STUDENT) {
-                            stringResource(R.string.account_session_eyebrow_vark)
-                        } else {
-                            stringResource(R.string.account_session_eyebrow_access)
-                        },
-                        style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.72f)),
-                    )
-                    Spacer(Modifier.height(dimen(R.dimen.space_10)))
-                    Text(
-                        text = sessionTitle(user),
-                        style = EduTheme.type.headline.copy(color = EduTheme.colors.onBrand, fontSize = dimenSp(R.dimen.text_size_24)),
-                    )
-                    Spacer(Modifier.height(dimen(R.dimen.space_10)))
-                    Text(
-                        text = sessionBody(user),
-                        style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.9f)),
-                    )
+
+                if (user.role == UserRole.STUDENT) {
+                    HeroCard(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = stringResource(R.string.account_session_eyebrow_vark),
+                            style = EduTheme.type.eyebrow.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.72f)),
+                        )
+                        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                        Text(
+                            text = stringResource(
+                                R.string.account_session_title_student,
+                                user.activeVark?.label ?: stringResource(R.string.common_vark),
+                            ),
+                            style = EduTheme.type.headline.copy(
+                                color = EduTheme.colors.onBrand,
+                                fontSize = dimenSp(R.dimen.text_size_24),
+                            ),
+                        )
+                        Spacer(Modifier.height(dimen(R.dimen.space_10)))
+                        Text(
+                            text = stringResource(R.string.account_session_body_student),
+                            style = EduTheme.type.bodySmall.copy(color = EduTheme.colors.onBrand.copy(alpha = 0.9f)),
+                        )
+                    }
+
+                    Spacer(Modifier.height(dimen(R.dimen.space_20)))
                 }
 
-                Spacer(Modifier.height(dimen(R.dimen.space_16)))
-                NoticeCard(text = accountNotice(user.role))
-
-                Spacer(Modifier.height(dimen(R.dimen.space_20)))
                 SecondaryButton(
                     text = stringResource(R.string.account_change_password),
                     onClick = onOpenChangePassword,
@@ -170,11 +182,20 @@ fun AccountScreen(
                     text = stringResource(R.string.account_logout),
                     onClick = viewModel::logout,
                 )
-                Spacer(Modifier.height(dimen(R.dimen.space_12)))
-                Text(
-                    text = stringResource(R.string.account_logout_note),
-                    style = EduTheme.type.bodySmall,
-                )
+                if (state.error != null) {
+                    Spacer(Modifier.height(dimen(R.dimen.space_12)))
+                    NoticeCard(
+                        text = state.error.orEmpty(),
+                        tone = TintTone.Danger,
+                    )
+                }
+                if (user.role == UserRole.STUDENT) {
+                    Spacer(Modifier.height(dimen(R.dimen.space_12)))
+                    Text(
+                        text = stringResource(R.string.account_logout_note),
+                        style = EduTheme.type.bodySmall,
+                    )
+                }
 
                 if (BuildConfig.DEBUG) {
                     Spacer(Modifier.height(dimen(R.dimen.space_16)))
@@ -194,37 +215,6 @@ private fun accountHeadline(role: UserRole): String = when (role) {
     UserRole.STUDENT -> stringResource(R.string.account_headline_student)
     UserRole.LECTURER -> stringResource(R.string.account_headline_lecturer)
     UserRole.ADMIN -> stringResource(R.string.account_headline_admin)
-}
-
-@Composable
-private fun accountSubtitle(role: UserRole): String = when (role) {
-    UserRole.STUDENT -> stringResource(R.string.account_subtitle_student)
-    UserRole.LECTURER -> stringResource(R.string.account_subtitle_lecturer)
-    UserRole.ADMIN -> stringResource(R.string.account_subtitle_admin)
-}
-
-@Composable
-private fun sessionTitle(user: UserProfile): String = when (user.role) {
-    UserRole.STUDENT -> stringResource(
-        R.string.account_session_title_student,
-        user.activeVark?.label ?: stringResource(R.string.common_vark),
-    )
-    UserRole.LECTURER -> stringResource(R.string.account_session_title_lecturer)
-    UserRole.ADMIN -> stringResource(R.string.account_session_title_admin)
-}
-
-@Composable
-private fun sessionBody(user: UserProfile): String = when (user.role) {
-    UserRole.STUDENT -> stringResource(R.string.account_session_body_student)
-    UserRole.LECTURER -> stringResource(R.string.account_session_body_lecturer)
-    UserRole.ADMIN -> stringResource(R.string.account_session_body_admin)
-}
-
-@Composable
-private fun accountNotice(role: UserRole): String = when (role) {
-    UserRole.STUDENT -> stringResource(R.string.account_notice_student)
-    UserRole.LECTURER -> stringResource(R.string.account_notice_lecturer)
-    UserRole.ADMIN -> stringResource(R.string.account_notice_admin)
 }
 
 @Preview(showBackground = true)

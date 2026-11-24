@@ -224,12 +224,17 @@ class HomeViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
+            _state.update { it.copy(refreshError = null) }
             try {
                 logoutUseCase()
-            } catch (_: Exception) {
-                // Session is cleared locally by the repository in its finally block.
-            } finally {
                 _state.update { it.copy(loggedOut = true) }
+            } catch (error: AppFailure) {
+                // Keep the signed-in state when the revocation failed.
+                _state.update { it.copy(refreshError = error.message) }
+            } catch (_: Exception) {
+                _state.update {
+                    it.copy(refreshError = "Terjadi kesalahan. Coba lagi.")
+                }
             }
         }
     }

@@ -1,0 +1,19 @@
+{
+    "data": [
+        {
+            "id": "81e9de87-7ea2-480c-b8f2-e68a2742749b",
+            "topicId": "a50f237b-d7df-44b3-8e77-f48a604b9dd7",
+            "vark": "KINESTHETIC",
+            "title": "Materi PDF Restore",
+            "kind": "FILE",
+            "mime": "application/pdf",
+            "sizeBytes": 51,
+            "url": null,
+            "contentUrl": "/api/v1/materials/81e9de87-7ea2-480c-b8f2-e68a2742749b/content",
+            "linkTargetUrl": null,
+            "signedUrl": null,
+            "expiresAt": null,
+            "uploadedAt": "2026-11-24T12:22:59.262Z"
+        }
+    ]
+}
