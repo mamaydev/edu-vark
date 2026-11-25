@@ -177,4 +177,24 @@
     <string name="lec_hub_meta_no_case">This topic has no case study yet. Tap to create one.</string>
     <string name="lec_hub_meta_analytics">V/A/R feedback and Kinesthetic grades</string>
 
+    <!-- Material file replacement & deletion notices -->
+    <string name="lec_material_action_replace">Replace file</string>
+    <string name="lec_material_file_pending_title">File deletion pending</string>
+    <string name="lec_material_file_pending_body">The material is hidden. The storage file has not been deleted yet and the server will retry automatically.</string>
+    <string name="lec_material_file_replace_pending_title">Old file deletion pending</string>
+    <string name="lec_material_file_replace_pending_body">The new file is active. The old file has not been deleted yet and the server will retry automatically.</string>
+    <string name="lec_material_file_skipped_title">File intentionally retained</string>
+    <string name="lec_material_file_skipped_body">The material is hidden. The file was not deleted because it is still referenced by an active material, so there is no automatic retry for this file.</string>
+    <string name="lec_material_file_replace_skipped_title">Old file retained</string>
+    <string name="lec_material_file_replace_skipped_body">The new file is active. The old file was not deleted because it is still referenced by an active material; there is no automatic retry.</string>
+    <string name="lec_material_file_failed_title">File deletion failed</string>
+    <string name="lec_material_file_failed_body">The material is hidden, but the file could not be deleted after several automatic attempts. Operator follow-up is required; the file will not be retried automatically.</string>
+    <string name="lec_material_file_replace_failed_title">Old file deletion failed</string>
+    <string name="lec_material_file_replace_failed_body">The new file is active, but the old file could not be deleted after several automatic attempts. Operator follow-up is required; there is no automatic retry.</string>
+    <string name="lec_material_file_unknown_title">File status uncertain</string>
+    <string name="lec_material_file_unknown_body">The material is hidden, but the storage file status could not be confirmed. There is no guarantee the file was deleted and no automatic retry.</string>
+    <string name="lec_material_file_replace_unknown_title">Old file status uncertain</string>
+    <string name="lec_material_file_replace_unknown_body">The new file is active, but the old file\'s storage status could not be confirmed. There is no guarantee the file was deleted and no automatic retry.</string>
+    <string name="lec_material_file_notice_dismiss">Dismiss notice</string>
+
 </resources>
