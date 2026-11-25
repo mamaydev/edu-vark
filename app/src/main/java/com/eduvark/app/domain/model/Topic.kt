@@ -54,3 +54,42 @@ data class UploadPayload(
     val mime: String,
     val bytes: ByteArray,
 )
+
+/**
+ * Status penghapusan objek berkas di penyimpanan (R2) setelah aksi dosen.
+ * PENDING berarti perubahan data sudah tersimpan dan materi/berkas lama sudah
+ * tidak dapat diakses, tetapi backend masih mencoba menghapus objek secara
+ * otomatis.
+ */
+/**
+ * Status penghapusan fisik objek materi setelah perubahan data berhasil.
+ *
+ * - [NONE] tidak ada operasi penyimpanan yang diperlukan (materi LINK)
+ * - [COMPLETED] objek terhapus, atau dipastikan sudah tidak ada
+ * - [PENDING] masih dijadwalkan/diproses dan akan dicoba ulang otomatis
+ * - [SKIPPED] objek sengaja dipertahankan karena masih dirujuk materi aktif
+ * - [FAILED] percobaan otomatis habis; perlu tindak lanjut operator
+ * - [UNKNOWN] status fisik belum dapat dipastikan (server lama, pekerjaan hilang)
+ *
+ * Nilai tak dikenal/absen diperlakukan [UNKNOWN] agar klien tidak menjanjikan
+ * penghapusan maupun percobaan ulang yang tidak terbukti.
+ */
+enum class FileDeletionStatus(val wireValue: String) {
+    NONE("NONE"),
+    COMPLETED("COMPLETED"),
+    PENDING("PENDING"),
+    SKIPPED("SKIPPED"),
+    FAILED("FAILED"),
+    UNKNOWN("UNKNOWN"),
+    ;
+
+    companion object {
+        fun fromWire(value: String?): FileDeletionStatus =
+            entries.firstOrNull { it.wireValue == value } ?: UNKNOWN
+    }
+}
+
+data class FileReplacementResult(
+    val material: Material,
+    val previousFileDeletion: FileDeletionStatus,
+)

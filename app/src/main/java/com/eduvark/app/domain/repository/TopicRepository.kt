@@ -1,5 +1,7 @@
 package com.eduvark.app.domain.repository
 
+import com.eduvark.app.domain.model.FileDeletionStatus
+import com.eduvark.app.domain.model.FileReplacementResult
 import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.StudentDashboard
 import com.eduvark.app.domain.model.Topic
@@ -41,5 +43,12 @@ interface TopicRepository {
         payload: UploadPayload,
     ): Material
 
-    suspend fun deleteMaterial(materialId: String)
+    /** Hapus materi; hasil menunjukkan status penghapusan objek penyimpanan. */
+    suspend fun deleteMaterial(materialId: String): FileDeletionStatus
+
+    /** Ganti berkas pada materi FILE yang sama tanpa mengubah judul/VARK. */
+    suspend fun replaceMaterialFile(
+        materialId: String,
+        payload: UploadPayload,
+    ): FileReplacementResult
 }

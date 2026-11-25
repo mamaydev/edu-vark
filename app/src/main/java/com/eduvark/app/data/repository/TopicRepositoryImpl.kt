@@ -10,6 +10,8 @@ import com.eduvark.app.data.remote.dto.TopicDto
 import com.eduvark.app.data.remote.dto.UpdateTopicRequest
 import com.eduvark.app.data.remote.toAppFailureOrNull
 import com.eduvark.app.domain.error.AppFailure
+import com.eduvark.app.domain.model.FileDeletionStatus
+import com.eduvark.app.domain.model.FileReplacementResult
 import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.MaterialKind
 import com.eduvark.app.domain.model.StudentDashboard
@@ -186,18 +188,7 @@ class TopicRepositoryImpl @Inject constructor(
         vark: VarkType,
         payload: UploadPayload,
     ): Material {
-        val mediaType = payload.mime.toMediaTypeOrNull()
-            ?: throw AppFailure.Api(
-                code = "INVALID_FILE_TYPE",
-                message = "Tipe file tidak dikenali.",
-                statusCode = 422,
-            )
-        val fileBody = payload.bytes.toRequestBody(mediaType)
-        val filePart = MultipartBody.Part.createFormData(
-            name = "file",
-            filename = payload.fileName,
-            body = fileBody,
-        )
+        val filePart = payload.toFilePart()
         val titleBody = title.toRequestBody("text/plain".toMediaType())
         val varkBody = vark.wireValue.toRequestBody("text/plain".toMediaType())
 
@@ -208,8 +199,42 @@ class TopicRepositoryImpl @Inject constructor(
         return data.toDomain()
     }
 
-    override suspend fun deleteMaterial(materialId: String) {
-        executor.execute { api.deleteMaterial(materialId) }
+    override suspend fun deleteMaterial(materialId: String): FileDeletionStatus {
+        val response = executor.execute { api.deleteMaterial(materialId) }
+        response.toAppFailureOrNull(json)?.let { throw it }
+        // Backend lama membalas 204 tanpa body: aksi hapus berhasil, tetapi status
+        // fisik objek tidak dikirim sehingga diperlakukan UNKNOWN (bukan PENDING,
+        // agar klien tidak menjanjikan percobaan ulang yang belum tentu ada).
+        val wire = response.body()?.data?.fileDeletion
+        return FileDeletionStatus.fromWire(wire)
+    }
+
+    override suspend fun replaceMaterialFile(
+        materialId: String,
+        payload: UploadPayload,
+    ): FileReplacementResult {
+        val response = executor.execute {
+            api.replaceMaterialFile(materialId, payload.toFilePart())
+        }
+        val data = response.data ?: throw AppFailure.Unknown
+        return FileReplacementResult(
+            material = data.material.toDomain(),
+            previousFileDeletion = FileDeletionStatus.fromWire(data.previousFileDeletion),
+        )
+    }
+
+    private fun UploadPayload.toFilePart(): MultipartBody.Part {
+        val mediaType = mime.toMediaTypeOrNull()
+            ?: throw AppFailure.Api(
+                code = "INVALID_FILE_TYPE",
+                message = "Tipe file tidak dikenali.",
+                statusCode = 422,
+            )
+        return MultipartBody.Part.createFormData(
+            name = "file",
+            filename = fileName,
+            body = bytes.toRequestBody(mediaType),
+        )
     }
 
     private fun TopicDto.toDomain(): Topic {

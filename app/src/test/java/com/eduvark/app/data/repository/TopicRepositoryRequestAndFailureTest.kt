@@ -2,11 +2,18 @@ package com.eduvark.app.data.repository
 
 import com.eduvark.app.core.network.EduVarkApi
 import com.eduvark.app.data.remote.ApiExecutor
+import com.eduvark.app.data.remote.dto.MaterialDeletionDto
+import com.eduvark.app.data.remote.dto.MaterialDeletionResponse
+import com.eduvark.app.data.remote.dto.MaterialDto
+import com.eduvark.app.data.remote.dto.MaterialFileReplacementDto
+import com.eduvark.app.data.remote.dto.MaterialFileReplacementResponse
 import com.eduvark.app.data.remote.dto.ReorderTopicsRequest
 import com.eduvark.app.data.remote.dto.TopicDto
 import com.eduvark.app.data.remote.dto.TopicResponse
 import com.eduvark.app.data.remote.dto.UpdateTopicRequest
 import com.eduvark.app.domain.error.AppFailure
+import com.eduvark.app.domain.model.FileDeletionStatus
+import com.eduvark.app.domain.model.UploadPayload
 import java.lang.reflect.Proxy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -18,6 +25,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import retrofit2.HttpException
 import retrofit2.Response
 
 /**
@@ -196,5 +204,129 @@ class TopicRepositoryRequestAndFailureTest {
         val failure = thrown as? AppFailure.Api
         assertEquals("HTTP_500", failure?.code)
         assertEquals(500, failure?.statusCode)
+    }
+
+    private fun materialDto(id: String = "material-1") = MaterialDto(
+        id = id,
+        topicId = "topic-1",
+        vark = "VISUAL",
+        title = "Materi",
+        kind = "FILE",
+        mime = "application/pdf",
+        sizeBytes = 10,
+    )
+
+    @Test
+    fun `delete maps every physical status from both endpoint contracts`() = runTest {
+        val expected = listOf(
+            "NONE" to FileDeletionStatus.NONE,
+            "COMPLETED" to FileDeletionStatus.COMPLETED,
+            "PENDING" to FileDeletionStatus.PENDING,
+            "SKIPPED" to FileDeletionStatus.SKIPPED,
+            "FAILED" to FileDeletionStatus.FAILED,
+            "UNKNOWN" to FileDeletionStatus.UNKNOWN,
+            null to FileDeletionStatus.UNKNOWN,
+            "STATUS_BARU" to FileDeletionStatus.UNKNOWN,
+        )
+
+        for ((wire, status) in expected) {
+            val repository = repository { name, args ->
+                assertEquals("deleteMaterial", name)
+                assertEquals("material-1", args!![0])
+                Response.success(
+                    MaterialDeletionResponse(
+                        data = MaterialDeletionDto(id = "material-1", fileDeletion = wire),
+                        error = null,
+                    ),
+                )
+            }
+
+            assertEquals(wire, status, repository.deleteMaterial("material-1"))
+        }
+    }
+
+    @Test
+    fun `legacy 204 delete without body is success with unknown physical status`() = runTest {
+        val repository = repository { name, _ ->
+            assertEquals("deleteMaterial", name)
+            Response.success<MaterialDeletionResponse>(null)
+        }
+
+        assertEquals(FileDeletionStatus.UNKNOWN, repository.deleteMaterial("material-1"))
+    }
+
+    @Test
+    fun `delete failure is propagated as AppFailure when the material is gone`() = runTest {
+        val repository = repository { name, _ ->
+            assertEquals("deleteMaterial", name)
+            throw HttpException(
+                Response.error<Any>(
+                    404,
+                    errorBody("MATERIAL_NOT_FOUND", "Materi tidak ditemukan.")
+                        .toResponseBody("application/json".toMediaType()),
+                ),
+            )
+        }
+
+        val thrown = runCatching { repository.deleteMaterial("material-1") }.exceptionOrNull()
+
+        val failure = thrown as? AppFailure.Api
+        assertEquals("MATERIAL_NOT_FOUND", failure?.code)
+        assertEquals(404, failure?.statusCode)
+    }
+
+    @Test
+    fun `replace file keeps the material and maps every previous deletion status`() = runTest {
+        val payload = UploadPayload("pengganti.pdf", "application/pdf", byteArrayOf(1, 2))
+        val expected = listOf(
+            "NONE" to FileDeletionStatus.NONE,
+            "COMPLETED" to FileDeletionStatus.COMPLETED,
+            "PENDING" to FileDeletionStatus.PENDING,
+            "SKIPPED" to FileDeletionStatus.SKIPPED,
+            "FAILED" to FileDeletionStatus.FAILED,
+            "UNKNOWN" to FileDeletionStatus.UNKNOWN,
+            null to FileDeletionStatus.UNKNOWN,
+        )
+
+        for ((wire, status) in expected) {
+            val repository = repository { name, args ->
+                assertEquals("replaceMaterialFile", name)
+                assertEquals("material-1", args!![0])
+                assertTrue(args[1] is okhttp3.MultipartBody.Part)
+                MaterialFileReplacementResponse(
+                    data = MaterialFileReplacementDto(
+                        material = materialDto(),
+                        previousFileDeletion = wire,
+                    ),
+                    error = null,
+                )
+            }
+
+            val result = repository.replaceMaterialFile("material-1", payload)
+
+            assertEquals("material-1", result.material.id)
+            assertEquals("Materi", result.material.title)
+            assertEquals(wire, status, result.previousFileDeletion)
+        }
+    }
+
+    @Test
+    fun `replace file maps an unknown wire status to unknown`() = runTest {
+        val repository = repository { _, _ ->
+            MaterialFileReplacementResponse(
+                data = MaterialFileReplacementDto(
+                    material = materialDto(),
+                    previousFileDeletion = "STATUS_BARU",
+                ),
+                error = null,
+            )
+        }
+
+        val result = repository.replaceMaterialFile(
+            "material-1",
+            UploadPayload("pengganti.pdf", "application/pdf", byteArrayOf(1)),
+        )
+
+        assertEquals(FileDeletionStatus.UNKNOWN, result.previousFileDeletion)
     }
 }

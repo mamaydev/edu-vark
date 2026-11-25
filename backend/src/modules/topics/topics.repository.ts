@@ -483,6 +483,32 @@ export async function findMaterialForLecturer(
   return result.rows[0] ?? null;
 }
 
+/**
+ * Baca materi berdasarkan ID tanpa syarat kepemilikan dosen. Dipakai jalur
+ * pemulihan setelah commit ambigu: record yang sudah tersimpan adalah sumber
+ * kebenaran, bukan respons yang hilang.
+ *
+ * `forUpdate` mengambil kunci baris sehingga rekonsiliasi bersaing dengan
+ * Ganti File/Hapus lain diserialkan pada baris yang sama.
+ */
+export async function findMaterialById(
+  client: PoolClient,
+  materialId: string,
+  options: { forUpdate?: boolean } = {},
+): Promise<MaterialRow | null> {
+  const result = await client.query<MaterialRow>(
+    `
+      SELECT id, topic_id, uploaded_by, vark_type, title, kind,
+             object_key, url, mime, size_bytes, uploaded_at, deleted_at
+      FROM materials
+      WHERE id = $1
+      ${options.forUpdate ? 'FOR UPDATE' : ''}
+    `,
+    [materialId],
+  );
+  return result.rows[0] ?? null;
+}
+
 export async function updateMaterial(
   client: PoolClient,
   materialId: string,
@@ -502,12 +528,59 @@ export async function updateMaterial(
   return result.rows[0]!;
 }
 
+/**
+ * Soft delete materi dan kembalikan baris hasil mutasi.
+ *
+ * `object_key` yang dikembalikan adalah nilai yang benar-benar terlihat oleh
+ * UPDATE (di bawah kunci baris), bukan hasil pembacaan sebelumnya. Ini membuat
+ * antrean penghapusan objek tetap memakai kunci yang tepat bila Ganti File
+ * menyelesaikan commit di antara pembacaan otorisasi dan mutasi ini.
+ *
+ * `null` berarti baris sudah tidak memenuhi syarat (sudah dihapus permintaan
+ * lain) sehingga pemanggil wajib memperlakukan permintaan sebagai 404.
+ */
 export async function softDeleteMaterial(
   client: PoolClient,
   materialId: string,
-): Promise<void> {
-  await client.query(
-    'UPDATE materials SET deleted_at = now() WHERE id = $1 AND deleted_at IS NULL',
+): Promise<MaterialRow | null> {
+  const result = await client.query<MaterialRow>(
+    `
+      UPDATE materials
+      SET deleted_at = now()
+      WHERE id = $1 AND deleted_at IS NULL
+      RETURNING id, topic_id, uploaded_by, vark_type, title, kind,
+                object_key, url, mime, size_bytes, uploaded_at, deleted_at
+    `,
     [materialId],
   );
+  return result.rows[0] ?? null;
+}
+
+/**
+ * Ganti berkas materi pada record yang sama. `expectedObjectKey` adalah kunci
+ * objek yang dibaca sebelum unggahan pengganti dimulai; bila materi berubah
+ * lebih dulu (mis. dua permintaan ganti berkas bersamaan), update tidak
+ * mengenai baris mana pun dan pemanggil wajib mengompensasi objek baru.
+ */
+export async function replaceMaterialFile(
+  client: PoolClient,
+  materialId: string,
+  input: {
+    expectedObjectKey: string;
+    objectKey: string;
+    mime: string;
+    sizeBytes: number;
+  },
+): Promise<MaterialRow | null> {
+  const result = await client.query<MaterialRow>(
+    `
+      UPDATE materials
+      SET object_key = $3, mime = $4, size_bytes = $5
+      WHERE id = $1 AND deleted_at IS NULL AND object_key = $2
+      RETURNING id, topic_id, uploaded_by, vark_type, title, kind,
+                object_key, url, mime, size_bytes, uploaded_at, deleted_at
+    `,
+    [materialId, input.expectedObjectKey, input.objectKey, input.mime, input.sizeBytes],
+  );
+  return result.rows[0] ?? null;
 }

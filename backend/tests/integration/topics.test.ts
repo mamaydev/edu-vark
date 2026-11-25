@@ -23,6 +23,9 @@ vi.mock('../../src/lib/storage', () => ({
   putObject: vi.fn(async () => undefined),
   getSignedObjectUrl: vi.fn(async (key: string) => 'https://signed.example/' + key),
   deleteObject: vi.fn(async () => undefined),
+  objectStat: vi.fn(async () => ({ size: 1 })),
+  listObjectKeys: vi.fn(async () => []),
+  storageMode: vi.fn(() => 'local'),
 }));
 
 const app = createApp();
@@ -467,10 +470,12 @@ describeDb('topics and materials integration', () => {
       .send({ value: 75 })
       .expect(200);
 
-    await request(app)
+    const deleted = await request(app)
       .delete('/api/v1/lecturer/materials/' + materialId)
       .set('Authorization', bearer(lecturer.accessToken))
-      .expect(204);
+      .expect(200);
+    expect(deleted.body.data.id).toBe(materialId);
+    expect(deleted.body.data.fileDeletion).toBe('COMPLETED');
 
     const materials = await request(app)
       .get('/api/v1/topics/' + topic.id + '/materials')

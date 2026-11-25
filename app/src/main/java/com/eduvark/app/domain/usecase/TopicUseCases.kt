@@ -131,3 +131,10 @@ class DeleteMaterialUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(materialId: String) = repository.deleteMaterial(materialId)
 }
+
+class ReplaceMaterialFileUseCase @Inject constructor(
+    private val repository: TopicRepository,
+) {
+    suspend operator fun invoke(materialId: String, payload: UploadPayload) =
+        repository.replaceMaterialFile(materialId, payload)
+}

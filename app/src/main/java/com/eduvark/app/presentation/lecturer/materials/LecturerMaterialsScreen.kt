@@ -35,7 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eduvark.app.domain.model.FileDeletionStatus
 import com.eduvark.app.domain.model.Material
+import com.eduvark.app.domain.model.MaterialKind
 import com.eduvark.app.domain.model.Topic
 import com.eduvark.app.domain.model.TopicStatus
 import com.eduvark.app.domain.model.UploadPayload
@@ -96,6 +98,7 @@ fun LecturerMaterialsScreen(
     var pickedFile by remember { mutableStateOf<PickedFile?>(null) }
     var expandedKeys by remember { mutableStateOf(setOf<String>()) }
     var deleteTarget by remember { mutableStateOf<Material?>(null) }
+    var replaceTarget by remember { mutableStateOf<Material?>(null) }
 
     var pendingSave by remember { mutableStateOf(false) }
     var sawSaving by remember { mutableStateOf(false) }
@@ -149,6 +152,27 @@ fun LecturerMaterialsScreen(
                 }
                 formError = null
             }
+        }
+    }
+
+    val replacePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri: Uri? ->
+        val target = replaceTarget
+        replaceTarget = null
+        if (uri == null || target == null) return@rememberLauncherForActivityResult
+        val fileName = queryFileName(context, uri, defaultFileName)
+        val mime = context.contentResolver.getType(uri) ?: "application/octet-stream"
+        val bytes = runCatching {
+            context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        }.getOrNull()
+        if (bytes == null) {
+            viewModel.reportError(fileReadError)
+        } else {
+            viewModel.replaceFile(
+                materialId = target.id,
+                payload = UploadPayload(fileName = fileName, mime = mime, bytes = bytes),
+            )
         }
     }
 
@@ -304,6 +328,14 @@ fun LecturerMaterialsScreen(
                 },
                 onAdd = openForm,
                 onDelete = { deleteTarget = it },
+                onReplace = { material ->
+                    replaceTarget = material
+                    replacePicker.launch(
+                        arrayOf("application/pdf", "image/*", "audio/*", "video/*"),
+                    )
+                },
+                fileDeletionNotice = state.fileDeletionNotice,
+                onDismissFileDeletionNotice = viewModel::clearFileDeletionNotice,
                 modifier = Modifier.padding(padding),
             )
         }
@@ -352,11 +384,38 @@ private fun MaterialsContent(
     onToggle: (VarkType) -> Unit,
     onAdd: (VarkType) -> Unit,
     onDelete: (Material) -> Unit,
+    onReplace: (Material) -> Unit,
+    fileDeletionNotice: FileDeletionNotice?,
+    onDismissFileDeletionNotice: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ScrollColumn(modifier = modifier, spacing = dimen(R.dimen.dimen_0)) {
         if (actionError != null) {
             NoticeCard(text = actionError, tone = TintTone.Danger)
+            Spacer(Modifier.height(dimen(R.dimen.space_16)))
+        }
+
+        if (fileDeletionNotice != null) {
+            // Tone mengikuti janji status: Amber hanya untuk retry otomatis,
+            // Danger untuk tindak lanjut, Neutral untuk status yang tidak
+            // menjanjikan penghapusan maupun retry.
+            val tone = when (fileDeletionNotice.status) {
+                FileDeletionStatus.PENDING -> TintTone.Amber
+                FileDeletionStatus.FAILED -> TintTone.Danger
+                else -> TintTone.Neutral
+            }
+            NoticeCard(
+                text = stringResource(fileDeletionNotice.messageRes),
+                tone = tone,
+                title = stringResource(fileDeletionNotice.titleRes),
+            )
+            Spacer(Modifier.height(dimen(R.dimen.space_8)))
+            TextLink(
+                text = stringResource(R.string.lec_material_file_notice_dismiss),
+                onClick = onDismissFileDeletionNotice,
+                color = EduTheme.colors.lime,
+                icon = false,
+            )
             Spacer(Modifier.height(dimen(R.dimen.space_16)))
         }
 
@@ -382,6 +441,7 @@ private fun MaterialsContent(
                 onToggle = { onToggle(vark) },
                 onAdd = { onAdd(vark) },
                 onDelete = onDelete,
+                onReplace = onReplace,
             )
             Spacer(Modifier.height(dimen(R.dimen.space_12)))
         }
@@ -402,6 +462,7 @@ private fun CategoryCard(
     onToggle: () -> Unit,
     onAdd: () -> Unit,
     onDelete: (Material) -> Unit,
+    onReplace: (Material) -> Unit,
 ) {
     val metaSeparator = stringResource(R.string.lec_material_meta_separator)
     val meta = when {
@@ -439,7 +500,11 @@ private fun CategoryCard(
         if (expanded && materials.isNotEmpty()) {
             Spacer(Modifier.height(dimen(R.dimen.space_4)))
             materials.forEach { material ->
-                MaterialRow(material = material, onDelete = { onDelete(material) })
+                MaterialRow(
+                    material = material,
+                    onDelete = { onDelete(material) },
+                    onReplace = { onReplace(material) },
+                )
             }
         }
 
@@ -483,7 +548,11 @@ private fun CategoryCard(
 }
 
 @Composable
-private fun MaterialRow(material: Material, onDelete: () -> Unit) {
+private fun MaterialRow(
+    material: Material,
+    onDelete: () -> Unit,
+    onReplace: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -495,6 +564,15 @@ private fun MaterialRow(material: Material, onDelete: () -> Unit) {
             Text(text = materialMeta(material), style = EduTheme.type.bodySmall)
         }
         Spacer(Modifier.size(dimen(R.dimen.space_8)))
+        if (material.kind == MaterialKind.FILE) {
+            TextLink(
+                text = stringResource(R.string.lec_material_action_replace),
+                onClick = onReplace,
+                color = EduTheme.colors.lime,
+                icon = false,
+            )
+            Spacer(Modifier.size(dimen(R.dimen.space_8)))
+        }
         TextLink(
             text = stringResource(R.string.lec_material_action_delete),
             onClick = onDelete,

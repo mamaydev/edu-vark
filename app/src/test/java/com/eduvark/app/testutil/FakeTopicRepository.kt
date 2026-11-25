@@ -1,6 +1,8 @@
 package com.eduvark.app.testutil
 
 import com.eduvark.app.domain.error.AppFailure
+import com.eduvark.app.domain.model.FileDeletionStatus
+import com.eduvark.app.domain.model.FileReplacementResult
 import com.eduvark.app.domain.model.Material
 import com.eduvark.app.domain.model.MaterialKind
 import com.eduvark.app.domain.model.StudentDashboard
@@ -91,8 +93,12 @@ class FakeTopicRepository(
         return topics.firstOrNull { it.id == topicId } ?: throw AppFailure.Unknown
     }
 
+    /** Kegagalan pemuatan ulang daftar setelah aksi materi berhasil (commit). */
+    var failMaterialsOnRefresh = false
+
     override suspend fun listLecturerMaterials(topicId: String): List<Material> {
         failure?.let { throw it }
+        if (failMaterialsOnRefresh) throw AppFailure.Unknown
         return materials
     }
 
@@ -193,7 +199,35 @@ class FakeTopicRepository(
         return material
     }
 
-    override suspend fun deleteMaterial(materialId: String) {
+    /** Status yang dikembalikan backend saat delete; dapat diatur test. */
+    var deletionStatus: FileDeletionStatus = FileDeletionStatus.COMPLETED
+
+    /** Kegagalan yang disimulasikan saat mengganti berkas. */
+    var replaceFailure: AppFailure? = null
+
+    /** Status fisik berkas lama yang dilaporkan setelah penggantian berhasil. */
+    var replaceDeletionStatus: FileDeletionStatus = FileDeletionStatus.COMPLETED
+
+    var lastReplacedPayload: UploadPayload? = null
+
+    override suspend fun deleteMaterial(materialId: String): FileDeletionStatus {
         materials = materials.filterNot { it.id == materialId }
+        return deletionStatus
+    }
+
+    override suspend fun replaceMaterialFile(
+        materialId: String,
+        payload: UploadPayload,
+    ): FileReplacementResult {
+        replaceFailure?.let { throw it }
+        lastReplacedPayload = payload
+        val existing = materials.firstOrNull { it.id == materialId }
+            ?: throw AppFailure.Api("MATERIAL_NOT_FOUND", "Materi tidak ditemukan.", 404)
+        val replaced = existing.copy(mime = payload.mime, sizeBytes = payload.bytes.size.toLong())
+        materials = materials.map { if (it.id == materialId) replaced else it }
+        return FileReplacementResult(
+            material = replaced,
+            previousFileDeletion = replaceDeletionStatus,
+        )
     }
 }

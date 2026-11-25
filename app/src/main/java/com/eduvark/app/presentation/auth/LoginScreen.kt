@@ -94,7 +94,6 @@ fun LoginScreen(
                     enabled = !state.isLoading,
                     keyboardType = KeyboardType.Number,
                 )
-                FieldHelper(text = stringResource(R.string.p3_login_helper_digits))
             }
 
             Spacer(Modifier.height(dimen(R.dimen.space_16)))
@@ -129,10 +128,6 @@ fun LoginScreen(
             )
             if (!LoginIdRules.canSubmit(loginId)) {
                 Spacer(Modifier.height(dimen(R.dimen.space_8)))
-                FieldHelper(
-                    text = stringResource(R.string.p3_login_submit_hint),
-                    isError = false,
-                )
             }
 
             if (BuildConfig.DEBUG) {

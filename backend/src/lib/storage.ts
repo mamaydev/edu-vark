@@ -1,11 +1,12 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -309,6 +310,92 @@ export async function getObjectInfo(key: string): Promise<ObjectInfo> {
     }
     throw storageFailure(error);
   }
+}
+
+/** Mode penyimpanan aktif; dipakai skrip inventaris backlog untuk laporan. */
+export function storageMode(): 'r2' | 'local' {
+  return isLocalStorage() ? 'local' : 'r2';
+}
+
+/**
+ * Ukuran objek bila ada, atau `null` bila objek sudah tidak ada. Berbeda dari
+ * `getObjectInfo`, ketiadaan objek bukan error: worker penghapusan dan skrip
+ * inventaris perlu membedakan "sudah hilang" dari "penyimpanan gagal".
+ */
+export async function objectStat(key: string): Promise<{ size: number } | null> {
+  if (isLocalStorage()) {
+    try {
+      const info = await stat(localPath(key));
+      if (!info.isFile()) return null;
+      return { size: info.size };
+    } catch (error) {
+      if (isStorageNotFound(error)) return null;
+      throw storageFailure(error);
+    }
+  }
+
+  try {
+    const cfg = config();
+    const head = await cfg.client.send(
+      new HeadObjectCommand({ Bucket: cfg.bucket, Key: key }),
+    );
+    return { size: Number(head.ContentLength ?? 0) };
+  } catch (error) {
+    if (isStorageNotFound(error)) return null;
+    throw storageFailure(error);
+  }
+}
+
+/**
+ * Daftar kunci objek pada prefix tertentu. Hanya dipakai skrip inventaris
+ * backlog (dry-run) untuk melaporkan objek yatim; tidak dipakai alur runtime.
+ */
+export async function listObjectKeys(prefix: string): Promise<string[]> {
+  if (isLocalStorage()) {
+    const root = localDir();
+    const start = path.resolve(root, prefix);
+    if (!start.startsWith(root + path.sep)) {
+      throw new AppError('STORAGE_UNAVAILABLE', 500, 'Prefix penyimpanan tidak valid.');
+    }
+    const keys: string[] = [];
+    const walk = async (dir: string): Promise<void> => {
+      let entries;
+      try {
+        entries = await readdir(dir, { withFileTypes: true });
+      } catch (error) {
+        if (isStorageNotFound(error)) return;
+        throw storageFailure(error);
+      }
+      for (const entry of entries) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          await walk(full);
+        } else if (entry.isFile()) {
+          keys.push(path.relative(root, full).split(path.sep).join('/'));
+        }
+      }
+    };
+    await walk(start);
+    return keys.sort();
+  }
+
+  const cfg = config();
+  const keys: string[] = [];
+  let token: string | undefined;
+  do {
+    const page = await cfg.client.send(
+      new ListObjectsV2Command({
+        Bucket: cfg.bucket,
+        Prefix: prefix,
+        ContinuationToken: token,
+      }),
+    );
+    for (const item of page.Contents ?? []) {
+      if (item.Key) keys.push(item.Key);
+    }
+    token = page.IsTruncated ? page.NextContinuationToken : undefined;
+  } while (token);
+  return keys.sort();
 }
 
 /**

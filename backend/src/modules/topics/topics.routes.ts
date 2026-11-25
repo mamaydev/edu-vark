@@ -18,6 +18,7 @@ import {
   listTopicsHandler,
   publishTopicHandler,
   reorderTopicsHandler,
+  replaceMaterialFileHandler,
   unpublishTopicHandler,
   updateMaterialHandler,
   updateTopicHandler,
@@ -88,4 +89,9 @@ lecturerTopicsRouter.post(
 );
 lecturerTopicsRouter.post('/topics/:id/materials/link', createLinkMaterialHandler);
 lecturerTopicsRouter.patch('/materials/:id', updateMaterialHandler);
+lecturerTopicsRouter.post(
+  '/materials/:id/file',
+  upload.single('file'),
+  replaceMaterialFileHandler,
+);
 lecturerTopicsRouter.delete('/materials/:id', deleteMaterialHandler);

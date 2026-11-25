@@ -77,6 +77,8 @@ async function activeAdminCount(): Promise<number> {
 const MIGRATION_001 = '001_init.sql';
 const MIGRATION_002 = '002_admin_login_ids.sql';
 const MIGRATION_003 = '003_admin_session_revoke_and_range.sql';
+const MIGRATION_004 = '004_material_object_deletions.sql';
+const MIGRATION_005 = '005_material_file_replacements.sql';
 
 function databaseName(): string {
   const url = new URL(process.env.DATABASE_URL as string);
@@ -827,6 +829,8 @@ describeDb('Admin identity remediation — sessions, range, locks, seed, migrati
           MIGRATION_001,
           MIGRATION_002,
           MIGRATION_003,
+          MIGRATION_004,
+          MIGRATION_005,
         ]);
         for (const row of rows.rows) {
           expect(row.checksum).toMatch(/^[0-9a-f]{64}$/);

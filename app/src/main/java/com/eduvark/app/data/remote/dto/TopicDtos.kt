@@ -76,6 +76,30 @@ data class MaterialResponse(
 )
 
 @Serializable
+data class MaterialDeletionDto(
+    val id: String,
+    val fileDeletion: String? = null,
+)
+
+@Serializable
+data class MaterialDeletionResponse(
+    val data: MaterialDeletionDto? = null,
+    val error: ApiErrorDto? = null,
+)
+
+@Serializable
+data class MaterialFileReplacementDto(
+    val material: MaterialDto,
+    val previousFileDeletion: String? = null,
+)
+
+@Serializable
+data class MaterialFileReplacementResponse(
+    val data: MaterialFileReplacementDto? = null,
+    val error: ApiErrorDto? = null,
+)
+
+@Serializable
 data class StudentDashboardDto(
     val vark: String,
     val availableMaterials: Int = 0,

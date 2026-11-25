@@ -211,17 +211,44 @@ fun SectionHeader(
     }
 }
 
-/** Surface tile with a big number and a caption (dashboard stats). */
+/**
+ * Surface tile with a big number and a caption (dashboard stats).
+ *
+ * [tone] tints the tile with the palette's own soft tints so a pair of tiles can
+ * read as "ok / pending" without leaving the dark theme. Both tiles are given
+ * the same [height] so a two-line caption never makes one card taller than its
+ * neighbour.
+ */
 @Composable
 fun StatCard(
     value: String,
     label: String,
     modifier: Modifier = Modifier,
+    tone: TintTone = TintTone.Neutral,
+    height: Dp = dimen(R.dimen.dimen_120),
 ) {
-    EduCard(modifier = modifier, radius = dimen(R.dimen.dimen_18), padding = dimen(R.dimen.dimen_18)) {
-        Text(text = value, style = EduTheme.type.numeral.copy(color = EduTheme.colors.ink))
-        Spacer(Modifier.height(dimen(R.dimen.space_6)))
-        Text(text = label, style = EduTheme.type.bodySmall)
+    val shape = RoundedCornerShape(dimen(R.dimen.radius_18))
+    val tinted = tone != TintTone.Neutral
+    val containerColor = if (tinted) tone.tint() else EduTheme.colors.surface
+    val valueColor = if (tinted) tone.content() else EduTheme.colors.ink
+    val labelColor = EduTheme.colors.muted
+    Column(
+        modifier = modifier
+            .height(height)
+            .clip(shape)
+            .background(containerColor, shape)
+            .then(
+                if (tinted) {
+                    Modifier.border(dimen(R.dimen.size_1), tone.content().copy(alpha = 0.24f), shape)
+                } else {
+                    Modifier
+                },
+            )
+            .padding(dimen(R.dimen.dimen_18)),
+    ) {
+        Text(text = value, style = EduTheme.type.numeral.copy(color = valueColor))
+        Spacer(Modifier.weight(1f))
+        Text(text = label, style = EduTheme.type.bodySmall.copy(color = labelColor))
     }
 }
 

@@ -378,10 +378,11 @@ describeDb('fixed material content access (FR-007/014/015, C1-02)', () => {
     expect(unpublished.body.error.code).toBe('MATERIAL_NOT_FOUND');
 
     await publishTopicApi(lecturer.accessToken, topic.id);
-    await request(app)
+    const deleted = await request(app)
       .delete('/api/v1/lecturer/materials/' + unpublishMaterial.id)
       .set('Authorization', bearer(lecturer.accessToken))
-      .expect(204);
+      .expect(200);
+    expect(deleted.body.data.fileDeletion).toBe('COMPLETED');
     const deletedMaterial = await getContent(student.accessToken, unpublishMaterial.id);
     expect(deletedMaterial.status).toBe(404);
     expect(deletedMaterial.body.error.code).toBe('MATERIAL_NOT_FOUND');

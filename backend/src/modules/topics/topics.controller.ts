@@ -240,8 +240,41 @@ export const deleteMaterialHandler: RequestHandler = async (req, res, next) => {
   try {
     const context = auth(req);
     const materialId = uuidSchema.parse(req.params.id);
-    await topicsService.deleteMaterial(materialId, context.userId);
-    res.status(204).send();
+    const result = await topicsService.deleteMaterial(materialId, context.userId);
+    res.status(200).json({ data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const replaceMaterialFileHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const context = auth(req);
+    const materialId = uuidSchema.parse(req.params.id);
+    if (!req.file) {
+      res.status(422).json({
+        error: {
+          code: 'FILE_REQUIRED',
+          message: 'File pengganti wajib diunggah.',
+          details: [],
+          requestId: req.requestId,
+        },
+      });
+      return;
+    }
+
+    const result = await topicsService.replaceMaterialFile(
+      materialId,
+      context.userId,
+      {
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        originalname: req.file.originalname,
+      },
+    );
+
+    res.status(200).json({ data: result });
   } catch (error) {
     next(error);
   }

@@ -50,6 +50,17 @@ private fun parseIso(iso: String?): Date? {
     return null
 }
 
+/**
+ * Formats a dashboard counter (a jumlah/total tile) with the app's padded
+ * counter style: `0` stays a single `0`, `1..9` gets one leading zero
+ * (`01`..`09`), and `10` and above keep every digit (`10`, `25`, `100`).
+ *
+ * Only counts and totals use this rule. Ordinals and other numbered labels
+ * ("Topik 01", dates, scores, percentages) keep their own formatting.
+ */
+fun formatCounter(value: Int): String =
+    if (value in 1..9) value.toString().padStart(2, '0') else value.toString()
+
 /** Human readable file size, e.g. 24_800_000 bytes -> "24,8 MB". */
 fun formatBytes(bytes: Long?): String? {
     if (bytes == null || bytes <= 0L) return null

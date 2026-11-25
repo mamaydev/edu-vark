@@ -17,6 +17,8 @@ import com.eduvark.app.data.remote.dto.LinkMaterialRequest
 import com.eduvark.app.data.remote.dto.LoginRequest
 import com.eduvark.app.data.remote.dto.LoginResponse
 import com.eduvark.app.data.remote.dto.MaterialLinkTargetResponse
+import com.eduvark.app.data.remote.dto.MaterialDeletionResponse
+import com.eduvark.app.data.remote.dto.MaterialFileReplacementResponse
 import com.eduvark.app.data.remote.dto.MaterialListResponse
 import com.eduvark.app.data.remote.dto.MaterialResponse
 import com.eduvark.app.data.remote.dto.MeResponse
@@ -235,7 +237,18 @@ interface EduVarkApi {
     ): MaterialResponse
 
     @DELETE("lecturer/materials/{id}")
-    suspend fun deleteMaterial(@Path("id") materialId: String): Response<Unit>
+    // Response<T> agar backend lama yang membalas 204 (tanpa body) tetap dapat
+    // diperlakukan sebagai aksi materi yang berhasil dengan status fisik UNKNOWN.
+    suspend fun deleteMaterial(
+        @Path("id") materialId: String,
+    ): Response<MaterialDeletionResponse>
+
+    @Multipart
+    @POST("lecturer/materials/{id}/file")
+    suspend fun replaceMaterialFile(
+        @Path("id") materialId: String,
+        @Part file: MultipartBody.Part,
+    ): MaterialFileReplacementResponse
 }
 
 interface RefreshApi {

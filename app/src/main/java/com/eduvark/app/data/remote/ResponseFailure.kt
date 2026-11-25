@@ -14,7 +14,7 @@ import retrofit2.Response
  * an [AppFailure.Api] carrying the server error envelope when the body can be
  * parsed, or a generic `HTTP_<code>` failure otherwise.
  */
-internal fun Response<Unit>.toAppFailureOrNull(json: Json): AppFailure? {
+internal fun <T> Response<T>.toAppFailureOrNull(json: Json): AppFailure? {
     if (isSuccessful) return null
     val parsed = errorBody()?.string()?.let { raw ->
         runCatching { json.decodeFromString<ApiErrorResponse>(raw) }.getOrNull()

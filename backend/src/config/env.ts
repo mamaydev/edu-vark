@@ -31,6 +31,14 @@ const EnvSchema = z
   CORS_ORIGINS: optionalString,
   LOCAL_STORAGE_DIR: optionalString,
   MAX_UPLOAD_BYTES: z.coerce.number().int().positive().max(104857600).default(104857600),
+  // Worker penghapusan objek penyimpanan. Interval 0 mematikan worker (dipakai
+  // test); percobaan pertama tetap dijalankan langsung setelah commit.
+  STORAGE_DELETION_INTERVAL_MS: z.coerce.number().int().min(0).default(60_000),
+  STORAGE_DELETION_MAX_ATTEMPTS: z.coerce.number().int().positive().default(10),
+  // Lease niat Ganti File. Harus lebih panjang dari durasi unggah normal agar
+  // rekonsiliasi tidak menyerobot unggahan yang masih berjalan; setelah proses
+  // mati, lease habis dan worker menyelesaikan berdasarkan state database.
+  FILE_REPLACEMENT_LEASE_MS: z.coerce.number().int().positive().default(600_000),
   CLIENT_COMPATIBILITY_ENFORCE: z.enum(['0', '1']).optional(),
   CLIENT_MIN_VERSION: z.coerce.number().int().positive().default(2),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),

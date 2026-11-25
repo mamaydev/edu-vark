@@ -58,6 +58,7 @@ import com.eduvark.app.ui.components.StatCard
 import com.eduvark.app.ui.components.TextLink
 import com.eduvark.app.ui.components.TintTone
 import com.eduvark.app.ui.components.content
+import com.eduvark.app.ui.format.formatCounter
 import com.eduvark.app.ui.format.formatDeadline
 import androidx.compose.ui.text.font.FontWeight
 import com.eduvark.app.ui.components.TopicCard
@@ -281,16 +282,16 @@ private fun StudentHome(state: HomeUiState, onOpenTopics: () -> Unit) {
         Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_12))) {
             StatCard(
                 value = state.studentDashboard?.availableMaterials
-                    ?.toString()
-                    ?.padStart(2, '0') ?: stringResource(R.string.home_stat_placeholder),
+                    ?.let(::formatCounter) ?: stringResource(R.string.home_stat_placeholder),
                 label = stringResource(R.string.home_stat_materials_available),
+                tone = TintTone.Teal,
                 modifier = Modifier.weight(1f),
             )
             StatCard(
                 value = state.studentDashboard?.notCompletedMaterials
-                    ?.toString()
-                    ?.padStart(2, '0') ?: stringResource(R.string.home_stat_placeholder),
+                    ?.let(::formatCounter) ?: stringResource(R.string.home_stat_placeholder),
                 label = stringResource(R.string.home_stat_materials_pending),
+                tone = TintTone.Danger,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -367,12 +368,12 @@ private fun LecturerHome(
 
     Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_12))) {
         StatCard(
-            value = state.publishedTopics.size.toString().padStart(2, '0'),
+            value = formatCounter(state.publishedTopics.size),
             label = stringResource(R.string.home_stat_published_topics),
             modifier = Modifier.weight(1f),
         )
         StatCard(
-            value = state.draftTopics.size.toString().padStart(2, '0'),
+            value = formatCounter(state.draftTopics.size),
             label = stringResource(R.string.home_stat_drafts),
             modifier = Modifier.weight(1f),
         )
@@ -440,12 +441,12 @@ private fun AdminHome(
 
     Row(horizontalArrangement = Arrangement.spacedBy(dimen(R.dimen.space_12))) {
         StatCard(
-            value = (summary?.active ?: 0).toString().padStart(2, '0'),
+            value = formatCounter(summary?.active ?: 0),
             label = stringResource(R.string.home_stat_active_accounts),
             modifier = Modifier.weight(1f),
         )
         StatCard(
-            value = (summary?.inactive ?: 0).toString().padStart(2, '0'),
+            value = formatCounter(summary?.inactive ?: 0),
             label = stringResource(R.string.home_stat_inactive_accounts),
             modifier = Modifier.weight(1f),
         )

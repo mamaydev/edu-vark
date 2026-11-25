@@ -6,7 +6,19 @@ import { MATERIAL_NOT_AVAILABLE_MESSAGE } from '../../lib/messages';
 import { writeAudit } from '../../lib/audit';
 import { validateUploadedFile, type UploadedFileInput } from '../../lib/file-validation';
 import { deleteObject, putObject } from '../../lib/storage';
+import { logger } from '../../lib/logger';
 import type { VarkType } from '../../types/auth';
+import {
+  attemptObjectDeletionAfterCommit,
+  enqueueObjectDeletion,
+  type FileDeletionOutcome,
+} from '../materials/object-deletions.service';
+import {
+  beginFileReplacement,
+  lockPendingFileReplacement,
+  markFileReplacementActive,
+  resolveFileReplacementAfterFailure,
+} from '../materials/file-replacements.service';
 import * as repo from './topics.repository';
 
 
@@ -425,16 +437,281 @@ export async function updateMaterial(
   });
 }
 
-export async function deleteMaterial(materialId: string, lecturerId: string): Promise<void> {
-  await withTransaction(async (client) => {
-    await requireMaterialOwnership(client, materialId, lecturerId);
-    await repo.softDeleteMaterial(client, materialId);
-    await writeAudit(client, {
-      actorId: lecturerId,
-      action: 'MATERIAL_DELETED',
-      entity: 'MATERIAL',
-      entityId: materialId,
-      metadata: {},
-    });
+export interface MaterialDeletionResult {
+  id: string;
+  /** Hasil penghapusan objek penyimpanan: tidak berlaku untuk materi LINK. */
+  fileDeletion: FileDeletionOutcome;
+}
+
+export interface MaterialFileReplacement {
+  material: MaterialResponse;
+  /** Hasil penghapusan objek berkas lama setelah berkas baru aktif. */
+  previousFileDeletion: FileDeletionOutcome;
+}
+
+export interface MaterialDeletionQueued {
+  jobId: string | null;
+  /** Kunci objek yang benar-benar dihapus, hasil mutasi (bukan pembacaan awal). */
+  objectKey: string | null;
+  kind: 'FILE' | 'LINK';
+}
+
+/**
+ * Seam internal untuk test deterministik. `afterOwnershipRead` dipanggil setelah
+ * pembacaan otorisasi dan sebelum mutasi, sehingga test dapat menyisipkan
+ * commit Ganti File tepat pada jendela balapan yang dilindungi.
+ */
+export interface MaterialDeletionHooks {
+  afterOwnershipRead?: () => void | Promise<void>;
+}
+
+/**
+ * Bagian transaksi dari Hapus materi: mutasi soft delete, audit, dan pencatatan
+ * pekerjaan penghapusan objek.
+ *
+ * `object_key` diambil dari `UPDATE ... RETURNING`, bukan dari pembacaan
+ * otorisasi sebelumnya. Bila Ganti File berhasil commit di antara pembacaan
+ * dan mutasi, hasil mutasi memuat kunci baru sehingga antrean menghapus berkas
+ * yang benar-benar aktif saat materi disembunyikan. Audit dan pekerjaan hanya
+ * ditulis bila UPDATE benar-benar mengubah baris; permintaan berikutnya
+ * menerima 404 MATERIAL_NOT_FOUND.
+ */
+export async function deleteMaterialInTransaction(
+  client: Parameters<typeof repo.softDeleteMaterial>[0],
+  materialId: string,
+  lecturerId: string,
+  hooks: MaterialDeletionHooks = {},
+): Promise<MaterialDeletionQueued> {
+  await requireMaterialOwnership(client, materialId, lecturerId);
+  await hooks.afterOwnershipRead?.();
+
+  const deleted = await repo.softDeleteMaterial(client, materialId);
+  if (!deleted) {
+    // Permintaan Hapus lain sudah menyembunyikan materi ini lebih dulu.
+    throw notFound('MATERIAL_NOT_FOUND', 'Materi tidak ditemukan.');
+  }
+
+  await writeAudit(client, {
+    actorId: lecturerId,
+    action: 'MATERIAL_DELETED',
+    entity: 'MATERIAL',
+    entityId: materialId,
+    metadata: { kind: deleted.kind },
   });
+
+  if (deleted.kind !== 'FILE' || !deleted.object_key) {
+    return { jobId: null, objectKey: null, kind: deleted.kind };
+  }
+  const jobId = await enqueueObjectDeletion(client, {
+    objectKey: deleted.object_key,
+    materialId,
+    requestedBy: lecturerId,
+    reason: 'MATERIAL_DELETED',
+  });
+  return { jobId, objectKey: deleted.object_key, kind: deleted.kind };
+}
+
+/**
+ * Hapus materi: record, audit, dan riwayat feedback tetap disimpan (soft
+ * delete). Untuk materi FILE, niat penghapusan objek dicatat dalam transaksi
+ * yang sama lalu langsung dicoba setelah commit tanpa masa tenggang. Bila
+ * penyimpanan gagal/belum pasti, hasil status fisik dilaporkan apa adanya dan
+ * worker menangani percobaan ulang.
+ */
+export async function deleteMaterial(
+  materialId: string,
+  lecturerId: string,
+): Promise<MaterialDeletionResult> {
+  const queued = await withTransaction((client) =>
+    deleteMaterialInTransaction(client, materialId, lecturerId),
+  );
+
+  const fileDeletion = await attemptObjectDeletionAfterCommit(queued.jobId);
+  return { id: materialId, fileDeletion };
+}
+
+/**
+ * Kait pengujian deterministik untuk menginjeksi kegagalan pada titik yang
+ * tepat. Tidak dipakai produksi; tanpa kait, alur berjalan normal.
+ */
+export interface MaterialFileReplacementHooks {
+  /** Setelah unggahan selesai, sebelum transaksi metadata dimulai. */
+  afterUpload?: () => Promise<void> | void;
+  /** Di dalam transaksi metadata, setelah baris materi diperbarui. */
+  afterMetadataUpdate?: () => Promise<void> | void;
+  /** Setelah COMMIT metadata berhasil, sebelum respons dibentuk. */
+  afterMetadataCommit?: () => Promise<void> | void;
+}
+
+/**
+ * Ganti berkas pada materi FILE yang sama.
+ *
+ * Niat penggantian dicatat lebih dulu (PENDING) sebelum objek pengganti
+ * ditulis. Saat metadata di-commit, niat ditandai ACTIVE dan pekerjaan hapus
+ * objek lama dicatat dalam transaksi yang sama, sehingga:
+ *   - COMMIT berhasil tetapi konfirmasi hilang tidak pernah menghapus objek
+ *     yang kini aktif (record sudah ACTIVE dan menunjuk objek baru);
+ *   - rollback/unggahan gagal membuat objek lama tetap aktif dan objek
+ *     pengganti masuk antrean pembersihan yang dapat diulang;
+ *   - proses yang berhenti sebelum commit metadata meninggalkan niat PENDING
+ *     yang diselesaikan worker setelah lease habis.
+ */
+export async function replaceMaterialFile(
+  materialId: string,
+  lecturerId: string,
+  file: UploadedFileInput,
+  hooks: MaterialFileReplacementHooks = {},
+): Promise<MaterialFileReplacement> {
+  const validated = validateUploadedFile(file);
+  const before = await withTransaction((client) =>
+    requireMaterialOwnership(client, materialId, lecturerId),
+  );
+  if (before.kind !== 'FILE' || !before.object_key) {
+    throw unprocessable(
+      'MATERIAL_KIND_UNSUPPORTED',
+      'Hanya materi berjenis berkas yang dapat diganti.',
+    );
+  }
+  const expectedObjectKey = before.object_key;
+  const objectKey = 'materials/' + randomUUID() + validated.extension;
+
+  // Niat persisten dicatat SEBELUM objek ditulis: bila proses berhenti di
+  // titik mana pun setelah ini, kunci pengganti sudah dapat ditemukan.
+  const intent = await beginFileReplacement({
+    materialId,
+    requestedBy: lecturerId,
+    oldObjectKey: expectedObjectKey,
+    newObjectKey: objectKey,
+  });
+  if (intent.leaseToken === null) {
+    throw new AppError(
+      'STORAGE_REPLACEMENT_UNAVAILABLE',
+      503,
+      'Tidak dapat memulai penggantian berkas. Coba lagi.',
+    );
+  }
+  const leaseToken = intent.leaseToken;
+
+  try {
+    await putObject(objectKey, file.buffer, validated.mime);
+    await hooks.afterUpload?.();
+
+    const updated = await withTransaction(async (client) => {
+      const material = await requireMaterialOwnership(client, materialId, lecturerId);
+      if (material.kind !== 'FILE' || !material.object_key) {
+        throw unprocessable(
+          'MATERIAL_KIND_UNSUPPORTED',
+          'Hanya materi berjenis berkas yang dapat diganti.',
+        );
+      }
+
+      // Urutan kunci: niat lalu materi (sama dengan rekonsiliasi) agar tidak
+      // deadlock dengan worker yang memulihkan operasi tertinggal.
+      const leaseValid = await lockPendingFileReplacement(
+        client,
+        intent.id,
+        leaseToken,
+      );
+      if (!leaseValid) {
+        throw conflict(
+          'MATERIAL_CHANGED',
+          'Materi berubah saat proses ganti berkas. Muat ulang lalu coba lagi.',
+        );
+      }
+
+      const row = await repo.replaceMaterialFile(client, materialId, {
+        expectedObjectKey,
+        objectKey,
+        mime: validated.mime,
+        sizeBytes: file.size,
+      });
+      if (!row) {
+        throw conflict(
+          'MATERIAL_CHANGED',
+          'Materi berubah saat proses ganti berkas. Muat ulang lalu coba lagi.',
+        );
+      }
+
+      await hooks.afterMetadataUpdate?.();
+
+      await writeAudit(client, {
+        actorId: lecturerId,
+        action: 'MATERIAL_FILE_REPLACED',
+        entity: 'MATERIAL',
+        entityId: materialId,
+        metadata: { kind: 'FILE', mime: validated.mime, sizeBytes: file.size },
+      });
+
+      const jobId = await enqueueObjectDeletion(client, {
+        objectKey: expectedObjectKey,
+        materialId,
+        requestedBy: lecturerId,
+        reason: 'FILE_REPLACED',
+      });
+      const activated = await markFileReplacementActive(
+        client,
+        intent.id,
+        leaseToken,
+        jobId,
+      );
+      if (!activated) {
+        throw conflict(
+          'MATERIAL_CHANGED',
+          'Materi berubah saat proses ganti berkas. Muat ulang lalu coba lagi.',
+        );
+      }
+      return { row, jobId };
+    });
+
+    // Titik di mana COMMIT sudah terjadi tetapi proses masih bisa gagal
+    // sebelum respons terkirim (kait ini mensimulasikannya di test).
+    await hooks.afterMetadataCommit?.();
+
+    const previousFileDeletion = await attemptObjectDeletionAfterCommit(updated.jobId);
+    return {
+      material: await toMaterial(updated.row),
+      previousFileDeletion,
+    };
+  } catch (error) {
+    // Kompensasi TIDAK PERNAH menghapus objek pengganti secara langsung.
+    // Keputusan diambil dari state database: ACTIVE berarti commit berhasil
+    // (pertahankan objek), ABANDONED berarti objek lama tetap aktif dan objek
+    // baru masuk antrean bersih, UNKNOWN berarti pertahankan + rekonsiliasi.
+    const resolution = await resolveFileReplacementAfterFailure(
+      intent.id,
+      leaseToken,
+    );
+
+    if (resolution.status === 'ACTIVE') {
+      logger.warn(
+        { materialId, replacementId: intent.id },
+        'Konfirmasi Ganti File hilang setelah commit; record menunjuk objek baru',
+      );
+      const previousFileDeletion = await attemptObjectDeletionAfterCommit(
+        resolution.oldDeletionJobId,
+      );
+      return {
+        material: await toMaterial(resolution.material),
+        previousFileDeletion,
+      };
+    }
+
+    if (resolution.status === 'ABANDONED') {
+      // Pekerjaan pembersihan sudah dicatat; coba sekali sekarang, worker akan
+      // mengulang bila penyimpanan sedang gagal.
+      await attemptObjectDeletionAfterCommit(resolution.cleanupJobId);
+      throw error;
+    }
+
+    logger.error(
+      { err: error, materialId, replacementId: intent.id },
+      'Status Ganti File tidak pasti; objek pengganti dipertahankan untuk rekonsiliasi',
+    );
+    throw new AppError(
+      'REPLACEMENT_UNCERTAIN',
+      503,
+      'Perubahan berkas belum dapat dipastikan. Muat ulang materi; sistem akan ' +
+        'merekonsiliasi otomatis.',
+    );
+  }
 }

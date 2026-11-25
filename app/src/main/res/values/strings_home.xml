@@ -21,7 +21,7 @@
     <string name="home_display_student">Siap memahami hal baru?</string>
     <string name="home_display_kinesthetic">Saatnya mencoba secara langsung.</string>
     <string name="home_hero_eyebrow_kinesthetic">IMPLEMENTASI BASIS DATA</string>
-    <string name="home_hero_eyebrow_student">IBD • SEMESTER GANJIL 2026/2027</string>
+    <string name="home_hero_eyebrow_student">IBD</string>
     <string name="home_hero_title_kinesthetic">Belajar melalui studi kasus.</string>
     <string name="home_class_name">Implementasi Basis Data</string>
     <string name="home_hero_vark_locked">%1$s • Terkunci selama sesi</string>
